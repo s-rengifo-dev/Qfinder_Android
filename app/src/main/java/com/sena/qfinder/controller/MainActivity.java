@@ -3,6 +3,8 @@ package com.sena.qfinder.controller;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
+import com.google.firebase.FirebaseApp;
 import com.sena.qfinder.Inicio;
 import com.sena.qfinder.R;
 
@@ -14,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+//        FirebaseApp.initializeApp(this);
         if (savedInstanceState == null) {
             loadFragment(new Inicio());
             isInicioFragmentShown = true;

@@ -13,6 +13,8 @@ import com.sena.qfinder.models.MedicamentoRequest;
 import com.sena.qfinder.models.MedicamentoResponse;
 import com.sena.qfinder.models.MedicamentoSimpleResponse;
 import com.sena.qfinder.models.MedicamentosResponse;
+import com.sena.qfinder.models.Mensaje;
+import com.sena.qfinder.models.MensajeRequest;
 import com.sena.qfinder.models.PacienteListResponse;
 import com.sena.qfinder.models.PacienteRequest;
 import com.sena.qfinder.models.PacienteResponse;
@@ -151,5 +153,46 @@ public interface AuthService {
     Call<Void> eliminarRed(
             @Header("Authorization") String token,
             @Path("id") int idRed
+    );
+    // En AuthService.java (alternativa)
+    @POST("api/membresiaRed/unirseRed/{id_red}")
+    Call<ResponseBody> unirseRed(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+    @DELETE("api/membresiaRed/salirRed/{id_red}")
+    Call<ResponseBody> salirRed(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+
+    @GET("api/membresiaRed/estaUnido/{id_red}")
+    Call<ResponseBody> verificarMembresia(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+    @GET("api/membresiaRed/listarRedPertenece")
+    Call<List<RedResponse>> listarRedesPertenecientes(
+            @Header("Authorization") String token
+    );
+    // Métodos para el chat
+    @GET("api/chat/{id_red}/mensajes")
+    Call<List<Mensaje>> obtenerMensajes(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed,
+            @Query("limite") int limite
+    );
+
+    @POST("api/chat/{id_red}/enviar")
+    Call<ResponseBody> enviarMensaje(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed,
+            @Body MensajeRequest mensaje
+    );
+
+    @GET("api/chat/obtenerIdRed")
+    Call<RedResponse> obtenerIdRedPorNombre(
+            @Header("Authorization") String token,
+            @Query("nombre") String nombreRed
     );
 }

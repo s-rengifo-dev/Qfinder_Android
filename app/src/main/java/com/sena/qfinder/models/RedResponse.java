@@ -7,7 +7,11 @@ public class RedResponse {
     private boolean success;
     private String message;
 
+    private boolean unido; // Nuevo campo para indicar si el usuario está unido
+
     // Getters y Setters
+    public boolean isUnido() { return unido; }
+    public void setUnido(boolean unido) { this.unido = unido; }
     public int getId_red() { return id_red; }
     public void setId_red(int id_red) { this.id_red = id_red; }
     public String getNombre_red() { return nombre_red; }

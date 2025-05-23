@@ -1,5 +1,7 @@
 package com.sena.qfinder.controller;
 
+import static com.google.firebase.FirebaseApp.initializeApp;
+
 import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -10,6 +12,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.FirebaseApp;
 import com.sena.qfinder.Comunidad;
 import com.sena.qfinder.Fragment_Serivicios;
 import com.sena.qfinder.R;
@@ -27,7 +30,7 @@ public class MainActivityDash extends AppCompatActivity {
         // Configuración crítica para el espacio de la barra de estado
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
-
+//        FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_main_dash);
 
         // Configuración de la navegación inferior
