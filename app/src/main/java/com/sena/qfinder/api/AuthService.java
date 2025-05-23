@@ -166,7 +166,7 @@ public interface AuthService {
             @Path("id_red") int idRed
     );
 
-    @GET("api/membresiaRed/verificarMembresia/{id_red}")
+    @GET("api/membresiaRed/verificarMembresiahoal/{id_red}")
     Call<ResponseBody> verificarMembresia(
             @Header("Authorization") String token,
             @Path("id_red") int idRed

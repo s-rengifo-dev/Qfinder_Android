@@ -1,17 +1,25 @@
 package com.sena.qfinder.api;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.*;
 import com.sena.qfinder.models.Mensaje;
 import com.sena.qfinder.models.MensajeRequest;
+
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ChatService {
     private static final String TAG = "ChatService";
@@ -22,6 +30,7 @@ public class ChatService {
     private AuthService authService;
     private String authToken;
     private Context context;
+    private Retrofit retrofit;
 
     public interface ChatCallback {
         void onMensajesRecibidos(List<Mensaje> mensajes);
@@ -40,17 +49,27 @@ public class ChatService {
                 FirebaseApp.initializeApp(context);
             }
             this.databaseRef = FirebaseDatabase.getInstance().getReference();
-            this.authService = ApiClient.getClient().create(AuthService.class);
+
+            // Configurar Retrofit con timeouts extendidos
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .build();
+
+            this.retrofit = new Retrofit.Builder()
+                    .baseUrl("https://qfinder-production.up.railway.app/")
+                    .client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            this.authService = retrofit.create(AuthService.class);
         } catch (Exception e) {
             Log.e(TAG, "Error inicializando Firebase", e);
             if (callback != null) {
                 callback.onError("Error inicializando chat");
             }
         }
-    }
-
-    public void setCallback(ChatCallback callback) {
-        this.callback = callback;
     }
 
     public void verificarMembresia() {
@@ -153,6 +172,17 @@ public class ChatService {
     }
 
     public void enviarMensaje(Mensaje mensaje) {
+        enviarMensajeConReintentos(mensaje, 3); // 3 intentos máximo
+    }
+
+    private void enviarMensajeConReintentos(Mensaje mensaje, int intentosRestantes) {
+        if (intentosRestantes <= 0) {
+            if (callback != null) {
+                callback.onError("No se pudo enviar el mensaje después de varios intentos");
+            }
+            return;
+        }
+
         try {
             MensajeRequest request = new MensajeRequest(
                     mensaje.getContenido(),
@@ -186,30 +216,44 @@ public class ChatService {
                                 })
                                 .addOnFailureListener(e -> {
                                     if (callback != null) {
-                                        callback.onError(e.getMessage());
+                                        callback.onError("Error al guardar mensaje localmente: " + e.getMessage());
                                     }
                                     Log.e(TAG, "Error guardando mensaje en Firebase", e);
                                 });
                     } else {
-                        if (callback != null) {
-                            callback.onError("Error al enviar mensaje al backend");
-                        }
+                        String errorMsg = "Error al enviar mensaje al backend: " + response.code();
                         try {
                             if (response.errorBody() != null) {
-                                Log.e(TAG, "Error enviando mensaje: " + response.errorBody().string());
+                                errorMsg += " - " + response.errorBody().string();
                             }
                         } catch (Exception e) {
-                            Log.e(TAG, "Error leyendo errorBody", e);
+                            errorMsg += " (error leyendo cuerpo)";
                         }
+                        if (callback != null) {
+                            callback.onError(errorMsg);
+                        }
+                        Log.e(TAG, errorMsg);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    if (callback != null) {
-                        callback.onError(t.getMessage());
+                    String errorMsg;
+                    if (t instanceof SocketTimeoutException) {
+                        errorMsg = "Tiempo de espera agotado. Reintentando...";
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            enviarMensajeConReintentos(mensaje, intentosRestantes - 1);
+                        }, 2000); // Reintentar después de 2 segundos
+                    } else {
+                        errorMsg = "Error de conexión: " + t.getMessage();
+                        if (callback != null) {
+                            callback.onError(errorMsg);
+                        }
                     }
-                    Log.e(TAG, "Error enviando mensaje", t);
+                    Log.e(TAG, errorMsg, t);
+
+                    // Guardar mensaje localmente para intentar enviar más tarde
+                    guardarMensajeLocalmente(mensaje);
                 }
             });
         } catch (Exception e) {
@@ -217,6 +261,25 @@ public class ChatService {
                 callback.onError("Error al enviar mensaje: " + e.getMessage());
             }
             Log.e(TAG, "Error enviando mensaje", e);
+            guardarMensajeLocalmente(mensaje);
+        }
+    }
+
+    private void guardarMensajeLocalmente(Mensaje mensaje) {
+        try {
+            DatabaseReference mensajesPendientesRef = databaseRef.child("mensajes_pendientes")
+                    .child(idRedActual)
+                    .push();
+
+            mensaje.setId(mensajesPendientesRef.getKey());
+            mensaje.setFecha_envio(System.currentTimeMillis());
+            mensaje.setEstado("pendiente");
+
+            mensajesPendientesRef.setValue(mensaje)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Mensaje guardado localmente para reenvío"))
+                    .addOnFailureListener(e -> Log.e(TAG, "Error guardando mensaje localmente", e));
+        } catch (Exception e) {
+            Log.e(TAG, "Error guardando mensaje localmente", e);
         }
     }
 }

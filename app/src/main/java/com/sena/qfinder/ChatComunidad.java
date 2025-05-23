@@ -3,8 +3,11 @@ package com.sena.qfinder;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,14 +23,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.FirebaseApp;
-import com.sena.qfinder.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sena.qfinder.api.ApiClient;
 import com.sena.qfinder.api.AuthService;
 import com.sena.qfinder.api.ChatService;
 import com.sena.qfinder.models.Mensaje;
 import com.sena.qfinder.models.RedResponse;
-
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,6 +66,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     private ChatService chatService;
     private SharedPreferences sharedPreferences;
     private AuthService authService;
+    private DatabaseReference mensajesPendientesRef;
 
     public static ChatComunidad newInstance(String nombreComunidad) {
         ChatComunidad fragment = new ChatComunidad();
@@ -84,6 +90,16 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                 sharedPreferences.getString("apellido_usuario", "");
 
         authService = ApiClient.getClient().create(AuthService.class);
+
+        // Inicializar Firebase para mensajes pendientes
+        try {
+            if (FirebaseApp.getApps(requireContext()).isEmpty()) {
+                FirebaseApp.initializeApp(requireContext());
+            }
+            mensajesPendientesRef = FirebaseDatabase.getInstance().getReference("mensajes_pendientes");
+        } catch (Exception e) {
+            Log.e(TAG, "Error inicializando Firebase", e);
+        }
     }
 
     @Override
@@ -105,8 +121,48 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         btnUnirmeComunidad.setOnClickListener(v -> unirseAComunidad());
 
         configurarEstadoInicial();
+        verificarMensajesPendientes();
 
         return view;
+    }
+
+    private void verificarMensajesPendientes() {
+        if (mensajesPendientesRef == null || idRed == null) return;
+
+        mensajesPendientesRef.child(idRed).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Mensaje mensajePendiente = snapshot.getValue(Mensaje.class);
+                        if (mensajePendiente != null && "pendiente".equals(mensajePendiente.getEstado())) {
+                            reenviarMensajePendiente(mensajePendiente, snapshot.getKey());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e(TAG, "Error verificando mensajes pendientes", databaseError.toException());
+            }
+        });
+    }
+
+    private void reenviarMensajePendiente(Mensaje mensaje, String mensajeId) {
+        if (chatService == null || !hayConexionInternet()) return;
+
+        chatService.enviarMensaje(mensaje);
+        mensajesPendientesRef.child(idRed).child(mensajeId).removeValue()
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Mensaje pendiente eliminado después de reenvío"))
+                .addOnFailureListener(e -> Log.e(TAG, "Error eliminando mensaje pendiente", e));
+    }
+
+    private boolean hayConexionInternet() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     private void configurarEstadoInicial() {
@@ -136,7 +192,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                     if (response.errorBody() != null) {
                         try {
                             errorMsg += ": " + response.errorBody().string();
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             errorMsg += " (error al leer cuerpo)";
                         }
                     }
@@ -173,7 +229,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             }
 
             chatService = new ChatService(requireContext(), idRed, token);
-            chatService.setCallback(this);
+//            chatService.setCallback(this);
             chatService.verificarMembresia();
         } catch (Exception e) {
             Log.e(TAG, "Error al inicializar chat", e);
@@ -215,7 +271,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                             if (response.errorBody() != null) {
                                 errorMsg += " - " + response.errorBody().string();
                             }
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             errorMsg += " (error al leer cuerpo)";
                         }
                         Log.e(TAG, errorMsg);
@@ -256,6 +312,13 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     private void enviarMensaje() {
         String contenido = etMensaje.getText().toString().trim();
         if (!contenido.isEmpty()) {
+            if (!hayConexionInternet()) {
+                Toast.makeText(getContext(), "Sin conexión a internet. El mensaje se enviará cuando se recupere la conexión.", Toast.LENGTH_LONG).show();
+                guardarMensajePendiente(contenido);
+                etMensaje.setText("");
+                return;
+            }
+
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
             String horaActual = sdf.format(new Date());
 
@@ -266,10 +329,33 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             nuevoMensaje.setComunidad(nombreComunidad);
             nuevoMensaje.setIdUsuario(idUsuario);
             nuevoMensaje.setFecha_envio(System.currentTimeMillis());
+            nuevoMensaje.setEstado("enviando");
 
             Log.d(TAG, "Enviando mensaje: " + contenido);
-            chatService.enviarMensaje(nuevoMensaje);
+            if (chatService != null) {
+                chatService.enviarMensaje(nuevoMensaje);
+            }
             etMensaje.setText("");
+        }
+    }
+
+    private void guardarMensajePendiente(String contenido) {
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        String horaActual = sdf.format(new Date());
+
+        Mensaje mensajePendiente = new Mensaje();
+        mensajePendiente.setNombreUsuario(nombreUsuario);
+        mensajePendiente.setContenido(contenido);
+        mensajePendiente.setHora(horaActual);
+        mensajePendiente.setComunidad(nombreComunidad);
+        mensajePendiente.setIdUsuario(idUsuario);
+        mensajePendiente.setFecha_envio(System.currentTimeMillis());
+        mensajePendiente.setEstado("pendiente");
+
+        if (mensajesPendientesRef != null && idRed != null) {
+            mensajesPendientesRef.child(idRed).push().setValue(mensajePendiente)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Mensaje guardado como pendiente"))
+                    .addOnFailureListener(e -> Log.e(TAG, "Error guardando mensaje pendiente", e));
         }
     }
 
@@ -321,7 +407,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                         mostrarDialogoInconsistencia();
                         mostrarOpcionUnirse();
                     } else {
-                        new Handler().postDelayed(() -> {
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
                             if (chatService != null) {
                                 chatService.verificarMembresia();
                             }
@@ -418,6 +504,17 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             holder.txtNombreUsuario.setText(mensaje.getNombreUsuario());
             holder.txtContenidoMensaje.setText(mensaje.getContenido());
             holder.txtHoraMensaje.setText(mensaje.getHora());
+
+            // Mostrar estado del mensaje si es relevante
+            if ("pendiente".equals(mensaje.getEstado())) {
+                holder.txtEstado.setText("(Enviando...)");
+                holder.txtEstado.setVisibility(View.VISIBLE);
+            } else if ("error".equals(mensaje.getEstado())) {
+                holder.txtEstado.setText("(Error al enviar)");
+                holder.txtEstado.setVisibility(View.VISIBLE);
+            } else {
+                holder.txtEstado.setVisibility(View.GONE);
+            }
         }
 
         @Override
@@ -426,13 +523,14 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         }
 
         static class MensajeViewHolder extends RecyclerView.ViewHolder {
-            TextView txtNombreUsuario, txtContenidoMensaje, txtHoraMensaje;
+            TextView txtNombreUsuario, txtContenidoMensaje, txtHoraMensaje, txtEstado;
 
             MensajeViewHolder(View itemView) {
                 super(itemView);
                 txtNombreUsuario = itemView.findViewById(R.id.txtNombreUsuario);
                 txtContenidoMensaje = itemView.findViewById(R.id.txtContenidoMensaje);
                 txtHoraMensaje = itemView.findViewById(R.id.txtHoraMensaje);
+//                txtEstado = itemView.findViewById(R.id.txtEstadoMensaje);
             }
         }
     }

@@ -1,18 +1,22 @@
 package com.sena.qfinder.api;
 
+import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
     private static Retrofit retrofit = null;
-    private static String resetToken = null;  // Variable para almacenar el token
+    private static String resetToken = null;
     private static String userEmail = null;
     private static final MyCookieJar cookieJar = new MyCookieJar();
 
     public static Retrofit getClient() {
         if (retrofit == null) {
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
                     .cookieJar(cookieJar)
                     .build();
 
@@ -25,13 +29,14 @@ public class ApiClient {
         return retrofit;
     }
 
-    // Añade estos métodos para manejar el token
     public static void setResetToken(String token) {
         resetToken = token;
     }
+
     public static void setUserEmail(String email) {
         userEmail = email;
     }
+
     public static String getResetToken() {
         return resetToken;
     }
