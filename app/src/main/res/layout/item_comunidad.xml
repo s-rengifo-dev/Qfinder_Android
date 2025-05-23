@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     card_view:cardCornerRadius="12dp"
     android:layout_margin="8dp"
+    android:id="@+id/cardComunidad"
     android:background="@android:color/white"
     card_view:cardElevation="6dp">
 
