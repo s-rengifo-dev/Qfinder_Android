@@ -6,10 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,6 +21,7 @@ import com.sena.qfinder.models.ActividadGetResponse;
 import com.sena.qfinder.models.ActividadListResponse;
 import com.sena.qfinder.models.PacienteListResponse;
 import com.sena.qfinder.models.PacienteResponse;
+import com.sena.qfinder.ui.home.PatientAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,12 +32,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Actividad1Fragment extends Fragment {
+public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPatientClickListener {
 
-    private Spinner spinnerPacientes;
     private RecyclerView recyclerViewActividades;
+    private RecyclerView recyclerViewPacientes;
     private Button btnAgregarActividad;
     private ActividadAdapter actividadAdapter;
+    private PatientAdapter patientAdapter;
     private Map<Integer, PacienteResponse> pacientesMap = new HashMap<>();
     private List<PacienteResponse> listaPacientes = new ArrayList<>();
     private int selectedPatientId = -1;
@@ -49,35 +48,25 @@ public class Actividad1Fragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_actividad1, container, false);
 
-        spinnerPacientes = view.findViewById(R.id.spinnerPacientes);
+        recyclerViewPacientes = view.findViewById(R.id.recyclerViewPacientes);
         recyclerViewActividades = view.findViewById(R.id.recyclerViewActividades);
         btnAgregarActividad = view.findViewById(R.id.btnAgregarActividad);
 
+        // Configurar RecyclerView para pacientes (horizontal)
+        recyclerViewPacientes.setLayoutManager(new LinearLayoutManager(
+                getContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+        ));
+        patientAdapter = new PatientAdapter(new ArrayList<>(), this);
+        recyclerViewPacientes.setAdapter(patientAdapter);
+
+        // Configurar RecyclerView para actividades (vertical)
         recyclerViewActividades.setLayoutManager(new LinearLayoutManager(getContext()));
         actividadAdapter = new ActividadAdapter(new ArrayList<>());
         recyclerViewActividades.setAdapter(actividadAdapter);
 
         cargarPacientes();
-
-        spinnerPacientes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0) {
-                    PacienteResponse pacienteSeleccionado = listaPacientes.get(position - 1);
-                    selectedPatientId = pacienteSeleccionado.getId();
-                    cargarActividades(pacienteSeleccionado.getId());
-                } else {
-                    actividadAdapter.setActividades(new ArrayList<>());
-                    selectedPatientId = -1;
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                actividadAdapter.setActividades(new ArrayList<>());
-                selectedPatientId = -1;
-            }
-        });
 
         btnAgregarActividad.setOnClickListener(v -> {
             if (selectedPatientId == -1) {
@@ -93,6 +82,12 @@ public class Actividad1Fragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onPatientClick(PacienteResponse paciente) {
+        selectedPatientId = paciente.getId();
+        cargarActividades(paciente.getId());
     }
 
     private void cargarPacientes() {
@@ -113,7 +108,12 @@ public class Actividad1Fragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     listaPacientes = response.body().getData();
                     if (listaPacientes != null && !listaPacientes.isEmpty()) {
-                        configurarSpinnerPacientes();
+                        // Llenar el mapa de pacientes
+                        for (PacienteResponse paciente : listaPacientes) {
+                            pacientesMap.put(paciente.getId(), paciente);
+                        }
+                        // Actualizar el adaptador de pacientes
+                        patientAdapter.setPatients(listaPacientes);
                     } else {
                         Toast.makeText(getContext(), "No hay pacientes registrados", Toast.LENGTH_SHORT).show();
                     }
@@ -127,24 +127,6 @@ public class Actividad1Fragment extends Fragment {
                 Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void configurarSpinnerPacientes() {
-        List<String> nombresPacientes = new ArrayList<>();
-        nombresPacientes.add("Seleccione un paciente");
-
-        for (PacienteResponse paciente : listaPacientes) {
-            nombresPacientes.add(paciente.getNombre() + " " + paciente.getApellido());
-            pacientesMap.put(paciente.getId(), paciente);
-        }
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
-                nombresPacientes
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerPacientes.setAdapter(adapter);
     }
 
     private void cargarActividades(int idPaciente) {
