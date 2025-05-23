@@ -38,7 +38,7 @@
     <!--hasta aqui-->
 
     <string name="text1RegUsuario">Registra tus datos</string>
-    <string name="text2RegUsuario">Créate una cuenta</string>
+    <string name="text2RegUsuario">Crear cuenta</string>
     <string name="txtNombre">Nombres:</string>
     <string name="txtApellido">Apellidos:</string>
     <string name="txtCorreo">Correo electrónico:</string>
@@ -46,6 +46,7 @@
     <string name="txtIdent">Identificación:</string>
     <string name="txtDirreccion">Dirección:</string>
     <string name="txtContra">Contraseña:</string>
+    <string name="txtCondiciones">Al registrarte aceptas nuestros términos y condiciones de privacidad y manejo de datos.</string>
     <string name="txtContra2">Confirmación de contraseña:</string>
 
     <string name="terminos_completos">Términos y Condiciones de Privacidad y Uso de Datos</string>

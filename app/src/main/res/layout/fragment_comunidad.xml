@@ -51,6 +51,14 @@
             android:clipToPadding="false" />
     </LinearLayout>
 
+    <!-- ProgressBar centered in the middle of the screen -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
     <!-- Botón flotante -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddComunidad"

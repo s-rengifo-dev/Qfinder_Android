@@ -13,9 +13,14 @@ import com.sena.qfinder.models.MedicamentoRequest;
 import com.sena.qfinder.models.MedicamentoResponse;
 import com.sena.qfinder.models.MedicamentoSimpleResponse;
 import com.sena.qfinder.models.MedicamentosResponse;
+import com.sena.qfinder.models.Mensaje;
+import com.sena.qfinder.models.MensajeRequest;
 import com.sena.qfinder.models.PacienteListResponse;
 import com.sena.qfinder.models.PacienteRequest;
 import com.sena.qfinder.models.PacienteResponse;
+import com.sena.qfinder.models.RedListResponse;
+import com.sena.qfinder.models.RedRequest;
+import com.sena.qfinder.models.RedResponse;
 import com.sena.qfinder.models.RegisterPacienteRequest;
 import com.sena.qfinder.models.RegisterPacienteResponse;
 import com.sena.qfinder.models.LoginRequest;
@@ -126,5 +131,68 @@ public interface AuthService {
     Call<List<AsignacionMedicamentoResponse>> listarAsignacionesMedicamentos(
             @Header("Authorization") String token,
             @Path("id_paciente") int pacienteId
+    );
+    // Añadir estos métodos en tu AuthService
+    @GET("api/redes/listarRedes")
+    Call<RedListResponse> listarRedes(@Header("Authorization") String token);
+
+    @POST("api/redes/crear")
+    Call<RedResponse> crearRed(
+            @Header("Authorization") String token,
+            @Body RedRequest request
+    );
+
+    @PUT("api/redes/actualizar/{id}")
+    Call<RedResponse> actualizarRed(
+            @Header("Authorization") String token,
+            @Path("id") int idRed,
+            @Body RedRequest request
+    );
+
+    @DELETE("api/redes/eliminar/{id}")
+    Call<Void> eliminarRed(
+            @Header("Authorization") String token,
+            @Path("id") int idRed
+    );
+    // En AuthService.java (alternativa)
+    @POST("api/membresiaRed/unirseRed/{id_red}")
+    Call<ResponseBody> unirseRed(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+    @DELETE("api/membresiaRed/salirRed/{id_red}")
+    Call<ResponseBody> salirRed(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+
+    @GET("api/membresiaRed/estaUnido/{id_red}")
+    Call<ResponseBody> verificarMembresia(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+    @GET("api/membresiaRed/listarRedPertenece")
+    Call<List<RedResponse>> listarRedesPertenecientes(
+            @Header("Authorization") String token
+    );
+    // Métodos para el chat
+    @GET("api/chat/{id_red}/mensajes")
+    Call<List<Mensaje>> obtenerMensajes(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed,
+            @Query("limite") int limite
+    );
+
+    @POST("api/chat/{id_red}/enviar")
+    Call<ResponseBody> enviarMensaje(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed,
+            @Body MensajeRequest mensaje
+    );
+
+    @GET("api/chat/obtenerIdRed")
+    Call<RedResponse> obtenerIdRedPorNombre(
+            @Header("Authorization") String token,
+            @Query("nombre") String nombreRed
     );
 }

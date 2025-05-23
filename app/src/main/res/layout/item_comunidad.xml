@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     card_view:cardCornerRadius="12dp"
     android:layout_margin="8dp"
+    android:id="@+id/cardComunidad"
     android:background="@android:color/white"
     card_view:cardElevation="6dp">
 
@@ -56,8 +57,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Unirme"
+            android:textColor="#4E9EFB"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="12dp"
+            android:backgroundTint="#594E9EFB"
             android:paddingHorizontal="16dp" />
 
         <!-- Icono de opciones -->

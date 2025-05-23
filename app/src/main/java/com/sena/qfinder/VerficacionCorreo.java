@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -31,6 +32,9 @@ public class VerficacionCorreo extends Fragment {
 
     private static final String ARG_EMAIL = "correo_usuario";
     private String correoUsuario;
+    private ImageView backButton;
+
+
 
     public VerficacionCorreo() {
     }
@@ -66,6 +70,15 @@ public class VerficacionCorreo extends Fragment {
 
         Button confirmButton = view.findViewById(R.id.confirmButton);
 
+        // Botón de imagen para regresar a RegistroUsuario
+        ImageView backButton = view.findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, new RegistroUsuario());
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
         // Configura el auto-foco para cada campo de dígito
         for (int i = 0; i < digits.length - 1; i++) {
             setupAutoFocus(digits[i], digits[i + 1]);
@@ -88,6 +101,7 @@ public class VerficacionCorreo extends Fragment {
 
         return view;
     }
+
 
     private void setupAutoFocus(EditText current, EditText next) {
         current.addTextChangedListener(new TextWatcher() {

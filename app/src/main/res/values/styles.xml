@@ -124,4 +124,9 @@
         <item name="android:textColor">@color/black</item>
         <item name="android:padding">8dp</item>
     </style>
+
+    <style name="CustomAlertDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="android:background">#F9F9F9</item>
+    </style>
+
 </resources>
