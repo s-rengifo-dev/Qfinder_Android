@@ -1,6 +1,5 @@
 package com.sena.qfinder.api;
 
-import com.sena.qfinder.models.ActividadGetResponse;
 import com.sena.qfinder.models.ActividadListResponse;
 import com.sena.qfinder.models.ActividadRequest;
 import com.sena.qfinder.models.ActividadResponse;
@@ -12,7 +11,6 @@ import com.sena.qfinder.models.CodeVerificationResponse;
 import com.sena.qfinder.models.MedicamentoRequest;
 import com.sena.qfinder.models.MedicamentoResponse;
 import com.sena.qfinder.models.MedicamentoSimpleResponse;
-import com.sena.qfinder.models.MedicamentosResponse;
 import com.sena.qfinder.models.Mensaje;
 import com.sena.qfinder.models.MensajeRequest;
 import com.sena.qfinder.models.PacienteListResponse;
