@@ -166,7 +166,7 @@ public interface AuthService {
             @Path("id_red") int idRed
     );
 
-    @GET("api/membresiaRed/verificarMembresiahoal/{id_red}")
+    @GET("api/membresiaRed/verificarMembresia/{id_red}")
     Call<ResponseBody> verificarMembresia(
             @Header("Authorization") String token,
             @Path("id_red") int idRed
@@ -183,7 +183,7 @@ public interface AuthService {
             @Query("limite") int limite
     );
 
-    @POST("api/chat/{id_red}/enviar")
+    @POST("api/chat/red/{id_red}/enviar")
     Call<ResponseBody> enviarMensaje(
             @Header("Authorization") String token,
             @Path("id_red") int idRed,
