@@ -9,6 +9,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -25,6 +26,10 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.sena.qfinder.Actividad1Fragment;
+import com.sena.qfinder.AgregarMedicamentoUsuario;
+import com.sena.qfinder.ListaAsignarMedicamentos;
+import com.sena.qfinder.Medicamentos;
 import com.sena.qfinder.R;
 import com.sena.qfinder.RegistrarPaciente;
 import com.sena.qfinder.api.AuthService;
@@ -55,6 +60,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class DashboardFragment extends Fragment {
 
     private LinearLayout patientsContainer, activitiesContainer;
+
+    private ImageButton boton1,boton2;
     private RecyclerView rvMedications;
     private SharedPreferences sharedPreferences;
     private TextView tvUserName;
@@ -72,7 +79,12 @@ public class DashboardFragment extends Fragment {
         sharedPreferences = requireContext().getSharedPreferences("prefs_qfinder", Context.MODE_PRIVATE);
 
         tvUserName = rootView.findViewById(R.id.tvUserName);
+
+        boton1=rootView.findViewById(R.id.botonActividad);
+        boton2=rootView.findViewById(R.id.botonMedicamento);
+
         setupUserInfo();
+        setupButtonListeners();
 
         // Primero cargamos los pacientes, las otras secciones se cargarán automáticamente
         setupPatientsSection();
@@ -80,6 +92,32 @@ public class DashboardFragment extends Fragment {
         return rootView;
     }
 
+
+    private void navigateToFragment1() {
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, new Actividad1Fragment()); // Reemplaza con tu Fragment
+        transaction.addToBackStack("dashboard"); // Opcional: para poder volver atrás
+        transaction.commit();
+    }
+
+    private void navigateToFragment2() {
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos()); // Reemplaza con tu Fragment
+        transaction.addToBackStack("dashboard"); // Opcional: para poder volver atrás
+        transaction.commit();
+    }
+
+    private void setupButtonListeners() {
+        boton1.setOnClickListener(v -> {
+            // Navegar a Fragment/Activity 1
+            navigateToFragment1();
+        });
+
+        boton2.setOnClickListener(v -> {
+            // Navegar a Fragment/Activity 2
+            navigateToFragment2();
+        });
+    }
     private void setupUserInfo() {
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
@@ -219,12 +257,10 @@ public class DashboardFragment extends Fragment {
         patientCard.setTag(patientId);
 
         TextView tvName = patientCard.findViewById(R.id.tvPatientName);
-        TextView tvRelation = patientCard.findViewById(R.id.tvPatientRelation);
         TextView tvConditions = patientCard.findViewById(R.id.tvPatientConditions);
         ImageView ivProfile = patientCard.findViewById(R.id.ivPatientProfile);
 
         tvName.setText(name);
-        tvRelation.setText(relation);
 
         if (conditions != null && !conditions.isEmpty()) {
             String[] conditionsList = conditions.split(",");
