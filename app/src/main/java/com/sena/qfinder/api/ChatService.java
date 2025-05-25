@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -11,7 +12,6 @@ import com.google.firebase.database.*;
 import com.sena.qfinder.models.Mensaje;
 import com.sena.qfinder.models.MensajeRequest;
 
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +36,8 @@ public class ChatService {
     private String authToken;
     private Context context;
     private Retrofit retrofit;
+    private FirebaseAuth mAuth;
+    private String firebaseToken;
 
     public interface ChatCallback {
         void onMensajesRecibidos(List<Mensaje> mensajes);
@@ -43,72 +45,103 @@ public class ChatService {
         void onMensajeEnviado();
         void onMembresiaVerificada(boolean esMiembro);
         void onFirebaseConnected(boolean connected);
+        void onMensajesCargados(List<Mensaje> mensajes);
+        void onFirebaseAuthSuccess();
+        void onFirebaseAuthFailed(String error);
     }
 
     public ChatService(Context context, String idRed, String authToken) {
         this.context = context.getApplicationContext();
         this.idRedActual = idRed;
         this.authToken = authToken;
+        this.mAuth = FirebaseAuth.getInstance();
+        initializeServices();
+    }
 
+    private void initializeServices() {
         try {
-            Log.d(TAG, "Inicializando Firebase para ChatService");
+            Log.d(TAG, "Inicializando servicios de chat");
 
-            // Inicialización segura de Firebase
-            if (FirebaseApp.getApps(context).isEmpty()) {
-                FirebaseOptions options = new FirebaseOptions.Builder()
-                        .setApplicationId("tu-app-id") // Reemplaza con tus valores reales
-                        .setApiKey("tu-api-key")
-                        .setDatabaseUrl("https://qfinder-comunity-default-rtdb.firebaseio.com/")
-                        .build();
-                FirebaseApp.initializeApp(context, options);
-                Log.d(TAG, "Firebase inicializado correctamente");
-            } else {
-                Log.d(TAG, "Firebase ya estaba inicializado");
-            }
+            // Configuración de Firebase
+            initializeFirebase();
 
-            this.databaseRef = FirebaseDatabase.getInstance().getReference("comunidades");
-            this.mensajesPendientesRef = FirebaseDatabase.getInstance().getReference("mensajes_pendientes");
+            // Configuración de Retrofit
+            initializeRetrofit();
 
-            // Configurar monitor de conexión
-            this.connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-            setupConnectionMonitor();
-
-            Log.d(TAG, "Referencias a Firebase inicializadas correctamente");
-
-            // Configurar cliente HTTP con timeout extendido
-            OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .connectTimeout(90, TimeUnit.SECONDS)
-                    .readTimeout(90, TimeUnit.SECONDS)
-                    .writeTimeout(90, TimeUnit.SECONDS)
-                    .build();
-
-            this.retrofit = new Retrofit.Builder()
-                    .baseUrl("https://qfinder-production.up.railway.app/")
-                    .client(okHttpClient)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-
-            this.authService = retrofit.create(AuthService.class);
             Log.d(TAG, "Servicios inicializados correctamente");
         } catch (Exception e) {
-            Log.e(TAG, "Error inicializando Firebase", e);
-            if (callback != null) {
-                callback.onError("Error inicializando chat: " + e.getMessage());
-            }
+            Log.e(TAG, "Error inicializando servicios", e);
+            notifyError("Error inicializando chat: " + e.getMessage());
         }
     }
 
+    private void initializeFirebase() {
+        if (FirebaseApp.getApps(context).isEmpty()) {
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setApplicationId("1:943234700783:android:63a905964f25737428521a")
+                    .setApiKey("AIzaSyDWsifL9DrQkUSqSmaVstQ7Cr9dhAPoPZg")
+                    .setDatabaseUrl("https://qfinder-comunity-default-rtdb.firebaseio.com/")
+                    .setProjectId("qfinder-community")
+                    .build();
+            FirebaseApp.initializeApp(context, options);
+            Log.d(TAG, "Firebase inicializado correctamente");
+        } else {
+            Log.d(TAG, "Firebase ya estaba inicializado");
+        }
+
+        this.databaseRef = FirebaseDatabase.getInstance().getReference("chats");
+        this.mensajesPendientesRef = FirebaseDatabase.getInstance().getReference("mensajes_pendientes");
+        this.connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+    }
+
+    private void initializeRetrofit() {
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        this.retrofit = new Retrofit.Builder()
+                .baseUrl("https://qfinder-production.up.railway.app/")
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        this.authService = retrofit.create(AuthService.class);
+    }
+
+    public void authenticateWithFirebase(String token) {
+        mAuth.signInWithCustomToken(token)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "Firebase auth success");
+                        setupConnectionMonitor();
+                        cargarMensajesIniciales();
+                        iniciarEscuchaMensajes();
+                    } else {
+                        Log.e(TAG, "Firebase auth failed", task.getException());
+                        notifyError("Error de autenticación con Firebase");
+                    }
+                });
+    }
+
+    public void setCallback(ChatCallback callback) {
+        this.callback = callback;
+        Log.d(TAG, "Callback establecido");
+    }
+
     private void setupConnectionMonitor() {
+        if (connectionListener != null) {
+            connectedRef.removeEventListener(connectionListener);
+        }
+
         connectionListener = connectedRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 boolean connected = snapshot.getValue(Boolean.class);
-                Log.d(TAG, "Conectado a Firebase: " + connected);
+                Log.d(TAG, "Estado conexión Firebase: " + connected);
                 if (callback != null) {
                     callback.onFirebaseConnected(connected);
-                }
-                if (!connected) {
-                    Log.w(TAG, "Advertencia: Sin conexión a Firebase");
                 }
             }
 
@@ -119,101 +152,69 @@ public class ChatService {
         });
     }
 
-    public void setCallback(ChatCallback callback) {
-        this.callback = callback;
-        Log.d(TAG, "Callback establecido");
-    }
-
-    public void verificarMembresia(int maxReintentos) {
-        if (idRedActual == null || idRedActual.isEmpty()) {
-            Log.e(TAG, "ID de red no válido para verificar membresía");
-            if (callback != null) {
-                callback.onError("ID de red no válido");
-            }
-            return;
-        }
-
-        Log.d(TAG, "Iniciando verificación de membresía para red: " + idRedActual +
-                ", Intentos restantes: " + maxReintentos);
-
-        if (maxReintentos <= 0) {
-            Log.e(TAG, "Máximo de reintentos alcanzado para verificación de membresía");
-            if (callback != null) {
-                callback.onError("No se pudo verificar la membresía después de varios intentos");
-            }
-            return;
-        }
+    public void cargarMensajesIniciales() {
+        if (!validateRedId()) return;
 
         try {
             int redId = Integer.parseInt(idRedActual);
-            Call<ResponseBody> call = authService.verificarMembresia("Bearer " + authToken, redId);
-            Log.d(TAG, "Realizando llamada a verificarMembresia para redId: " + redId);
+            Call<List<Mensaje>> call = authService.obtenerMensajes("Bearer " + authToken, redId, 50);
 
-            call.enqueue(new Callback<ResponseBody>() {
+            call.enqueue(new Callback<List<Mensaje>>() {
                 @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    Log.d(TAG, "Respuesta recibida de verificarMembresia. Código: " + response.code());
-
-                    if (response.isSuccessful()) {
-                        try {
-                            String responseBody = response.body() != null ? response.body().string() : "";
-                            boolean esMiembro = responseBody.toLowerCase().contains("\"success\":true");
-                            Log.d(TAG, "Resultado verificación membresía: " + esMiembro);
-
-                            if (callback != null) {
-                                callback.onMembresiaVerificada(esMiembro);
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error procesando respuesta de membresía", e);
-                            if (callback != null) {
-                                callback.onError("Error procesando respuesta del servidor");
-                            }
-                        }
+                public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        notifyMensajesCargados(response.body());
                     } else {
-                        Log.w(TAG, "Respuesta no exitosa al verificar membresía. Código: " + response.code());
-                        if (response.code() == 401 || response.code() == 403) {
-                            // No autorizado o prohibido - no es miembro
-                            if (callback != null) {
-                                callback.onMembresiaVerificada(false);
-                            }
-                        } else {
-                            // Reintentar para otros errores
-                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                Log.d(TAG, "Reintentando verificación de membresía...");
-                                verificarMembresia(maxReintentos - 1);
-                            }, 3000);
-                        }
+                        Log.e(TAG, "Error al cargar mensajes: " + response.code());
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    if (t instanceof SocketTimeoutException) {
-                        Log.e(TAG, "Timeout al verificar membresía");
-                    } else {
-                        Log.e(TAG, "Error de conexión al verificar membresía", t);
-                    }
-
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        Log.d(TAG, "Reintentando verificación de membresía por error de conexión...");
-                        verificarMembresia(maxReintentos - 1);
-                    }, 3000);
+                public void onFailure(Call<List<Mensaje>> call, Throwable t) {
+                    Log.e(TAG, "Error de conexión al cargar mensajes", t);
                 }
             });
         } catch (NumberFormatException e) {
             Log.e(TAG, "ID de red inválido: " + idRedActual, e);
-            if (callback != null) {
-                callback.onError("ID de red inválido");
-            }
+            notifyError("ID de red inválido");
+        }
+    }
+
+    public void verificarMembresia(int maxReintentos) {
+        if (!validateRedId()) return;
+
+        try {
+            int redId = Integer.parseInt(idRedActual);
+            Call<ResponseBody> call = authService.verificarMembresia("Bearer " + authToken, redId);
+
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    boolean esMiembro = response.isSuccessful() && response.code() == 200;
+                    notifyMembresiaVerificada(esMiembro);
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Log.e(TAG, "Error de conexión al verificar membresía", t);
+                    notifyError("Error de conexión al verificar membresía");
+                }
+            });
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "ID de red inválido: " + idRedActual, e);
+            notifyError("ID de red inválido");
         }
     }
 
     public void iniciarEscuchaMensajes() {
-        if (idRedActual == null || idRedActual.isEmpty()) {
-            Log.e(TAG, "ID de red no válido para escuchar mensajes");
-            if (callback != null) {
-                callback.onError("ID de comunidad no válido");
-            }
+        if (!validateRedId()) {
+            notifyError("ID de comunidad no válido");
+            return;
+        }
+
+        if (mAuth.getCurrentUser() == null) {
+            Log.e(TAG, "Usuario no autenticado en Firebase");
+            notifyError("Usuario no autenticado en Firebase");
             return;
         }
 
@@ -231,7 +232,7 @@ public class ChatService {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     List<Mensaje> nuevosMensajes = new ArrayList<>();
-                    Log.d(TAG, "Nuevos datos recibidos. Cantidad: " + dataSnapshot.getChildrenCount());
+                    Log.d(TAG, "Nuevos mensajes recibidos: " + dataSnapshot.getChildrenCount());
 
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         try {
@@ -239,67 +240,23 @@ public class ChatService {
                             if (mensaje != null) {
                                 mensaje.setId(snapshot.getKey());
                                 nuevosMensajes.add(mensaje);
-                                Log.d(TAG, "Mensaje procesado: " + mensaje.getContenido());
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "Error procesando mensaje", e);
                         }
                     }
 
-                    if (callback != null) {
-                        callback.onMensajesRecibidos(nuevosMensajes);
-                    }
+                    notifyMensajesRecibidos(nuevosMensajes);
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    String errorMsg = "Error escuchando mensajes: " + databaseError.getMessage() +
-                            ", Código: " + databaseError.getCode();
-                    Log.e(TAG, errorMsg);
-
-                    if (callback != null) {
-                        String userMsg = "Error de base de datos: ";
-                        switch (databaseError.getCode()) {
-                            case DatabaseError.PERMISSION_DENIED:
-                                userMsg += "Permiso denegado. Verifica las reglas de Firebase.";
-                                break;
-                            case DatabaseError.DISCONNECTED:
-                                userMsg += "Desconectado de Firebase.";
-                                break;
-                            default:
-                                userMsg += databaseError.getMessage();
-                        }
-                        callback.onError(userMsg);
-                    }
+                    handleDatabaseError(databaseError);
                 }
             });
-            Log.d(TAG, "Escucha de mensajes iniciada correctamente");
         } catch (Exception e) {
             Log.e(TAG, "Error iniciando escucha de mensajes", e);
-            if (callback != null) {
-                callback.onError("Error al iniciar escucha: " + e.getMessage());
-            }
-        }
-    }
-
-    public void detenerEscuchaMensajes() {
-        if (mensajesListener != null && databaseRef != null && idRedActual != null) {
-            try {
-                databaseRef.child(idRedActual).child("mensajes")
-                        .removeEventListener(mensajesListener);
-                mensajesListener = null;
-                Log.d(TAG, "Escucha de mensajes detenida correctamente");
-            } catch (Exception e) {
-                Log.e(TAG, "Error deteniendo escucha", e);
-            }
-        }
-    }
-
-    public void detenerConnectionMonitor() {
-        if (connectionListener != null && connectedRef != null) {
-            connectedRef.removeEventListener(connectionListener);
-            connectionListener = null;
-            Log.d(TAG, "Monitor de conexión detenido");
+            notifyError("Error al iniciar escucha: " + e.getMessage());
         }
     }
 
@@ -310,15 +267,13 @@ public class ChatService {
         }
 
         Log.d(TAG, "Preparando para enviar mensaje: " + mensaje.getContenido());
-        enviarMensajeConReintentos(mensaje, 3); // 3 intentos máximo
+        enviarMensajeConReintentos(mensaje, 3);
     }
 
     private void enviarMensajeConReintentos(Mensaje mensaje, int intentosRestantes) {
         if (intentosRestantes <= 0) {
             Log.e(TAG, "No se pudo enviar el mensaje después de varios intentos");
-            if (callback != null) {
-                callback.onError("No se pudo enviar el mensaje después de varios intentos");
-            }
+            notifyError("No se pudo enviar el mensaje después de varios intentos");
             guardarMensajePendiente(mensaje);
             return;
         }
@@ -330,7 +285,6 @@ public class ChatService {
                     mensaje.getNombreUsuario()
             );
 
-            Log.d(TAG, "Enviando mensaje al servidor. Intento: " + (4 - intentosRestantes));
             Call<ResponseBody> call = authService.enviarMensaje(
                     "Bearer " + authToken,
                     Integer.parseInt(idRedActual),
@@ -341,58 +295,19 @@ public class ChatService {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.isSuccessful()) {
-                        Log.d(TAG, "Mensaje aceptado por el servidor. Guardando en Firebase...");
                         guardarMensajeEnFirebase(mensaje);
                     } else {
-                        String errorMsg = "Error al enviar mensaje al backend: " + response.code();
-                        try {
-                            if (response.errorBody() != null) {
-                                errorMsg += " - " + response.errorBody().string();
-                            }
-                        } catch (Exception e) {
-                            errorMsg += " (error leyendo cuerpo)";
-                        }
-                        Log.e(TAG, errorMsg);
-
-                        if (response.code() == 401 || response.code() == 403) {
-                            // No autorizado o prohibido - no reintentar
-                            if (callback != null) {
-                                callback.onError("No tienes permiso para enviar mensajes");
-                            }
-                        } else {
-                            // Reintentar para otros errores
-                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                Log.d(TAG, "Reintentando envío de mensaje...");
-                                enviarMensajeConReintentos(mensaje, intentosRestantes - 1);
-                            }, 2000);
-                        }
+                        handleSendMessageError(response, mensaje, intentosRestantes);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    String errorMsg;
-                    if (t instanceof SocketTimeoutException) {
-                        errorMsg = "Tiempo de espera agotado. Reintentando...";
-                        Log.w(TAG, errorMsg);
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            enviarMensajeConReintentos(mensaje, intentosRestantes - 1);
-                        }, 2000);
-                    } else {
-                        errorMsg = "Error de conexión: " + t.getMessage();
-                        Log.e(TAG, errorMsg, t);
-                        if (callback != null) {
-                            callback.onError(errorMsg);
-                        }
-                        guardarMensajePendiente(mensaje);
-                    }
+                    retrySendMessage(mensaje, intentosRestantes);
                 }
             });
         } catch (Exception e) {
             Log.e(TAG, "Error enviando mensaje", e);
-            if (callback != null) {
-                callback.onError("Error al enviar mensaje: " + e.getMessage());
-            }
             guardarMensajePendiente(mensaje);
         }
     }
@@ -409,32 +324,21 @@ public class ChatService {
 
             nuevoMensajeRef.setValue(mensaje)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Mensaje guardado en Firebase correctamente");
-                        if (callback != null) {
-                            callback.onMensajeEnviado();
-                        }
+                        Log.d(TAG, "Mensaje guardado en Firebase");
+                        notifyMensajeEnviado();
                     })
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "Error guardando mensaje en Firebase", e);
-                        if (callback != null) {
-                            callback.onError("Error al guardar mensaje localmente");
-                        }
-                        // Intenta guardar como pendiente si falla
                         guardarMensajePendiente(mensaje);
                     });
         } catch (Exception e) {
             Log.e(TAG, "Error guardando mensaje en Firebase", e);
-            if (callback != null) {
-                callback.onError("Error al guardar mensaje");
-            }
             guardarMensajePendiente(mensaje);
         }
     }
 
-    public void guardarMensajePendiente(Mensaje mensaje) {
+    private void guardarMensajePendiente(Mensaje mensaje) {
         try {
-            Log.d(TAG, "Guardando mensaje pendiente: " + mensaje.getContenido());
-
             if (mensajesPendientesRef == null) {
                 mensajesPendientesRef = FirebaseDatabase.getInstance().getReference("mensajes_pendientes");
             }
@@ -448,28 +352,114 @@ public class ChatService {
 
             mensajePendienteRef.setValue(mensaje)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Mensaje guardado como pendiente correctamente");
-                        if (callback != null) {
-                            callback.onError("Mensaje guardado como pendiente. Se enviará cuando haya conexión.");
-                        }
+                        Log.d(TAG, "Mensaje guardado como pendiente");
+                        notifyError("Mensaje guardado como pendiente. Se enviará cuando haya conexión.");
                     })
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "Error guardando mensaje pendiente", e);
-                        if (callback != null) {
-                            callback.onError("Error al guardar mensaje pendiente: " + e.getMessage());
-                        }
                     });
         } catch (Exception e) {
             Log.e(TAG, "Error guardando mensaje pendiente", e);
-            if (callback != null) {
-                callback.onError("Error crítico al guardar mensaje pendiente");
+        }
+    }
+
+    public void detenerEscuchaMensajes() {
+        if (mensajesListener != null && databaseRef != null && idRedActual != null) {
+            try {
+                databaseRef.child(idRedActual).child("mensajes")
+                        .removeEventListener(mensajesListener);
+                mensajesListener = null;
+                Log.d(TAG, "Escucha de mensajes detenida");
+            } catch (Exception e) {
+                Log.e(TAG, "Error deteniendo escucha", e);
             }
+        }
+    }
+
+    public void detenerConnectionMonitor() {
+        if (connectionListener != null && connectedRef != null) {
+            connectedRef.removeEventListener(connectionListener);
+            connectionListener = null;
+            Log.d(TAG, "Monitor de conexión detenido");
         }
     }
 
     public void cleanup() {
         detenerEscuchaMensajes();
         detenerConnectionMonitor();
-        Log.d(TAG, "ChatService limpiado correctamente");
+        Log.d(TAG, "ChatService limpiado");
+    }
+
+    // Métodos auxiliares
+    private boolean validateRedId() {
+        if (idRedActual == null || idRedActual.isEmpty()) {
+            Log.e(TAG, "ID de red no válido");
+            return false;
+        }
+        return true;
+    }
+
+    private void handleDatabaseError(DatabaseError error) {
+        String errorMsg = "Error en base de datos: " + error.getMessage() + ", Código: " + error.getCode();
+        Log.e(TAG, errorMsg);
+
+        String userMsg = "Error: ";
+        switch (error.getCode()) {
+            case DatabaseError.PERMISSION_DENIED:
+                userMsg += "Permiso denegado. Verifica las reglas de Firebase.";
+                break;
+            case DatabaseError.DISCONNECTED:
+                userMsg += "Desconectado de Firebase.";
+                break;
+            default:
+                userMsg += error.getMessage();
+        }
+        notifyError(userMsg);
+    }
+
+    private void handleSendMessageError(Response<ResponseBody> response, Mensaje mensaje, int intentosRestantes) {
+        if (response.code() == 403) {
+            verificarMembresia(3);
+            notifyError("No tienes permiso para enviar mensajes");
+        } else {
+            retrySendMessage(mensaje, intentosRestantes);
+        }
+    }
+
+    private void retrySendMessage(Mensaje mensaje, int intentosRestantes) {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            enviarMensajeConReintentos(mensaje, intentosRestantes - 1);
+        }, 2000);
+    }
+
+    // Métodos de notificación
+    private void notifyMensajesRecibidos(List<Mensaje> mensajes) {
+        if (callback != null) {
+            callback.onMensajesRecibidos(mensajes);
+        }
+    }
+
+    private void notifyError(String error) {
+        if (callback != null) {
+            callback.onError(error);
+        }
+    }
+
+    private void notifyMensajeEnviado() {
+        if (callback != null) {
+            callback.onMensajeEnviado();
+        }
+    }
+
+    private void notifyMembresiaVerificada(boolean esMiembro) {
+        if (callback != null) {
+            callback.onMembresiaVerificada(esMiembro);
+        }
+    }
+
+    private void notifyMensajesCargados(List<Mensaje> mensajes) {
+        if (callback != null) {
+            callback.onMensajesCargados(mensajes);
+        }
     }
 }
