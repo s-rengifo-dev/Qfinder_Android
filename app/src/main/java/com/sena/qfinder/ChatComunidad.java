@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +15,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.FirebaseDatabase;
 import com.sena.qfinder.R;
 import com.sena.qfinder.api.ApiClient;
 import com.sena.qfinder.api.AuthService;
@@ -39,10 +40,14 @@ import retrofit2.Response;
 
 public class ChatComunidad extends Fragment implements ChatService.ChatCallback {
     private static final String ARG_NOMBRE_COMUNIDAD = "nombre_comunidad";
+    private static final String TAG = "ChatComunidad";
+    private static final int MAX_REINTENTOS = 3;
+
     private String nombreComunidad;
     private String idRed;
     private String idUsuario;
     private String nombreUsuario;
+    private int reintentosVerificacion = 0;
 
     private RecyclerView recyclerView;
     private MensajeAdapter mensajeAdapter;
@@ -70,6 +75,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             nombreComunidad = getArguments().getString(ARG_NOMBRE_COMUNIDAD);
+            Log.d(TAG, "Comunidad recibida: " + nombreComunidad);
         }
 
         sharedPreferences = requireActivity().getSharedPreferences("usuario", Context.MODE_PRIVATE);
@@ -98,13 +104,24 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         btnEnviar.setOnClickListener(v -> enviarMensaje());
         btnUnirmeComunidad.setOnClickListener(v -> unirseAComunidad());
 
-        obtenerIdRedDesdeNombre(nombreComunidad);
+        configurarEstadoInicial();
 
         return view;
     }
 
+    private void configurarEstadoInicial() {
+        if (obtenerEstadoUnion(nombreComunidad)) {
+            Log.d(TAG, "Estado local: Ya unido a " + nombreComunidad);
+            obtenerIdRedDesdeNombre(nombreComunidad);
+        } else {
+            Log.d(TAG, "Estado local: No unido a " + nombreComunidad);
+            obtenerIdRedDesdeNombre(nombreComunidad);
+        }
+    }
+
     private void obtenerIdRedDesdeNombre(String nombreRed) {
         String token = "Bearer " + sharedPreferences.getString("token", "");
+        Log.d(TAG, "Obteniendo ID de red para: " + nombreRed);
 
         Call<RedResponse> call = authService.obtenerIdRedPorNombre(token, nombreRed);
         call.enqueue(new Callback<RedResponse>() {
@@ -112,36 +129,41 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             public void onResponse(Call<RedResponse> call, Response<RedResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     idRed = String.valueOf(response.body().getId_red());
+                    Log.d(TAG, "ID de red obtenido: " + idRed);
                     iniciarServicioChat();
                 } else {
-                    Toast.makeText(getContext(), "Error al obtener ID de red", Toast.LENGTH_SHORT).show();
-                    try {
-                        if (response.errorBody() != null) {
-                            Log.e("ChatError", "Error obtenerIdRed: " + response.errorBody().string());
+                    String errorMsg = "Error al obtener ID de red";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMsg += ": " + response.errorBody().string();
+                        } catch (IOException e) {
+                            errorMsg += " (error al leer cuerpo)";
                         }
-                    } catch (IOException e) {
-                        Log.e("ChatError", "Error al leer errorBody", e);
                     }
+                    Log.e(TAG, errorMsg);
+                    mostrarError("Error al cargar la comunidad", errorMsg);
                 }
             }
 
             @Override
             public void onFailure(Call<RedResponse> call, Throwable t) {
-                Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
-                Log.e("ChatError", "Error obtenerIdRed", t);
+                Log.e(TAG, "Error de conexión al obtener ID de red", t);
+                mostrarError("Error de conexión", "No se pudo conectar al servidor");
             }
         });
     }
 
     private void iniciarServicioChat() {
         if (idRed == null || idRed.isEmpty()) {
-            Toast.makeText(getContext(), "ID de red no disponible", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "ID de red no disponible");
+            mostrarError("Error", "ID de red no disponible");
             return;
         }
 
         String token = sharedPreferences.getString("token", "");
         if (token.isEmpty()) {
-            Toast.makeText(getContext(), "Sesión no válida", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Token no disponible");
+            mostrarError("Error", "Sesión no válida");
             return;
         }
 
@@ -154,14 +176,15 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             chatService.setCallback(this);
             chatService.verificarMembresia();
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Error al inicializar chat: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            Log.e("ChatError", "Error al inicializar chat", e);
+            Log.e(TAG, "Error al inicializar chat", e);
+            mostrarError("Error", "No se pudo iniciar el chat");
         }
     }
 
     private void unirseAComunidad() {
         if (idRed == null || idRed.isEmpty()) {
-            Toast.makeText(getContext(), "ID de red no disponible", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "ID de red no disponible para unirse");
+            mostrarError("Error", "ID de red no disponible");
             return;
         }
 
@@ -174,49 +197,60 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             progressDialog.setCancelable(false);
             progressDialog.show();
 
+            Log.d(TAG, "Solicitando unión a red ID: " + redId);
             Call<ResponseBody> call = authService.unirseRed(token, redId);
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     progressDialog.dismiss();
                     if (response.isSuccessful()) {
+                        Log.d(TAG, "Unión exitosa a la comunidad");
                         guardarEstadoUnion(nombreComunidad, true);
-                        iniciarChat();
+                        if (chatService != null) {
+                            chatService.verificarMembresia();
+                        }
                     } else {
-                        Toast.makeText(getContext(), "Error al unirse: " + response.code(), Toast.LENGTH_SHORT).show();
+                        String errorMsg = "Error al unirse: " + response.code();
                         try {
                             if (response.errorBody() != null) {
-                                Log.e("ChatError", "Error al unirse: " + response.errorBody().string());
+                                errorMsg += " - " + response.errorBody().string();
                             }
                         } catch (IOException e) {
-                            Log.e("ChatError", "Error al leer errorBody", e);
+                            errorMsg += " (error al leer cuerpo)";
                         }
+                        Log.e(TAG, errorMsg);
+                        mostrarDialogoError("Error al unirse",
+                                "No se pudo completar la unión a la comunidad. Por favor, intenta nuevamente.",
+                                () -> unirseAComunidad());
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     progressDialog.dismiss();
-                    Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
-                    Log.e("ChatError", "Error al unirse", t);
+                    Log.e(TAG, "Error de conexión al unirse a comunidad", t);
+                    mostrarDialogoError("Error de conexión",
+                            "No se pudo conectar al servidor. Verifica tu conexión a internet.",
+                            () -> unirseAComunidad());
                 }
             });
         } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), "ID de red inválido", Toast.LENGTH_SHORT).show();
-            Log.e("ChatError", "ID de red: " + idRed, e);
+            Log.e(TAG, "ID de red inválido: " + idRed, e);
+            mostrarError("Error", "ID de red inválido");
         }
     }
 
     private void iniciarChat() {
         requireActivity().runOnUiThread(() -> {
+            Log.d(TAG, "Iniciando chat para comunidad: " + nombreComunidad);
             layoutAviso.setVisibility(View.GONE);
             layoutEnviarMensaje.setVisibility(View.VISIBLE);
             btnUnirmeComunidad.setVisibility(View.GONE);
-        });
 
-        if (chatService != null) {
-            chatService.iniciarEscuchaMensajes();
-        }
+            if (chatService != null) {
+                chatService.iniciarEscuchaMensajes();
+            }
+        });
     }
 
     private void enviarMensaje() {
@@ -233,6 +267,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             nuevoMensaje.setIdUsuario(idUsuario);
             nuevoMensaje.setFecha_envio(System.currentTimeMillis());
 
+            Log.d(TAG, "Enviando mensaje: " + contenido);
             chatService.enviarMensaje(nuevoMensaje);
             etMensaje.setText("");
         }
@@ -241,6 +276,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     @Override
     public void onMensajesRecibidos(List<Mensaje> mensajes) {
         requireActivity().runOnUiThread(() -> {
+            Log.d(TAG, "Mensajes recibidos: " + mensajes.size());
             mensajesActivos.clear();
             mensajesActivos.addAll(mensajes);
             mensajeAdapter.notifyDataSetChanged();
@@ -253,14 +289,15 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     @Override
     public void onError(String error) {
         requireActivity().runOnUiThread(() -> {
-            Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-            Log.e("ChatError", error);
+            Log.e(TAG, "Error en chat: " + error);
+            mostrarError("Error en el chat", error);
         });
     }
 
     @Override
     public void onMensajeEnviado() {
         requireActivity().runOnUiThread(() -> {
+            Log.d(TAG, "Mensaje enviado con éxito");
             Toast.makeText(getContext(), "Mensaje enviado", Toast.LENGTH_SHORT).show();
         });
     }
@@ -268,38 +305,96 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     @Override
     public void onMembresiaVerificada(boolean esMiembro) {
         requireActivity().runOnUiThread(() -> {
+            Log.d(TAG, "Membresía verificada: " + esMiembro);
             if (esMiembro) {
+                reintentosVerificacion = 0;
+                guardarEstadoUnion(nombreComunidad, true);
                 iniciarChat();
             } else {
-                mostrarOpcionUnirse();
+                if (obtenerEstadoUnion(nombreComunidad)) {
+                    reintentosVerificacion++;
+                    Log.w(TAG, "Estado inconsistente: local=unido, servidor=no unido. Reintento " + reintentosVerificacion);
+
+                    if (reintentosVerificacion >= MAX_REINTENTOS) {
+                        reintentosVerificacion = 0;
+                        limpiarEstadoUnion(nombreComunidad);
+                        mostrarDialogoInconsistencia();
+                        mostrarOpcionUnirse();
+                    } else {
+                        new Handler().postDelayed(() -> {
+                            if (chatService != null) {
+                                chatService.verificarMembresia();
+                            }
+                        }, 2000);
+                    }
+                } else {
+                    reintentosVerificacion = 0;
+                    mostrarOpcionUnirse();
+                }
             }
         });
     }
 
     private void mostrarOpcionUnirse() {
         requireActivity().runOnUiThread(() -> {
+            Log.d(TAG, "Mostrando opción para unirse");
             layoutAviso.setVisibility(View.VISIBLE);
             layoutEnviarMensaje.setVisibility(View.GONE);
             btnUnirmeComunidad.setVisibility(View.VISIBLE);
         });
     }
 
+    private void mostrarDialogoInconsistencia() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Problema de membresía")
+                .setMessage("Hubo un problema verificando tu membresía. Por favor, únete a la comunidad nuevamente.")
+                .setPositiveButton("Aceptar", null)
+                .show();
+    }
+
+    private void mostrarError(String titulo, String mensaje) {
+        requireActivity().runOnUiThread(() -> {
+            Toast.makeText(getContext(), titulo + ": " + mensaje, Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private void mostrarDialogoError(String titulo, String mensaje, Runnable onRetry) {
+        requireActivity().runOnUiThread(() -> {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle(titulo)
+                    .setMessage(mensaje)
+                    .setPositiveButton("Reintentar", (dialog, which) -> onRetry.run())
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+        });
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "Fragmento destruido");
         if (chatService != null) {
             chatService.detenerEscuchaMensajes();
         }
     }
 
     private void guardarEstadoUnion(String nombreComunidad, boolean unido) {
+        Log.d(TAG, "Guardando estado de unión: " + nombreComunidad + " = " + unido);
         SharedPreferences prefs = requireActivity().getSharedPreferences("UnionComunidad", Context.MODE_PRIVATE);
         prefs.edit().putBoolean(nombreComunidad, unido).apply();
     }
 
     private boolean obtenerEstadoUnion(String nombreComunidad) {
         SharedPreferences prefs = requireActivity().getSharedPreferences("UnionComunidad", Context.MODE_PRIVATE);
-        return prefs.getBoolean(nombreComunidad, false);
+        boolean estado = prefs.getBoolean(nombreComunidad, false);
+        Log.d(TAG, "Obteniendo estado de unión: " + nombreComunidad + " = " + estado);
+        return estado;
+    }
+
+    private void limpiarEstadoUnion(String nombreComunidad) {
+        Log.d(TAG, "Limpiando estado de unión para: " + nombreComunidad);
+        SharedPreferences prefs = requireActivity().getSharedPreferences("UnionComunidad", Context.MODE_PRIVATE);
+        prefs.edit().remove(nombreComunidad).apply();
     }
 
     private static class MensajeAdapter extends RecyclerView.Adapter<MensajeAdapter.MensajeViewHolder> {
