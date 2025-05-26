@@ -27,7 +27,7 @@ public class Fragment_Serivicios extends Fragment {
         LinearLayout cardGestionMedicamentos = view.findViewById(R.id.btnMedicamentos);
         cardGestionMedicamentos.setOnClickListener(v -> {
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new Medicamentos());
+            transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos());
             transaction.addToBackStack(null); // Para poder volver atrás
             transaction.commit();
         });

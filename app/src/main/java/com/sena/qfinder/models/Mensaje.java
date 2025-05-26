@@ -8,11 +8,10 @@ public class Mensaje {
     private String comunidad;
     private long fecha_envio;
     private String idUsuario;
+    private String estado; // Nuevo campo: "enviado", "pendiente", "error"
 
-    // Constructor vacío requerido por Firebase
     public Mensaje() {}
 
-    // Getters y setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getNombreUsuario() { return nombreUsuario; }
@@ -27,4 +26,6 @@ public class Mensaje {
     public void setFecha_envio(long fecha_envio) { this.fecha_envio = fecha_envio; }
     public String getIdUsuario() { return idUsuario; }
     public void setIdUsuario(String idUsuario) { this.idUsuario = idUsuario; }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 }

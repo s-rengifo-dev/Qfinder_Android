@@ -34,6 +34,13 @@
             android:text="12:00 p.m."
             android:textSize="12sp"
             android:layout_gravity="end" />
+        <TextView
+            android:id="@+id/txtEstadoMensaje"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:00 p.m."
+            android:textSize="12sp"
+            android:layout_gravity="end" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

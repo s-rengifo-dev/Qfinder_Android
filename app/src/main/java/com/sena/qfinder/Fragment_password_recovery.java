@@ -74,6 +74,7 @@ public class Fragment_password_recovery extends Fragment {
         AuthService authService = retrofit.create(AuthService.class);
         Call<SendCodeResponse> call = authService.SendCode(new SendCodeRequest(email));
 
+
         call.enqueue(new Callback<SendCodeResponse>() {
             @Override
             public void onResponse(Call<SendCodeResponse> call, Response<SendCodeResponse> response) {

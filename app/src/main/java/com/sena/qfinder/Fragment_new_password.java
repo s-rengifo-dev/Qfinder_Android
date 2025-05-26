@@ -87,6 +87,7 @@ public class Fragment_new_password extends Fragment {
 
         AuthService authService = ApiClient.getClient().create(AuthService.class);
         CambiarPasswordRequest request = new CambiarPasswordRequest(email, newPassword);
+        Log.d("TOKEN_RESET", "[" + resetToken + "]");
 
         Call<Void> call = authService.cambiarPassword("Bearer " + resetToken, request);
         call.enqueue(new Callback<Void>() {

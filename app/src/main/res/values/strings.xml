@@ -123,6 +123,8 @@ Teléfono: 31022589685
         <item>2</item>
     </string-array>
 
+    <string name="fecha_prefix">Fecha: </string>
+
 </resources>
 
 

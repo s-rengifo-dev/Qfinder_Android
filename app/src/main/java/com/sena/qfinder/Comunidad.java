@@ -30,6 +30,7 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 public class Comunidad extends Fragment {
 
     private static final String TAG = "ComunidadFragment";
@@ -246,6 +247,7 @@ public class Comunidad extends Fragment {
             }
         });
     }
+
     private class ComunidadAdapter extends RecyclerView.Adapter<ComunidadAdapter.ViewHolder> {
 
         private Context context;
@@ -301,18 +303,22 @@ public class Comunidad extends Fragment {
             holder.miembros.setText(red.getDescripcion_red() != null ? red.getDescripcion_red() : "");
 
             boolean unido = obtenerEstadoUnion(red.getNombre_red());
-            holder.btnUnirme.setText(unido ? "Unido" : "Unirme");
-            holder.btnUnirme.setBackgroundColor(context.getResources().getColor(unido ? R.color.colorUnido : R.color.colorUnirse));
+
+            // Mostrar solo el botón Unirme si no está unido
+            if (unido) {
+                holder.btnUnirme.setVisibility(View.GONE);
+            } else {
+                holder.btnUnirme.setVisibility(View.VISIBLE);
+                holder.btnUnirme.setText("Unirme");
+                holder.btnUnirme.setBackgroundColor(context.getResources().getColor(R.color.azul_link));
+            }
 
             // Configurar clic en el botón Unirme
             holder.btnUnirme.setOnClickListener(v -> {
-                if (!unido) {
-                    Log.d(TAG, "Uniendose a la red: " + red.getNombre_red());
-                    guardarEstadoUnion(red.getNombre_red(), true);
-                    holder.btnUnirme.setText("Unido");
-                    holder.btnUnirme.setBackgroundColor(context.getResources().getColor(R.color.colorUnido));
-                    Toast.makeText(context, "Te has unido a " + red.getNombre_red(), Toast.LENGTH_SHORT).show();
-                }
+                Log.d(TAG, "Uniendose a la red: " + red.getNombre_red());
+                guardarEstadoUnion(red.getNombre_red(), true);
+                notifyItemChanged(position);
+                Toast.makeText(context, "Te has unido a " + red.getNombre_red(), Toast.LENGTH_SHORT).show();
                 abrirChatComunidad(red);
             });
 
@@ -325,35 +331,6 @@ public class Comunidad extends Fragment {
                 transaction.replace(R.id.fragment_container, pf);
                 transaction.addToBackStack(null);
                 transaction.commit();
-            });
-
-            // Configurar clic en el botón de opciones
-            holder.btnOpciones.setOnClickListener(v -> {
-                Log.d(TAG, "Mostrando opciones para la red: " + red.getNombre_red());
-                PopupMenu popup = new PopupMenu(context, holder.btnOpciones);
-                popup.getMenuInflater().inflate(R.menu.menu_comunidad_item, popup.getMenu());
-
-                popup.setOnMenuItemClickListener(item -> {
-                    int itemId = item.getItemId();
-                    if (itemId == R.id.menu_editar) {
-                        Log.d(TAG, "Editando red: " + red.getNombre_red());
-//                        mostrarDialogoEditar(red, position);
-                        return true;
-                    } else if (itemId == R.id.menu_eliminar) {
-                        Log.d(TAG, "Eliminando red: " + red.getNombre_red());
-//                        eliminarRed(red.getId_red(), position);
-                        return true;
-                    } else if (itemId == R.id.btnsalirComunidad) {
-                        Log.d(TAG, "Saliendo de la red: " + red.getNombre_red());
-                        guardarEstadoUnion(red.getNombre_red(), false);
-                        holder.btnUnirme.setText("Unirme");
-                        holder.btnUnirme.setBackgroundColor(context.getResources().getColor(R.color.colorUnirse));
-                        Toast.makeText(context, "Has salido de " + red.getNombre_red(), Toast.LENGTH_SHORT).show();
-                        return true;
-                    }
-                    return false;
-                });
-                popup.show();
             });
         }
 
@@ -370,7 +347,6 @@ public class Comunidad extends Fragment {
                         .setTitle("Unirse a la comunidad")
                         .setMessage("Debes unirte a " + red.getNombre_red() + " para acceder al chat")
                         .setPositiveButton("Unirme", (dialog, which) -> {
-                            // Simulamos el clic en el botón Unirme
                             for (int i = 0; i < redes.size(); i++) {
                                 if (redes.get(i).getId_red() == red.getId_red()) {
                                     ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
@@ -393,9 +369,9 @@ public class Comunidad extends Fragment {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             TextView nombre, miembros;
-            ImageView imgComunidad, btnOpciones;
+            ImageView imgComunidad;
             Button btnUnirme;
-            CardView cardComunidad; // Asegúrate de tener este elemento en tu layout
+            CardView cardComunidad;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -403,10 +379,8 @@ public class Comunidad extends Fragment {
                 miembros = itemView.findViewById(R.id.miembros_comunidad);
                 imgComunidad = itemView.findViewById(R.id.imgComunidad);
                 btnUnirme = itemView.findViewById(R.id.btnUnirme1);
-                btnOpciones = itemView.findViewById(R.id.btnOpciones);
-                cardComunidad = itemView.findViewById(R.id.cardComunidad); // Añade esta línea
+                cardComunidad = itemView.findViewById(R.id.cardComunidad);
 
-                // Configurar clic en toda la tarjeta
                 cardComunidad.setOnClickListener(v -> {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
@@ -415,7 +389,6 @@ public class Comunidad extends Fragment {
                 });
             }
         }
-
 
         private void guardarEstadoUnion(String nombreRed, boolean unido) {
             Log.d(TAG, "Guardando estado de unión. Red: " + nombreRed + ", Estado: " + unido);

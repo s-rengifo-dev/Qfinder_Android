@@ -22,13 +22,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.gson.Gson;
 import com.sena.qfinder.api.AuthService;
 import com.sena.qfinder.controller.MainActivityDash;
 import com.sena.qfinder.models.LoginRequest;
 import com.sena.qfinder.models.LoginResponse;
-
-import java.io.IOException;
+import com.sena.qfinder.models.PerfilUsuarioResponse;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,6 +41,7 @@ public class Login extends Fragment {
     private Button btnLogin;
     private AlertDialog progressDialog;
     private AuthService authService;
+    private Retrofit retrofit;
 
     @Nullable
     @Override
@@ -79,7 +78,6 @@ public class Login extends Fragment {
                 .setCancelable(false)
                 .create();
 
-        // Configuración adicional para hacerlo transparente
         if (progressDialog.getWindow() != null) {
             progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         }
@@ -94,7 +92,7 @@ public class Login extends Fragment {
     }
 
     private void setupRetrofit() {
-        Retrofit retrofit = new Retrofit.Builder()
+        retrofit = new Retrofit.Builder()
                 .baseUrl("https://qfinder-production.up.railway.app/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
@@ -145,16 +143,14 @@ public class Login extends Fragment {
         authService.LoginUser(request).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
-                dismissProgressDialog();
-
                 if (response.isSuccessful() && response.body() != null) {
-                    String mensaje = response.body().getMensaje();
-//                    Toast.makeText(getContext(), mensaje != null ? mensaje : "Inicio de sesión exitoso",
-//                            Toast.LENGTH_SHORT).show();
+                    String token = response.body().getToken();
+                    guardarDatosUsuario(email, token);
 
-                    guardarDatosUsuario(email, response.body().getToken());
-                    iniciarSesionExitoso();
+                    // Obtener el perfil completo del usuario para guardar el ID
+                    obtenerPerfilUsuario(token);
                 } else {
+                    dismissProgressDialog();
                     Toast.makeText(getContext(), "Credenciales incorrectas", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -167,11 +163,60 @@ public class Login extends Fragment {
         });
     }
 
+    private void obtenerPerfilUsuario(String token) {
+        authService.obtenerPerfil("Bearer " + token).enqueue(new Callback<PerfilUsuarioResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PerfilUsuarioResponse> call, @NonNull Response<PerfilUsuarioResponse> response) {
+                dismissProgressDialog();
+
+                if (response.isSuccessful() && response.body() != null) {
+                    PerfilUsuarioResponse perfil = response.body();
+
+                    // Guardar todos los datos del usuario
+                    guardarDatosCompletosUsuario(
+                            perfil.getId_usuario(),
+                            perfil.getNombre_usuario(),
+                            perfil.getApellido_usuario(),
+                            perfil.getCorreo_usuario(),
+                            perfil.getTelefono_usuario(),
+                            perfil.getDireccion_usuario(),
+                            perfil.getIdentificacion_usuario()
+                    );
+
+                    iniciarSesionExitoso();
+                } else {
+                    Toast.makeText(getContext(), "Error al obtener perfil de usuario", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PerfilUsuarioResponse> call, @NonNull Throwable t) {
+                dismissProgressDialog();
+                Toast.makeText(getContext(), "Error al obtener perfil: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void guardarDatosUsuario(String email, String token) {
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         preferences.edit()
                 .putString("correo_usuario", email)
                 .putString("token", token)
+                .apply();
+    }
+
+    private void guardarDatosCompletosUsuario(String idUsuario, String nombre, String apellido,
+                                              String correo, String telefono, String direccion,
+                                              String identificacion) {
+        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        preferences.edit()
+                .putString("id_usuario", idUsuario)
+                .putString("nombre_usuario", nombre)
+                .putString("apellido_usuario", apellido)
+                .putString("correo_usuario", correo)
+                .putString("telefono_usuario", telefono)
+                .putString("direccion_usuario", direccion)
+                .putString("identificacion_usuario", identificacion)
                 .apply();
     }
 

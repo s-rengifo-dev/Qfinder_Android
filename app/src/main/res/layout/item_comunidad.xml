@@ -57,20 +57,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Unirme"
-            android:textColor="#4E9EFB"
+            android:textColor="@color/white"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="12dp"
             android:backgroundTint="#594E9EFB"
             android:paddingHorizontal="16dp" />
 
         <!-- Icono de opciones -->
-        <ImageView
-            android:id="@+id/btnOpciones"
-            android:layout_width="34dp"
-            android:layout_height="37dp"
-            android:layout_gravity="center_vertical"
-            android:contentDescription="Opciones"
-            android:padding="8dp"
-            android:src="@drawable/trespuntos" />
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

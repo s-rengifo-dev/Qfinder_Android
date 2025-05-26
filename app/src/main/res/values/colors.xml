@@ -11,6 +11,11 @@
     <color name="azulBorder">#08053989</color>
     <color name="cantidadregistros">#A6A6A6</color>
 <!--    <color name="azulitoInput">#3F0066FF</color>-->
+    <color name="primary">#3F51B5</color>
+    <color name="primary_light">#C5CAE9</color>
+    <color name="secondary">#FF4081</color>
+    <color name="secondary_light">#F8BBD0</color>
+    <color name="error">#FF0000</color>
     <color name="azul_link">#2196F3</color>
     <color name="azulitoInput">#72B8F8</color>
     <color name="azulito">#18A0FB</color>
