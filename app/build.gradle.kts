@@ -77,6 +77,10 @@ dependencies {
         exclude(group = "org.threeten", module = "threetenbp")
     }
 
+    //codigo QR
+
+    implementation("com.google.zxing:core:3.4.1")
+
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-database-ktx")

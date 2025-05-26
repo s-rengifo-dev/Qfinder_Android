@@ -35,31 +35,6 @@
         android:orientation="horizontal"
         android:layout_marginTop="4dp">
 
-        <!-- First column (Birth Date) -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Fecha Nac."
-                android:textSize="10sp"
-                android:textColor="@android:color/darker_gray"
-                android:gravity="center"/>
-
-            <TextView
-                android:id="@+id/tvPatientRelation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:gravity="center"
-                android:text="Relación" />
-        </LinearLayout>
-
         <!-- Second column (Diagnosis) -->
         <LinearLayout
             android:layout_width="0dp"

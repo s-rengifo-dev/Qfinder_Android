@@ -224,12 +224,10 @@ public class ListaAsignarMedicamentos extends Fragment {
         patientCard.setTag(patientId);
 
         TextView tvName = patientCard.findViewById(R.id.tvPatientName);
-        TextView tvRelation = patientCard.findViewById(R.id.tvPatientRelation);
         TextView tvConditions = patientCard.findViewById(R.id.tvPatientConditions);
         ImageView ivProfile = patientCard.findViewById(R.id.ivPatientProfile);
 
         tvName.setText(name);
-        tvRelation.setText(birthDate);
 
         if (conditions != null && !conditions.isEmpty()) {
             String[] conditionsList = conditions.split(",");

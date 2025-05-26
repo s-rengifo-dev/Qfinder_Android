@@ -76,7 +76,15 @@
                 android:layout_height="wrap_content"
                 android:text="Actividades"
                 android:textStyle="bold"
-                android:textSize="18sp" />
+                android:textSize="18sp"/>
+
+            <ImageButton
+                android:id="@+id/botonActividad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/masicono"
+                android:background="@drawable/fondo_redondeado_con_sombra"
+                android:layout_gravity="end"/>
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -186,6 +194,14 @@
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:layout_marginBottom="8dp" />
+
+            <ImageButton
+                android:id="@+id/botonMedicamento"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/masicono"
+                android:background="@drawable/fondo_redondeado_con_sombra"
+                android:layout_gravity="end"/>
 
             <ProgressBar
                 android:id="@+id/progressBar"
