@@ -84,9 +84,8 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         Log.d(TAG, "onCreate: Inicializando fragmento");
 
         sharedPreferences = requireActivity().getSharedPreferences("usuario", Context.MODE_PRIVATE);
-//        idUsuario = String.valueOf(sharedPreferences.getInt("id_usuario", -1));
         idUsuario = sharedPreferences.getString("id_usuario", null);
-        if (idUsuario.equals("-1") || idUsuario.isEmpty()) {
+        if (idUsuario == null || idUsuario.equals("-1") || idUsuario.isEmpty()) {
             Log.e(TAG, "ID de usuario no disponible o inválido");
             mostrarErrorYSalir("Error: Sesión no válida");
             return;
@@ -160,7 +159,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
 
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mensajeAdapter = new MensajeAdapter(mensajesActivos);
+        mensajeAdapter = new MensajeAdapter(mensajesActivos, idUsuario);
         recyclerView.setAdapter(mensajeAdapter);
     }
 
@@ -605,36 +604,50 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         }
     }
 
-    private static class MensajeAdapter extends RecyclerView.Adapter<MensajeAdapter.MensajeViewHolder> {
+    private class MensajeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private final List<Mensaje> mensajes;
+        private final String currentUserId;
 
-        public MensajeAdapter(List<Mensaje> mensajes) {
+        private static final int VIEW_TYPE_MESSAGE_SENT = 1;
+        private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
+
+        public MensajeAdapter(List<Mensaje> mensajes, String currentUserId) {
             this.mensajes = mensajes;
+            this.currentUserId = currentUserId;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            Mensaje mensaje = mensajes.get(position);
+            return mensaje.getIdUsuario().equals(currentUserId) ?
+                    VIEW_TYPE_MESSAGE_SENT : VIEW_TYPE_MESSAGE_RECEIVED;
         }
 
         @NonNull
         @Override
-        public MensajeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_mensaje, parent, false);
-            return new MensajeViewHolder(view);
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view;
+            if (viewType == VIEW_TYPE_MESSAGE_SENT) {
+                view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_mensaje_propio, parent, false);
+                return new SentMessageHolder(view);
+            } else {
+                view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_mensaje_recibido, parent, false);
+                return new ReceivedMessageHolder(view);
+            }
         }
 
         @Override
-        public void onBindViewHolder(@NonNull MensajeViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             Mensaje mensaje = mensajes.get(position);
-            holder.txtNombreUsuario.setText(mensaje.getNombreUsuario());
-            holder.txtContenidoMensaje.setText(mensaje.getContenido());
-            holder.txtHoraMensaje.setText(mensaje.getHora());
 
-            if ("pendiente".equals(mensaje.getEstado())) {
-                holder.txtEstado.setText("(Enviando...)");
-                holder.txtEstado.setVisibility(View.VISIBLE);
-            } else if ("error".equals(mensaje.getEstado())) {
-                holder.txtEstado.setText("(Error al enviar)");
-                holder.txtEstado.setVisibility(View.VISIBLE);
-            } else {
-                holder.txtEstado.setVisibility(View.GONE);
+            switch (holder.getItemViewType()) {
+                case VIEW_TYPE_MESSAGE_SENT:
+                    ((SentMessageHolder) holder).bind(mensaje);
+                    break;
+                case VIEW_TYPE_MESSAGE_RECEIVED:
+                    ((ReceivedMessageHolder) holder).bind(mensaje);
             }
         }
 
@@ -643,15 +656,48 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             return mensajes.size();
         }
 
-        static class MensajeViewHolder extends RecyclerView.ViewHolder {
+        private class SentMessageHolder extends RecyclerView.ViewHolder {
             TextView txtNombreUsuario, txtContenidoMensaje, txtHoraMensaje, txtEstado;
 
-            MensajeViewHolder(View itemView) {
+            SentMessageHolder(View itemView) {
                 super(itemView);
                 txtNombreUsuario = itemView.findViewById(R.id.txtNombreUsuario);
                 txtContenidoMensaje = itemView.findViewById(R.id.txtContenidoMensaje);
                 txtHoraMensaje = itemView.findViewById(R.id.txtHoraMensaje);
                 txtEstado = itemView.findViewById(R.id.txtEstadoMensaje);
+            }
+
+            void bind(Mensaje mensaje) {
+                txtNombreUsuario.setText("Tú");
+                txtContenidoMensaje.setText(mensaje.getContenido());
+                txtHoraMensaje.setText(mensaje.getHora());
+
+                if ("pendiente".equals(mensaje.getEstado())) {
+                    txtEstado.setText("(Enviando...)");
+                    txtEstado.setVisibility(View.VISIBLE);
+                } else if ("error".equals(mensaje.getEstado())) {
+                    txtEstado.setText("(Error al enviar)");
+                    txtEstado.setVisibility(View.VISIBLE);
+                } else {
+                    txtEstado.setVisibility(View.GONE);
+                }
+            }
+        }
+
+        private class ReceivedMessageHolder extends RecyclerView.ViewHolder {
+            TextView txtNombreUsuario, txtContenidoMensaje, txtHoraMensaje;
+
+            ReceivedMessageHolder(View itemView) {
+                super(itemView);
+                txtNombreUsuario = itemView.findViewById(R.id.txtNombreUsuario);
+                txtContenidoMensaje = itemView.findViewById(R.id.txtContenidoMensaje);
+                txtHoraMensaje = itemView.findViewById(R.id.txtHoraMensaje);
+            }
+
+            void bind(Mensaje mensaje) {
+                txtNombreUsuario.setText(mensaje.getNombreUsuario());
+                txtContenidoMensaje.setText(mensaje.getContenido());
+                txtHoraMensaje.setText(mensaje.getHora());
             }
         }
     }
