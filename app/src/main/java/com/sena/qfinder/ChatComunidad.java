@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -409,9 +410,44 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     public void onMensajesRecibidos(List<Mensaje> mensajes) {
         requireActivity().runOnUiThread(() -> {
             Log.d(TAG, "Nuevos mensajes recibidos: " + mensajes.size());
-            mensajesActivos.addAll(mensajes);
-            mensajeAdapter.notifyDataSetChanged();
-            if (mensajesActivos.size() > 0) {
+
+            for (Mensaje mensaje : mensajes) {
+                boolean mensajeExistente = false;
+
+                // Buscar si el mensaje ya existe en la lista
+                for (int i = 0; i < mensajesActivos.size(); i++) {
+                    Mensaje existente = mensajesActivos.get(i);
+
+                    // Comparar por ID si está disponible
+                    if (mensaje.getId() != null && mensaje.getId().equals(existente.getId())) {
+                        mensajeExistente = true;
+
+                        // Actualizar estado si era un mensaje local "enviando"
+                        if ("enviando".equals(existente.getEstado())) {
+                            existente.setEstado("enviado");
+                            existente.setHora(mensaje.getHora());
+                            mensajeAdapter.notifyItemChanged(i);
+                        }
+                        break;
+                    }
+
+                    // Comparar por contenido y tiempo si no hay ID
+                    if (mensaje.getContenido().equals(existente.getContenido()) &&
+                            Math.abs(mensaje.getFecha_envio() - existente.getFecha_envio()) < 2000 &&
+                            mensaje.getIdUsuario().equals(existente.getIdUsuario())) {
+                        mensajeExistente = true;
+                        break;
+                    }
+                }
+
+                // Solo agregar si no es un mensaje existente
+                if (!mensajeExistente) {
+                    mensajesActivos.add(mensaje);
+                    mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
+                }
+            }
+
+            if (!mensajes.isEmpty()) {
                 recyclerView.scrollToPosition(mensajesActivos.size() - 1);
             }
         });
@@ -529,20 +565,34 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
 
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
         String horaActual = sdf.format(new Date());
+        long fechaEnvio = System.currentTimeMillis();
+
+        // Generar un ID único para el mensaje con UUID
+        String mensajeId = idUsuario + "_" + fechaEnvio + "_" + UUID.randomUUID().toString().substring(0, 8);
 
         Mensaje nuevoMensaje = new Mensaje();
+        nuevoMensaje.setId(mensajeId);
         nuevoMensaje.setNombreUsuario(nombreUsuario);
         nuevoMensaje.setContenido(contenido);
         nuevoMensaje.setHora(horaActual);
         nuevoMensaje.setComunidad(nombreComunidad);
         nuevoMensaje.setIdUsuario(idUsuario);
-        nuevoMensaje.setFecha_envio(System.currentTimeMillis());
-        nuevoMensaje.setEstado(hayConexionInternet() ? "enviando" : "pendiente");
+        nuevoMensaje.setFecha_envio(fechaEnvio);
+        nuevoMensaje.setEstado("enviando");
+
+        // Limpiar el campo de texto
+        etMensaje.setText("");
 
         if (chatService != null) {
+            // Mostrar el mensaje localmente primero con estado "enviando"
+            mensajesActivos.add(nuevoMensaje);
+            mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
+            recyclerView.scrollToPosition(mensajesActivos.size() - 1);
+
+            // Luego enviar el mensaje al servidor
             chatService.enviarMensaje(nuevoMensaje);
+            Log.d(TAG, "Mensaje local agregado con ID: " + mensajeId);
         }
-        etMensaje.setText("");
     }
 
     private boolean hayConexionInternet() {
@@ -601,104 +651,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         super.onDestroy();
         if (chatService != null) {
             chatService.cleanup();
-        }
-    }
-
-    private class MensajeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        private final List<Mensaje> mensajes;
-        private final String currentUserId;
-
-        private static final int VIEW_TYPE_MESSAGE_SENT = 1;
-        private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
-
-        public MensajeAdapter(List<Mensaje> mensajes, String currentUserId) {
-            this.mensajes = mensajes;
-            this.currentUserId = currentUserId;
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            Mensaje mensaje = mensajes.get(position);
-            return mensaje.getIdUsuario().equals(currentUserId) ?
-                    VIEW_TYPE_MESSAGE_SENT : VIEW_TYPE_MESSAGE_RECEIVED;
-        }
-
-        @NonNull
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view;
-            if (viewType == VIEW_TYPE_MESSAGE_SENT) {
-                view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_mensaje_propio, parent, false);
-                return new SentMessageHolder(view);
-            } else {
-                view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_mensaje_recibido, parent, false);
-                return new ReceivedMessageHolder(view);
-            }
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            Mensaje mensaje = mensajes.get(position);
-
-            switch (holder.getItemViewType()) {
-                case VIEW_TYPE_MESSAGE_SENT:
-                    ((SentMessageHolder) holder).bind(mensaje);
-                    break;
-                case VIEW_TYPE_MESSAGE_RECEIVED:
-                    ((ReceivedMessageHolder) holder).bind(mensaje);
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return mensajes.size();
-        }
-
-        private class SentMessageHolder extends RecyclerView.ViewHolder {
-            TextView txtNombreUsuario, txtContenidoMensaje, txtHoraMensaje, txtEstado;
-
-            SentMessageHolder(View itemView) {
-                super(itemView);
-                txtNombreUsuario = itemView.findViewById(R.id.txtNombreUsuario);
-                txtContenidoMensaje = itemView.findViewById(R.id.txtContenidoMensaje);
-                txtHoraMensaje = itemView.findViewById(R.id.txtHoraMensaje);
-                txtEstado = itemView.findViewById(R.id.txtEstadoMensaje);
-            }
-
-            void bind(Mensaje mensaje) {
-                txtNombreUsuario.setText("Tú");
-                txtContenidoMensaje.setText(mensaje.getContenido());
-                txtHoraMensaje.setText(mensaje.getHora());
-
-                if ("pendiente".equals(mensaje.getEstado())) {
-                    txtEstado.setText("(Enviando...)");
-                    txtEstado.setVisibility(View.VISIBLE);
-                } else if ("error".equals(mensaje.getEstado())) {
-                    txtEstado.setText("(Error al enviar)");
-                    txtEstado.setVisibility(View.VISIBLE);
-                } else {
-                    txtEstado.setVisibility(View.GONE);
-                }
-            }
-        }
-
-        private class ReceivedMessageHolder extends RecyclerView.ViewHolder {
-            TextView txtNombreUsuario, txtContenidoMensaje, txtHoraMensaje;
-
-            ReceivedMessageHolder(View itemView) {
-                super(itemView);
-                txtNombreUsuario = itemView.findViewById(R.id.txtNombreUsuario);
-                txtContenidoMensaje = itemView.findViewById(R.id.txtContenidoMensaje);
-                txtHoraMensaje = itemView.findViewById(R.id.txtHoraMensaje);
-            }
-
-            void bind(Mensaje mensaje) {
-                txtNombreUsuario.setText(mensaje.getNombreUsuario());
-                txtContenidoMensaje.setText(mensaje.getContenido());
-                txtHoraMensaje.setText(mensaje.getHora());
-            }
         }
     }
 }
