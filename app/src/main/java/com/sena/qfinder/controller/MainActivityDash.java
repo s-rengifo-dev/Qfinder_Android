@@ -2,11 +2,16 @@ package com.sena.qfinder.controller;
 
 import static com.google.firebase.FirebaseApp.initializeApp;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 
