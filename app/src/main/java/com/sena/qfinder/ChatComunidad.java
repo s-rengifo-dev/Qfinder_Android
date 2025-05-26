@@ -3,6 +3,7 @@ package com.sena.qfinder;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -12,6 +13,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -66,6 +69,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     private EditText etMensaje;
     private Button btnEnviar;
     private Button btnUnirmeComunidad;
+    private TextView txtTitulo;
 
     private ChatService chatService;
     private SharedPreferences sharedPreferences;
@@ -105,9 +109,84 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         }
     }
 
-    private void mostrarErrorYSalir(String mensaje) {
-        showToast(mensaje);
-        requireActivity().finish();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_chat_comunidad, container, false);
+
+        if (idUsuario == null || idUsuario.equals("-1")) {
+            mostrarErrorYSalir("Sesión expirada");
+            return view;
+        }
+
+        setupViews(view);
+        setupRecyclerView();
+        setupButtons();
+        configurarEstadoInicial();
+        configurarTeclado(view);
+
+        return view;
+    }
+
+    private void setupViews(View view) {
+        recyclerView = view.findViewById(R.id.recyclerChat);
+        layoutAviso = view.findViewById(R.id.layoutAviso);
+        layoutEnviarMensaje = view.findViewById(R.id.layoutEnviarMensaje);
+        etMensaje = view.findViewById(R.id.etMensaje);
+        btnEnviar = view.findViewById(R.id.btnEnviar);
+        btnUnirmeComunidad = view.findViewById(R.id.btnUnirmeComunidad);
+        txtTitulo = view.findViewById(R.id.txtTitulo);
+
+        if (nombreComunidad != null) {
+            txtTitulo.setText(nombreComunidad);
+        }
+    }
+
+    private void setupRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mensajeAdapter = new MensajeAdapter(mensajesActivos, idUsuario);
+        recyclerView.setAdapter(mensajeAdapter);
+    }
+
+    private void setupButtons() {
+        btnEnviar.setOnClickListener(v -> {
+            if (validarSesion()) {
+                enviarMensaje();
+            }
+        });
+
+        btnUnirmeComunidad.setOnClickListener(v -> {
+            if (validarSesion()) {
+                unirseAComunidad();
+            }
+        });
+
+        etMensaje.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEND) {
+                enviarMensaje();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void configurarTeclado(View rootView) {
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Rect r = new Rect();
+                rootView.getWindowVisibleDisplayFrame(r);
+                int screenHeight = rootView.getRootView().getHeight();
+                int keypadHeight = screenHeight - r.bottom;
+
+                if (keypadHeight > screenHeight * 0.15) {
+                    if (mensajesActivos.size() > 0) {
+                        recyclerView.postDelayed(() -> {
+                            recyclerView.smoothScrollToPosition(mensajesActivos.size() - 1);
+                        }, 100);
+                    }
+                }
+            }
+        });
     }
 
     private void inicializarAuthService() {
@@ -132,50 +211,9 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_chat_comunidad, container, false);
-
-        if (idUsuario == null || idUsuario.equals("-1")) {
-            mostrarErrorYSalir("Sesión expirada");
-            return view;
-        }
-
-        setupViews(view);
-        setupRecyclerView();
-        setupButtons();
-        configurarEstadoInicial();
-
-        return view;
-    }
-
-    private void setupViews(View view) {
-        recyclerView = view.findViewById(R.id.recyclerChat);
-        layoutAviso = view.findViewById(R.id.layoutAviso);
-        layoutEnviarMensaje = view.findViewById(R.id.layoutEnviarMensaje);
-        etMensaje = view.findViewById(R.id.etMensaje);
-        btnEnviar = view.findViewById(R.id.btnEnviar);
-        btnUnirmeComunidad = view.findViewById(R.id.btnUnirmeComunidad);
-    }
-
-    private void setupRecyclerView() {
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mensajeAdapter = new MensajeAdapter(mensajesActivos, idUsuario);
-        recyclerView.setAdapter(mensajeAdapter);
-    }
-
-    private void setupButtons() {
-        btnEnviar.setOnClickListener(v -> {
-            if (validarSesion()) {
-                enviarMensaje();
-            }
-        });
-
-        btnUnirmeComunidad.setOnClickListener(v -> {
-            if (validarSesion()) {
-                unirseAComunidad();
-            }
-        });
+    private void mostrarErrorYSalir(String mensaje) {
+        showToast(mensaje);
+        requireActivity().finish();
     }
 
     private boolean validarSesion() {
@@ -269,7 +307,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
 
         try {
             chatService = new ChatService(requireContext(), idRed, token);
-            chatService.setCallback(ChatComunidad.this);
+            chatService.setCallback(this);
 
             Call<ResponseBody> call = authService.verificarMembresia("Bearer " + token, Integer.parseInt(idRed));
             call.enqueue(new Callback<ResponseBody>() {
@@ -414,15 +452,12 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             for (Mensaje mensaje : mensajes) {
                 boolean mensajeExistente = false;
 
-                // Buscar si el mensaje ya existe en la lista
                 for (int i = 0; i < mensajesActivos.size(); i++) {
                     Mensaje existente = mensajesActivos.get(i);
 
-                    // Comparar por ID si está disponible
                     if (mensaje.getId() != null && mensaje.getId().equals(existente.getId())) {
                         mensajeExistente = true;
 
-                        // Actualizar estado si era un mensaje local "enviando"
                         if ("enviando".equals(existente.getEstado())) {
                             existente.setEstado("enviado");
                             existente.setHora(mensaje.getHora());
@@ -431,7 +466,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                         break;
                     }
 
-                    // Comparar por contenido y tiempo si no hay ID
                     if (mensaje.getContenido().equals(existente.getContenido()) &&
                             Math.abs(mensaje.getFecha_envio() - existente.getFecha_envio()) < 2000 &&
                             mensaje.getIdUsuario().equals(existente.getIdUsuario())) {
@@ -440,7 +474,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                     }
                 }
 
-                // Solo agregar si no es un mensaje existente
                 if (!mensajeExistente) {
                     mensajesActivos.add(mensaje);
                     mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
@@ -458,6 +491,10 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         requireActivity().runOnUiThread(() -> {
             Log.e(TAG, "Error en chat: " + error);
             showToast("Error en el chat: " + error);
+
+            if (error.contains("permiso") || error.contains("membresía")) {
+                mostrarOpcionUnirse();
+            }
         });
     }
 
@@ -465,7 +502,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     public void onMensajeEnviado() {
         requireActivity().runOnUiThread(() -> {
             Log.d(TAG, "Mensaje enviado con éxito");
-            showToast("Mensaje enviado");
         });
     }
 
@@ -567,7 +603,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         String horaActual = sdf.format(new Date());
         long fechaEnvio = System.currentTimeMillis();
 
-        // Generar un ID único para el mensaje con UUID
         String mensajeId = idUsuario + "_" + fechaEnvio + "_" + UUID.randomUUID().toString().substring(0, 8);
 
         Mensaje nuevoMensaje = new Mensaje();
@@ -580,16 +615,13 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         nuevoMensaje.setFecha_envio(fechaEnvio);
         nuevoMensaje.setEstado("enviando");
 
-        // Limpiar el campo de texto
         etMensaje.setText("");
 
         if (chatService != null) {
-            // Mostrar el mensaje localmente primero con estado "enviando"
             mensajesActivos.add(nuevoMensaje);
             mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
             recyclerView.scrollToPosition(mensajesActivos.size() - 1);
 
-            // Luego enviar el mensaje al servidor
             chatService.enviarMensaje(nuevoMensaje);
             Log.d(TAG, "Mensaje local agregado con ID: " + mensajeId);
         }

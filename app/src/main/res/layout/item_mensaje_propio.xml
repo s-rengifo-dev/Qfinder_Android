@@ -10,7 +10,7 @@
         android:id="@+id/txtNombreUsuario"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/secondary_text"
         android:textStyle="bold"/>
 
     <LinearLayout
@@ -24,7 +24,8 @@
             android:id="@+id/txtContenidoMensaje"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@android:color/black"/>
+            android:textColor="@android:color/black"
+            android:textSize="18dp"/>
 
         <TextView
             android:id="@+id/txtHoraMensaje"
