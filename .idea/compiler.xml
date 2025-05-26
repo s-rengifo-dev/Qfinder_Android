@@ -2,5 +2,9 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="21" />
+<<<<<<< HEAD
+=======
+    <bytecodeTargetLevel target="17" />
+>>>>>>> origin/GermanNuevo
   </component>
 </project>

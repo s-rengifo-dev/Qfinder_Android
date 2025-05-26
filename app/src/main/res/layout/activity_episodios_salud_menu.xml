@@ -7,8 +7,7 @@
     android:background="@color/white"
     tools:context=".episodios_salud_menu">
 
-
-<LinearLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -34,7 +33,7 @@
                 android:textSize="26sp"
                 android:textStyle="bold"
                 android:layout_centerInParent="true"
-                android:layout_marginTop="33dp"/>
+                android:layout_marginTop="33dp" />
         </RelativeLayout>
 
         <!-- Info de registros -->
@@ -50,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:text="Episodios salud"
                 android:textSize="26sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/cantidadRegistros"
@@ -58,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:text="0 Registros"
                 android:textStyle="bold"
-                android:textColor="@color/cantidadregistros"/>
+                android:textColor="@color/cantidadregistros" />
         </LinearLayout>
 
         <!-- Línea divisoria -->
@@ -67,14 +66,22 @@
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:layout_marginHorizontal="16dp"
-            android:background="?android:attr/listDivider"/>
+            android:background="?android:attr/listDivider" />
+
+        <Spinner
+            android:id="@+id/SeleccionarPaciente"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp" />
 
         <!-- Herramientas -->
         <LinearLayout
             android:id="@+id/herramientas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="20dp"
             android:orientation="horizontal"
             android:paddingHorizontal="10dp"
             android:elevation="2dp"
@@ -84,32 +91,51 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/search"
-                android:contentDescription="Buscar"/>
+                android:contentDescription="Buscar"
+                android:layout_marginEnd="8dp" />
 
-            <View
+            <EditText
+                android:id="@+id/searchInput"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Buscar..."
+                android:inputType="text"
+                android:background="@drawable/edittext_background"
+                android:paddingHorizontal="8dp"
+                android:drawablePadding="4dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray" />
 
             <ImageView
                 android:layout_width="23dp"
                 android:layout_height="20dp"
                 android:src="@drawable/organizar"
-                android:contentDescription="Organizar"/>
+                android:contentDescription="Organizar"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="4dp" />
 
             <Spinner
                 android:id="@+id/spinner_organizar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:spinnerMode="dropdown"
-                android:layout_marginStart="8dp"/>
+                android:spinnerMode="dropdown" />
         </LinearLayout>
 
-
+        <!-- ListView para las notas -->
+        <ListView
+            android:id="@+id/listViewNotas"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="1dp"
+            android:padding="8dp"
+            android:clipToPadding="false" />
 
     </LinearLayout>
 
-    <!-- Botón flotante -->
+    <!-- Botón flotante para agregar nota -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnNuevaNota"
         android:layout_width="wrap_content"
@@ -118,5 +144,5 @@
         android:layout_margin="36dp"
         android:src="@drawable/nuevoregistro"
         android:backgroundTint="@color/fondo"
-        android:contentDescription="Agregar nuevo registro"/>
+        android:contentDescription="Agregar nuevo registro" />
 </FrameLayout>
