@@ -67,7 +67,7 @@ public class episodios_salud_nota extends AppCompatActivity {
 
         // --------- RELLENAR AUTOMÁTICAMENTE FECHA INICIO ----------
         calendarInicio.setTimeInMillis(System.currentTimeMillis());
-        calendarInicio.add(Calendar.SECOND, -10); // restar 10 segundos para evitar error de fecha futura
+        calendarInicio.add(Calendar.DAY_OF_MONTH, -1); // restar 10 segundos para evitar error de fecha futura
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
         editTextFechaInicio.setText(sdf.format(calendarInicio.getTime()));
         // ----------------------------------------------------------
@@ -121,7 +121,7 @@ public class episodios_salud_nota extends AppCompatActivity {
                                 calendar.set(Calendar.SECOND, 0);
 
                                 // Ajuste para evitar error con fecha "ligeramente futura"
-                                calendar.add(Calendar.MINUTE, -2);
+                                calendar.add(Calendar.DAY_OF_MONTH, -1);
 
                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
                                 campo.setText(sdf.format(calendar.getTime()));
@@ -196,6 +196,11 @@ public class episodios_salud_nota extends AppCompatActivity {
         String token = "Bearer " + tokenGuardado;
 
         int registradoPor = obtenerIdUsuarioRegistrado();
+        if(registradoPor == -1){
+            Toast.makeText(this, "Error al obtener el ID de usuario registrado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String registradoPorRole = obtenerRolUsuarioRegistrado();
 
         String tipo = "nota";
@@ -256,13 +261,32 @@ public class episodios_salud_nota extends AppCompatActivity {
         return prefs.getString("token", null);
     }
 
+    // --- Aquí los métodos para obtener el id y rol guardados COMO STRING ---
+
     private int obtenerIdUsuarioRegistrado() {
         SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
-        return prefs.getInt("id_usuario", -1);
+        String idString = prefs.getString("id_usuario", "-1");
+        try {
+            return Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     private String obtenerRolUsuarioRegistrado() {
         SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
-        return prefs.getString("rol_usuario", "Usuario");
+        return prefs.getString("rol", "desconocido");
     }
+
+    // --- Método para guardar id_usuario y rol en SharedPreferences (de ejemplo) ---
+
+    public void guardarUsuarioEnPrefs(int idUsuario, String rolUsuario, String token) {
+        SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("id_usuario", String.valueOf(idUsuario)); // Guardamos como String para evitar problemas
+        editor.putString("rol", rolUsuario);
+        editor.putString("token", token);
+        editor.apply();
+    }
+
 }

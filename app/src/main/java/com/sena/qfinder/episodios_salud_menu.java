@@ -17,6 +17,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sena.qfinder.api.ApiClient;
@@ -25,17 +27,14 @@ import com.sena.qfinder.models.NotaEpisodio;
 import com.sena.qfinder.models.NotaEpisodioListResponse;
 import com.sena.qfinder.models.PacienteListResponse;
 import com.sena.qfinder.models.PacienteResponse;
+import com.sena.qfinder.ui.home.PatientAdapter;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,17 +42,20 @@ import retrofit2.Response;
 
 public class episodios_salud_menu extends AppCompatActivity {
 
-    private Spinner spinnerPacientes, spinnerOrganizar;
+    private Spinner spinnerOrganizar;
     private int pacienteIdSeleccionado = -1;
-    private Map<String, Integer> nombreIdMap = new HashMap<>();
     private String token;
+
     private ListView listViewNotas;
     private List<NotaEpisodio> todasLasNotas = new ArrayList<>();
     private List<NotaEpisodio> notasFiltradas = new ArrayList<>();
     private TextView cantidadRegistros;
     private EditText searchInput;
-
     private NotaEpisodioAdapter notaAdapter;
+
+    private RecyclerView recyclerPacientes;
+    private PatientAdapter patientAdapter;
+    private List<PacienteResponse> listaPacientes = new ArrayList<>();
 
     private SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
 
@@ -62,11 +64,11 @@ public class episodios_salud_menu extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_episodios_salud_menu);
 
-        spinnerPacientes = findViewById(R.id.SeleccionarPaciente);
         spinnerOrganizar = findViewById(R.id.spinner_organizar);
         listViewNotas = findViewById(R.id.listViewNotas);
         cantidadRegistros = findViewById(R.id.cantidadRegistros);
         searchInput = findViewById(R.id.searchInput);
+        recyclerPacientes = findViewById(R.id.recyclerPacientes);
 
         notaAdapter = new NotaEpisodioAdapter(this, notasFiltradas);
         listViewNotas.setAdapter(notaAdapter);
@@ -75,21 +77,22 @@ public class episodios_salud_menu extends AppCompatActivity {
         String rawToken = preferences.getString("token", null);
         if (rawToken != null) {
             token = "Bearer " + rawToken;
-            Log.d("episodios_salud_menu", "Token obtenido correctamente");
         } else {
             Toast.makeText(this, "Token no encontrado. Inicia sesión nuevamente.", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
-        configurarSpinners();
+        configurarSpinnerOrganizar();
         configurarBusqueda();
+
+        setupRecyclerPacientes();
         cargarPacientes();
 
         FloatingActionButton btnNuevaNota = findViewById(R.id.btnNuevaNota);
         btnNuevaNota.setOnClickListener(v -> {
             if (pacienteIdSeleccionado != -1) {
-                Intent intent = new Intent(episodios_salud_menu.this, episodios_salud_nota.class);
+                Intent intent = new Intent(this, episodios_salud_nota.class);
                 intent.putExtra("id_paciente", pacienteIdSeleccionado);
                 startActivity(intent);
             } else {
@@ -98,7 +101,16 @@ public class episodios_salud_menu extends AppCompatActivity {
         });
     }
 
-    private void configurarSpinners() {
+    private void setupRecyclerPacientes() {
+        recyclerPacientes.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        patientAdapter = new PatientAdapter(listaPacientes, paciente -> {
+            pacienteIdSeleccionado = paciente.getId();
+            cargarNotasDelPaciente(pacienteIdSeleccionado);
+        });
+        recyclerPacientes.setAdapter(patientAdapter);
+    }
+
+    private void configurarSpinnerOrganizar() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{"Fecha", "Severidad"});
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerOrganizar.setAdapter(adapter);
@@ -126,51 +138,17 @@ public class episodios_salud_menu extends AppCompatActivity {
             @Override
             public void onResponse(Call<PacienteListResponse> call, Response<PacienteListResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<PacienteResponse> pacientes = response.body().getData();
-                    if (pacientes != null && !pacientes.isEmpty()) {
-                        List<String> nombres = new ArrayList<>();
-                        nombreIdMap.clear();
-                        for (PacienteResponse p : pacientes) {
-                            String nombre = p.getNombre() + " " + p.getApellido();
-                            nombreIdMap.put(nombre, p.getId());
-                            nombres.add(nombre);
-                        }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(episodios_salud_menu.this, android.R.layout.simple_spinner_item, nombres);
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        spinnerPacientes.setAdapter(adapter);
-                        spinnerPacientes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                            @Override
-                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                String nombreSeleccionado = (String) parent.getItemAtPosition(position);
-                                Integer idPaciente = nombreIdMap.get(nombreSeleccionado);
-                                if (idPaciente != null) {
-                                    pacienteIdSeleccionado = idPaciente;
-                                    cargarNotasDelPaciente(pacienteIdSeleccionado);
-                                } else {
-                                    pacienteIdSeleccionado = -1;
-                                }
-                            }
-                            @Override public void onNothingSelected(AdapterView<?> parent) {
-                                pacienteIdSeleccionado = -1;
-                                todasLasNotas.clear();
-                                notasFiltradas.clear();
-                                notaAdapter.notifyDataSetChanged();
-                                actualizarCantidadRegistros();
-                            }
-                        });
-                    } else {
-                        Toast.makeText(episodios_salud_menu.this, "No se encontraron pacientes", Toast.LENGTH_SHORT).show();
-                    }
+                    listaPacientes.clear();
+                    listaPacientes.addAll(response.body().getData());
+                    patientAdapter.notifyDataSetChanged();
                 } else {
-                    Toast.makeText(episodios_salud_menu.this, "Error en la respuesta al cargar pacientes", Toast.LENGTH_SHORT).show();
-                    Log.e("API_ERROR", "Error pacientes - Código: " + response.code());
+                    Toast.makeText(episodios_salud_menu.this, "Error al cargar pacientes", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<PacienteListResponse> call, Throwable t) {
-                Toast.makeText(episodios_salud_menu.this, "Error al conectar al servidor", Toast.LENGTH_SHORT).show();
-                Log.e("API_ERROR", "Falla conexión pacientes", t);
+                Toast.makeText(episodios_salud_menu.this, "Fallo la conexión al cargar pacientes", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -181,23 +159,18 @@ public class episodios_salud_menu extends AppCompatActivity {
             @Override
             public void onResponse(Call<NotaEpisodioListResponse> call, Response<NotaEpisodioListResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<NotaEpisodio> notas = response.body().getData();
-                    if (notas != null) {
-                        todasLasNotas.clear();
-                        todasLasNotas.addAll(notas);
-                        ordenarNotas();
-                        filtrarNotas(searchInput.getText().toString());
-                    }
+                    todasLasNotas.clear();
+                    todasLasNotas.addAll(response.body().getData());
+                    ordenarNotas();
+                    filtrarNotas(searchInput.getText().toString());
                 } else {
                     Toast.makeText(episodios_salud_menu.this, "Error al cargar notas", Toast.LENGTH_SHORT).show();
-                    Log.e("API_ERROR", "Error notas - Código: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<NotaEpisodioListResponse> call, Throwable t) {
-                Toast.makeText(episodios_salud_menu.this, "Error al conectar al servidor para notas", Toast.LENGTH_SHORT).show();
-                Log.e("API_ERROR", "Falla conexión notas", t);
+                Toast.makeText(episodios_salud_menu.this, "Error de conexión al cargar notas", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -209,20 +182,17 @@ public class episodios_salud_menu extends AppCompatActivity {
         if (criterio.equalsIgnoreCase("fecha")) {
             Collections.sort(todasLasNotas, (n1, n2) -> {
                 try {
-                    String fecha1 = n1.getFechaHoraInicio();
-                    String fecha2 = n2.getFechaHoraInicio();
-
-                    if (fecha1 == null || fecha1.trim().isEmpty()) return 1;
-                    if (fecha2 == null || fecha2.trim().isEmpty()) return -1;
-
-                    Date d1 = inputFormat.parse(fecha1);
-                    Date d2 = inputFormat.parse(fecha2);
-                    return d2.compareTo(d1); // Orden descendente
+                    Date d1 = inputFormat.parse(n1.getFechaHoraInicio());
+                    Date d2 = inputFormat.parse(n2.getFechaHoraInicio());
+                    return d2.compareTo(d1); // Más reciente primero
                 } catch (Exception e) {
-                    Log.e("ordenarNotas", "Error al parsear fecha", e);
                     return 0;
                 }
             });
+        } else if (criterio.equalsIgnoreCase("severidad")) {
+            Collections.sort(todasLasNotas, (n1, n2) ->
+                    Integer.compare(severidadValue(n2.getSeveridad()), severidadValue(n1.getSeveridad()))
+            );
         }
 
         filtrarNotas(searchInput.getText().toString());
@@ -245,14 +215,10 @@ public class episodios_salud_menu extends AppCompatActivity {
         } else {
             String filtro = texto.toLowerCase(Locale.ROOT);
             for (NotaEpisodio nota : todasLasNotas) {
-                boolean coincide = false;
-                if (nota.getDescripcion() != null && nota.getDescripcion().toLowerCase(Locale.ROOT).contains(filtro)) {
-                    coincide = true;
-                } else if (nota.getIntervenciones() != null && nota.getIntervenciones().toLowerCase(Locale.ROOT).contains(filtro)) {
-                    coincide = true;
-                } else if (nota.getSeveridad() != null && nota.getSeveridad().toLowerCase(Locale.ROOT).contains(filtro)) {
-                    coincide = true;
-                }
+                boolean coincide =
+                        (nota.getDescripcion() != null && nota.getDescripcion().toLowerCase().contains(filtro)) ||
+                                (nota.getIntervenciones() != null && nota.getIntervenciones().toLowerCase().contains(filtro)) ||
+                                (nota.getSeveridad() != null && nota.getSeveridad().toLowerCase().contains(filtro));
                 if (coincide) {
                     notasFiltradas.add(nota);
                 }

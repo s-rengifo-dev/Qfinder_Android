@@ -1,5 +1,6 @@
 package com.sena.qfinder;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,12 +44,11 @@ public class Fragment_Serivicios extends Fragment {
 
         LinearLayout cardRegistroSalud = view.findViewById(R.id.registrosalud);
         cardRegistroSalud.setOnClickListener(v -> {
-            // Reemplazar fragmento actual por GestionPacienteFragment
-            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new registro_salud()); // Asegúrate de que R.id.fragment_container exista
-            transaction.addToBackStack(null); // Para poder volver atrás
-            transaction.commit();
+            // Iniciar nueva actividad
+            Intent intent = new Intent(getActivity(), episodios_salud_menu.class);
+            startActivity(intent);
         });
+
 
         // Card para recordatorios
         LinearLayout cardRecordatorio = view.findViewById(R.id.cardRecordatorio);
