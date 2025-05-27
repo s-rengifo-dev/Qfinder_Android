@@ -16,13 +16,23 @@
         android:background="#66B2FF"
         android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/backButton"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
+        <!-- Fondo redondo blanco para la flecha -->
+        <FrameLayout
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:layout_marginStart="8dp"
-            android:contentDescription="Volver"
-            android:src="@drawable/flecha" />
+            android:background="@drawable/circle_white"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_gravity="center"
+                android:contentDescription="Volver"
+                android:src="@drawable/flecha"
+                android:scaleType="centerInside"/>
+        </FrameLayout>
 
         <TextView
             android:layout_width="335dp"
@@ -30,8 +40,8 @@
             android:layout_marginStart="8dp"
             android:text="Verificar Código"
             android:textColor="@android:color/black"
-            android:textSize="25sp"
-            android:textStyle="bold" />
+            android:textSize="26sp"
+            android:gravity="center"/>
     </LinearLayout>
 
     <!-- Contenido principal -->
@@ -45,8 +55,8 @@
             android:id="@+id/instructionText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Ingresa el código que te enviamos"
-            android:textSize="16sp"
+            android:text="Ingresa el código que te enviamos a tu correo para continuar con la recuperación de tu contraseña."
+            android:textSize="18sp"
             android:textColor="#000000"
             android:gravity="center"
             android:layout_marginBottom="24dp"/>

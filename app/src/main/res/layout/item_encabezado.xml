@@ -7,38 +7,39 @@
     android:gravity="center_vertical">
 
     <TextView
-        android:text="Paciente"
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textStyle="bold"
         android:gravity="center"
+        android:text="Actividad"
         android:textColor="@color/black"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"/>
+        android:textStyle="bold" />
 
     <TextView
+        android:layout_width="85dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Descripcion"
+        android:textColor="@color/black"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="75dp"
         android:text="Fecha"
         android:layout_weight="1"
         android:textStyle="bold"
         android:gravity="center"
         android:textColor="@color/black"
-        android:layout_width="0dp"
+
         android:layout_height="wrap_content"/>
 
     <TextView
-        android:text="Hora"
-        android:layout_weight="1"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:textColor="@color/black"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:text="Actividades"
+        android:layout_width="15dp"
+        android:layout_height="wrap_content"
         android:layout_weight="2"
-        android:textStyle="bold"
         android:gravity="center"
+        android:text="Hora"
         android:textColor="@color/black"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"/>
+        android:textStyle="bold" />
 </LinearLayout>

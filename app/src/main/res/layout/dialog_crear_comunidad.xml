@@ -41,8 +41,8 @@
             android:id="@+id/etMiembrosComunidad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Número de integrantes"
-            android:inputType="number" />
+            android:hint="Descripcion"
+            android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

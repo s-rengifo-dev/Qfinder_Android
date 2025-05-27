@@ -1,8 +1,10 @@
 package com.sena.qfinder.api;
 
+import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 public class ApiClient {
 
@@ -15,7 +17,15 @@ public class ApiClient {
 
     public static Retrofit getClient() {
         if (retrofit == null) {
+
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .addInterceptor(loggingInterceptor)
                     .cookieJar(cookieJar)
                     .build();
 
@@ -29,7 +39,7 @@ public class ApiClient {
     }
 
     // Métodos para manejar el token y el email
-    public static String getToken() {
+    public static String getResetToken() {
         return resetToken;
     }
 

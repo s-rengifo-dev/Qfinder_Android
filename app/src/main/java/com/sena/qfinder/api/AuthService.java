@@ -1,9 +1,18 @@
 package com.sena.qfinder.api;
 
+import com.sena.qfinder.models.ActividadListResponse;
 import com.sena.qfinder.models.ActividadRequest;
 import com.sena.qfinder.models.ActividadResponse;
+import com.sena.qfinder.models.AsignacionMedicamentoResponse;
+import com.sena.qfinder.models.AsignarMedicamentoRequest;
+import com.sena.qfinder.models.AsignarMedicamentoResponse;
 import com.sena.qfinder.models.CodeVerificationRequest;
 import com.sena.qfinder.models.CodeVerificationResponse;
+import com.sena.qfinder.models.MedicamentoRequest;
+import com.sena.qfinder.models.MedicamentoResponse;
+import com.sena.qfinder.models.MedicamentoSimpleResponse;
+import com.sena.qfinder.models.Mensaje;
+import com.sena.qfinder.models.MensajeRequest;
 import com.sena.qfinder.models.NotaEpisodio;
 import com.sena.qfinder.models.NotaEpisodioListResponse;
 import com.sena.qfinder.models.NotaEpisodioRequest;
@@ -11,6 +20,9 @@ import com.sena.qfinder.models.NotaEpisodioResponse;
 import com.sena.qfinder.models.PacienteListResponse;
 import com.sena.qfinder.models.PacienteRequest;
 import com.sena.qfinder.models.PacienteResponse;
+import com.sena.qfinder.models.RedListResponse;
+import com.sena.qfinder.models.RedRequest;
+import com.sena.qfinder.models.RedResponse;
 import com.sena.qfinder.models.RegisterPacienteRequest;
 import com.sena.qfinder.models.RegisterPacienteResponse;
 import com.sena.qfinder.models.LoginRequest;
@@ -35,6 +47,7 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface AuthService {
     @POST("api/auth/register")
@@ -50,7 +63,7 @@ public interface AuthService {
     @POST("api/auth/verificar-codigo")
     Call<Void> verificarCodigo(@Body VerificarCodigoRequest request);
 
-    @POST("api/auth/cambiar-password") // o "/api/auth/change-password" según tu backend
+    @POST("api/auth/cambiar-password")
     Call<Void> cambiarPassword(
             @Header("Authorization") String authToken,
             @Body CambiarPasswordRequest request
@@ -62,7 +75,6 @@ public interface AuthService {
             @Header("Authorization") String token,
             @Body RegisterPacienteRequest request
     );
-    // En tu AuthService, añade este método
     @GET("api/paciente/listarPacientes/{id_paciente}")
     Call<PacienteResponse> obtenerPacientePorId(
             @Header("Authorization") String token,
@@ -80,32 +92,12 @@ public interface AuthService {
             @Path("id_paciente") int pacienteId,
             @Body PacienteRequest pacienteRequest
     );
-
-
-    // En tu AuthService.java
-    @POST("api/actividades/crearActivdad/{id_paciente}")
-    Call<ActividadResponse> crearActividad(
-            @Header("Authorization") String token,
-            @Path("id_paciente") int idPaciente,
-            @Body ActividadRequest request
-    );
-
-    @PUT("api/auth/actualizarUser")
-    Call<ResponseBody> actualizarUsuario(@Body UsuarioRequest usuario, @Header("Authorization") String token);
-
-
-    // Rutas de episodios salud
-
-    // -------------------------------
-// EPISODIOS DE SALUD
-// -------------------------------
-
+    // EPISODIOS DE SALUD
     @GET("api/episodios/episodioSalud/{id_paciente}")
     Call<NotaEpisodioListResponse> obtenerEpisodios(
             @Header("Authorization") String token,
             @Path("id_paciente") int pacienteId
     );
-
 
     @POST("api/episodios/episodioSalud/{id_paciente}")
     Call<NotaEpisodioResponse> crearEpisodio(
@@ -128,9 +120,103 @@ public interface AuthService {
             @Path("id_paciente") int pacienteId,
             @Path("id_episodio") int idEpisodio
     );
+    @POST("/api/medicamentos/crear")
+    Call<MedicamentoResponse> agregarMedicamento(
+            @Header("Authorization") String token,
+            @Body MedicamentoRequest request
+    );
+    @GET("api/medicamentos/listar")
+    Call<List<MedicamentoResponse>> listarMedicamentos(@Header("Authorization") String token);
 
+    @DELETE("api/medicamentos/eliminar/{id}")
+    Call<MedicamentoSimpleResponse> eliminarMedicamento(
+            @Header("Authorization") String token,
+            @Path("id") int id
+    );
 
+    @POST("api/actividades/crearActivdad/{id_paciente}")
+    Call<ActividadResponse> crearActividad(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente,
+            @Body ActividadRequest request
+    );
 
+    @PUT("api/auth/actualizarUser")
+    Call<ResponseBody> actualizarUsuario(@Body UsuarioRequest usuario, @Header("Authorization") String token);
 
+    @GET("api/actividades/listarActividades/{id_paciente}")
+    Call<ActividadListResponse> listarActividades(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int pacienteId
+    );
+    @POST("api/paciente-medicamento/crear")
+    Call<AsignarMedicamentoResponse> asignarMedicamento(
+            @Header("Authorization") String token,
+            @Body AsignarMedicamentoRequest request
+    );
+    @GET("api/paciente-medicamento/asignaciones/{id_paciente}")
+    Call<List<AsignacionMedicamentoResponse>> listarAsignacionesMedicamentos(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int pacienteId
+    );
+    @GET("api/redes/listarRedes")
+    Call<RedListResponse> listarRedes(@Header("Authorization") String token);
 
+    @POST("api/redes/crear")
+    Call<RedResponse> crearRed(
+            @Header("Authorization") String token,
+            @Body RedRequest request
+    );
+
+    @PUT("api/redes/actualizar/{id}")
+    Call<RedResponse> actualizarRed(
+            @Header("Authorization") String token,
+            @Path("id") int idRed,
+            @Body RedRequest request
+    );
+
+    @DELETE("api/redes/eliminar/{id}")
+    Call<Void> eliminarRed(
+            @Header("Authorization") String token,
+            @Path("id") int idRed
+    );
+    @POST("api/membresiaRed/unirseRed/{id_red}")
+    Call<ResponseBody> unirseRed(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+    @DELETE("api/membresiaRed/salirRed/{id_red}")
+    Call<ResponseBody> salirRed(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+
+    @GET("api/membresiaRed/verificarMembresia/{id_red}")
+    Call<ResponseBody> verificarMembresia(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed
+    );
+    @GET("api/membresiaRed/listarRedPertenece")
+    Call<List<RedResponse>> listarRedesPertenecientes(
+            @Header("Authorization") String token
+    );
+    @GET("api/chat/{id_red}/mensajes")
+    Call<List<Mensaje>> obtenerMensajes(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed,
+            @Query("limite") int limite
+    );
+
+    @POST("api/chat/{id_red}/enviar")
+    Call<ResponseBody> enviarMensaje(
+            @Header("Authorization") String token,
+            @Path("id_red") int idRed,
+            @Body MensajeRequest mensaje
+    );
+
+    @GET("api/redes/obtenerIdRed")
+    Call<RedResponse> obtenerIdRedPorNombre(
+            @Header("Authorization") String token,
+            @Query("nombre") String nombreRed
+    );
 }

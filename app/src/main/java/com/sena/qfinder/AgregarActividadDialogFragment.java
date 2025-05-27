@@ -44,7 +44,7 @@ import retrofit2.Response;
 
 public class AgregarActividadDialogFragment extends DialogFragment {
 
-    private static final String ARG_ACTIVIDAD = "actividad";
+    private static final String ARG_PACIENTE_ID = "paciente_id";
     private AutoCompleteTextView spinnerPacientes;
     private TextInputEditText etTipoActividad, etFecha, etHora, etDuracion, etDescripcion, etObservaciones;
     private AutoCompleteTextView spinnerIntensidad, spinnerEstado;
@@ -52,18 +52,18 @@ public class AgregarActividadDialogFragment extends DialogFragment {
     private String fechaSeleccionada = "";
     private String horaSeleccionada = "";
     private List<PacienteResponse> listaPacientes = new ArrayList<>();
-    private Actividad actividadExistente;
+    private int pacienteId;
 
     public interface OnActividadGuardadaListener {
-        void onActividadGuardada(Actividad actividad);
+        void onActividadGuardada();
     }
 
     private OnActividadGuardadaListener listener;
 
-    public static AgregarActividadDialogFragment newInstance(Actividad actividad) {
+    public static AgregarActividadDialogFragment newInstance(int pacienteId) {
         AgregarActividadDialogFragment fragment = new AgregarActividadDialogFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_ACTIVIDAD, actividad);
+        args.putInt(ARG_PACIENTE_ID, pacienteId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -72,7 +72,7 @@ public class AgregarActividadDialogFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            actividadExistente = (Actividad) getArguments().getSerializable(ARG_ACTIVIDAD);
+            pacienteId = getArguments().getInt(ARG_PACIENTE_ID, -1);
         }
     }
 
@@ -97,6 +97,7 @@ public class AgregarActividadDialogFragment extends DialogFragment {
 
     private void initViews(View view) {
         spinnerPacientes = view.findViewById(R.id.spinnerPaciente);
+        spinnerPacientes.setEnabled(false); // Disable patient selection
         etTipoActividad = view.findViewById(R.id.etTipoActividad);
         etFecha = view.findViewById(R.id.etFecha);
         etHora = view.findViewById(R.id.etHora);
@@ -181,16 +182,6 @@ public class AgregarActividadDialogFragment extends DialogFragment {
         AuthService authService = ApiClient.getClient().create(AuthService.class);
         Call<PacienteListResponse> call = authService.listarPacientes("Bearer " + token);
 
-        List<String> nombresPacientes = new ArrayList<>();
-        nombresPacientes.add("Seleccione un paciente");
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                nombresPacientes
-        );
-        spinnerPacientes.setAdapter(adapter);
-
         call.enqueue(new Callback<PacienteListResponse>() {
             @Override
             public void onResponse(Call<PacienteListResponse> call, Response<PacienteListResponse> response) {
@@ -199,21 +190,15 @@ public class AgregarActividadDialogFragment extends DialogFragment {
                 if (response.isSuccessful() && response.body() != null) {
                     listaPacientes = response.body().getData();
 
-                    nombresPacientes.clear();
-                    nombresPacientes.add("Seleccione un paciente");
-
                     if (listaPacientes != null && !listaPacientes.isEmpty()) {
                         for (PacienteResponse paciente : listaPacientes) {
-                            String nombreCompleto = paciente.getNombre() + " " + paciente.getApellido();
-                            nombresPacientes.add(nombreCompleto);
+                            if (paciente.getId() == pacienteId) {
+                                String nombreCompleto = paciente.getNombre() + " " + paciente.getApellido();
+                                spinnerPacientes.setText(nombreCompleto, false);
+                                break;
+                            }
                         }
-                    } else {
-                        Toast.makeText(getContext(), "No hay pacientes registrados", Toast.LENGTH_SHORT).show();
                     }
-
-                    adapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(getContext(), "Error al obtener pacientes", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -221,17 +206,11 @@ public class AgregarActividadDialogFragment extends DialogFragment {
             public void onFailure(Call<PacienteListResponse> call, Throwable t) {
                 if (!isAdded()) return;
                 Log.e("API", "Error de conexión", t);
-                Toast.makeText(getContext(), "Error de conexión al cargar pacientes", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void validarYGuardarActividad() {
-        if (spinnerPacientes.getText().toString().equals("Seleccione un paciente")) {
-            spinnerPacientes.setError("Seleccione un paciente");
-            return;
-        }
-
         String tipoActividad = etTipoActividad.getText().toString().trim();
         if (TextUtils.isEmpty(tipoActividad)) {
             etTipoActividad.setError("Ingrese el tipo de actividad");
@@ -289,12 +268,10 @@ public class AgregarActividadDialogFragment extends DialogFragment {
 
         String observaciones = etObservaciones.getText().toString().trim();
 
-        int selectedPosition = ((ArrayAdapter<String>) spinnerPacientes.getAdapter()).getPosition(spinnerPacientes.getText().toString());
-        if (selectedPosition <= 0 || selectedPosition > listaPacientes.size()) {
-            Toast.makeText(getContext(), "Error al obtener ID del paciente", Toast.LENGTH_SHORT).show();
+        if (pacienteId == -1) {
+            Toast.makeText(getContext(), "Error: Paciente no válido", Toast.LENGTH_SHORT).show();
             return;
         }
-        int idPaciente = listaPacientes.get(selectedPosition - 1).getId();
 
         String fechaISO = convertirFechaHoraISO(fechaSeleccionada, horaSeleccionada);
         if (fechaISO.isEmpty()) {
@@ -312,7 +289,7 @@ public class AgregarActividadDialogFragment extends DialogFragment {
                 observaciones
         );
 
-        guardarActividadEnAPI(idPaciente, request);
+        guardarActividadEnAPI(pacienteId, request);
     }
 
     private String convertirFechaHoraISO(String fecha, String hora) {
@@ -351,20 +328,10 @@ public class AgregarActividadDialogFragment extends DialogFragment {
                 if (response.isSuccessful() && response.body() != null) {
                     ActividadResponse actividadResponse = response.body();
                     if (actividadResponse.isSuccess()) {
-                        // Crear objeto Actividad para pasar al listener
-                        Actividad nuevaActividad = new Actividad(
-                                spinnerPacientes.getText().toString(),
-                                fechaSeleccionada,
-                                horaSeleccionada,
-                                etDescripcion.getText().toString(),
-                                spinnerIntensidad.getText().toString(),
-                                spinnerEstado.getText().toString()
-                        );
-
-                        if (listener != null) {
-                            listener.onActividadGuardada(nuevaActividad);
-                        }
                         Toast.makeText(getContext(), "Actividad creada exitosamente", Toast.LENGTH_SHORT).show();
+                        if (listener != null) {
+                            listener.onActividadGuardada();
+                        }
                         dismiss();
                     } else {
                         Toast.makeText(getContext(), "Error: " + actividadResponse.getMessage(), Toast.LENGTH_SHORT).show();

@@ -1,7 +1,7 @@
 package com.sena.qfinder.models;
 
 public class PerfilUsuarioResponse {
-
+    private String id_usuario;
     private String nombre_usuario;
     private String apellido_usuario;
     private String telefono_usuario;
@@ -36,5 +36,8 @@ public class PerfilUsuarioResponse {
 
     public String getIdentificacion_usuario() {
         return identificacion_usuario;
+    }
+    public String getId_usuario() {
+        return id_usuario;
     }
 }

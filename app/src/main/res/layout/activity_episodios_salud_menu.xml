@@ -68,13 +68,11 @@
             android:layout_marginHorizontal="16dp"
             android:background="?android:attr/listDivider" />
 
-        <Spinner
-            android:id="@+id/SeleccionarPaciente"
-            android:layout_width="wrap_content"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerPaciente"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:spinnerMode="dropdown"
-            android:layout_gravity="center"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="8dp" />
 
         <!-- Herramientas -->
         <LinearLayout

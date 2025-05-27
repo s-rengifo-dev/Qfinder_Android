@@ -252,12 +252,11 @@
 
         <!-- Imagen del QR -->
         <ImageView
-            android:id="@+id/imgQR"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:id="@+id/imgQrPaciente"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
             android:layout_gravity="center"
-            android:layout_marginTop="16dp"
-            android:src="@drawable/img_6" />
+            android:layout_marginTop="16dp" />
 
         <!-- Botón generar QR -->
         <LinearLayout
@@ -288,7 +287,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Generar QR"
+                        android:text="Actualizar QR"
                         android:textColor="@android:color/black"
                         android:textStyle="bold"
                         android:textSize="18dp"

@@ -3,9 +3,10 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#FFFFFF"
+    android:fitsSystemWindows="true"> <!-- Añade esto para manejar correctamente las ventanas del sistema -->
 
-    <!-- Encabezado -->
+    <!-- Encabezado - Añade margen superior para la Action Bar -->
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
@@ -13,7 +14,8 @@
         android:orientation="horizontal"
         android:background="#FFFFFF"
         android:padding="8dp"
-        android:elevation="4dp">
+        android:elevation="4dp"
+        android:layout_marginTop="?attr/actionBarSize"> <!-- Margen para la Action Bar -->
 
         <ImageView
             android:layout_width="40dp"
@@ -122,5 +124,4 @@
             android:textColor="#FFFFFF"
             android:layout_marginStart="8dp" />
     </LinearLayout>
-
 </LinearLayout>

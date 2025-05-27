@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- bg_status_completed.xml -->
+    <shape xmlns:android="http://schemas.android.com/apk/res/android">
+        <corners android:radius="4dp"/>
+        <solid android:color="@color/green"/>
+    </shape>
+
+    <!-- bg_status_pending.xml -->
+    <shape xmlns:android="http://schemas.android.com/apk/res/android">
+        <corners android:radius="4dp"/>
+        <solid android:color="@color/orange"/>
+    </shape>
+
+    <!-- bg_status_default.xml -->
+    <shape xmlns:android="http://schemas.android.com/apk/res/android">
+        <corners android:radius="4dp"/>
+        <solid android:color="@color/colorPrimary"/>
+    </shape>
+</selector>

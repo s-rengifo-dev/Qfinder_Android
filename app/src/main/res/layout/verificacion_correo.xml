@@ -15,22 +15,32 @@
         android:background="#66B2FF"
         android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/backButton"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
+        <FrameLayout
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:layout_marginStart="8dp"
-            android:contentDescription="Volver"
-            android:src="@drawable/flecha" />
+            android:background="@drawable/circle_white"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_gravity="center"
+                android:contentDescription="Volver"
+                android:src="@drawable/flecha"
+                android:scaleType="centerInside"/>
+        </FrameLayout>
 
         <TextView
             android:layout_width="335dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="-10dp"
             android:text="Verificar Código"
             android:textColor="@android:color/black"
-            android:textSize="25sp"
-            android:textStyle="bold" />
+            android:textSize="26sp"
+            android:gravity="center"
+             />
     </LinearLayout>
 
     <LinearLayout

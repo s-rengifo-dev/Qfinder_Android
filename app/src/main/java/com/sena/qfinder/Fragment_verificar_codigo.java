@@ -135,7 +135,7 @@ public class Fragment_verificar_codigo extends Fragment {
                     String token = null;
 
                     for (Cookie cookie : cookies) {
-                        if ("resetToken".equals(cookie.name())) {
+                        if ("token".equals(cookie.name())) {
                             token = cookie.value();
                             Log.d(TAG, "Token encontrado en cookies: " + token);
                             break;

@@ -11,6 +11,7 @@ public class PacienteResponse {
     private String diagnostico_principal;
     private boolean es_cuidador_principal;
     private String parentesco;
+    private String qrCode;
 
     // Getters y Setters
     public int getId() { return id; }
@@ -31,4 +32,7 @@ public class PacienteResponse {
     public void setEs_cuidador_principal(boolean es_cuidador_principal) { this.es_cuidador_principal = es_cuidador_principal; }
     public String getParentesco() { return parentesco; }
     public void setParentesco(String parentesco) { this.parentesco = parentesco; }
+
+    public String getQrCode() { return qrCode; }
+    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
 }

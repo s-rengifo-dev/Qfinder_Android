@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="180dp"
+    android:layout_width="160dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="12dp"
@@ -10,7 +10,6 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground">
-
 
     <TextView
         android:id="@+id/tvPatientName"
@@ -29,19 +28,36 @@
         android:background="@drawable/circle_bg"
         android:src="@drawable/perfil_paciente" />
 
-    <TextView
-        android:id="@+id/tvPatientRelation"
+    <!-- Horizontal container for the two columns -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:gravity="center"
-        android:text="Relación" />
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp">
 
-    <TextView
-        android:id="@+id/tvPatientConditions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:text="Condiciones"
-        android:layout_marginTop="4dp" />
+        <!-- Second column (Diagnosis) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Diagnóstico"
+                android:textSize="10sp"
+                android:textColor="@android:color/darker_gray"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/tvPatientConditions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:text="Condiciones" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

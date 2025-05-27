@@ -23,8 +23,7 @@ public class registro_salud extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
-    @Override
+    /*@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_registro_salud, container, false);
@@ -38,5 +37,5 @@ public class registro_salud extends Fragment {
         });
 
         return view;
-    }
+    }*/
 }

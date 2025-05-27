@@ -14,6 +14,28 @@
         <item name="android:padding">8dp</item>
         <item name="android:background">@android:color/white</item>
     </style>
+    <style name="MinimalProgressDialog" parent="ThemeOverlay.Material3.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.3</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+    </style>
+        <!-- ... tus otros estilos existentes ... -->
+
+        <!-- Añade estos nuevos estilos para el diálogo de progreso -->
+        <style name="MyProgressDialogTheme" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+            <item name="android:textColorPrimary">@color/black</item>
+            <item name="colorPrimary">@color/colorPrimary</item>
+            <item name="android:windowBackground">@android:color/transparent</item>
+            <item name="android:backgroundDimEnabled">true</item>
+            <item name="android:backgroundDimAmount">0.5</item>
+        </style>
+
+        <style name="ProgressDialog.TextAppearance" parent="TextAppearance.Material3.BodyMedium">
+            <item name="android:textColor">@color/black</item>
+            <item name="android:textSize">16sp</item>
+        </style>
 
     <!-- Estilo para tablas -->
     <style name="MyTableStyle">
@@ -89,4 +111,22 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
 
     </style>
+
+    <style name="table_header_cell">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="table_cell">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="CustomAlertDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="android:background">#F9F9F9</item>
+    </style>
+
 </resources>

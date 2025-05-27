@@ -7,58 +7,42 @@
     android:gravity="center_vertical">
 
     <TextView
+        android:layout_width="90dp"
         android:id="@+id/txtNombre"
         android:layout_weight="2"
-        android:text="Paciente"
-        android:layout_marginStart="7dp"
+        android:text="Actividad"
+        android:layout_marginStart="5dp"
         android:gravity="center"
         android:textColor="@color/black"
-        android:layout_width="0dp"
         android:layout_height="wrap_content" />
-
+    <TextView
+        android:id="@+id/txtActividad"
+        android:layout_weight="3"
+        android:text="Descripción"
+        android:layout_marginStart="10dp"
+        android:layout_gravity="center"
+        android:textColor="@color/black"
+        android:layout_width="85dp"
+        android:layout_height="wrap_content" />
     <TextView
         android:id="@+id/txtFecha"
         android:layout_weight="3"
         android:text="Fecha"
         android:layout_marginStart="18dp"
         android:textColor="@color/black"
-        android:layout_width="0dp"
+        android:layout_width="70dp"
         android:layout_height="wrap_content" />
 
     <TextView
+        android:layout_width="40dp"
         android:id="@+id/txtHora"
         android:layout_weight="2"
         android:text="Hora"
         android:gravity="center"
         android:layout_marginStart="10dp"
         android:textColor="@color/black"
-        android:layout_width="0dp"
         android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/txtActividad"
-        android:layout_weight="3"
-        android:text="Actividades"
-        android:layout_marginStart="10dp"
-        android:layout_gravity="center"
-        android:textColor="@color/black"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content" />
 
-    <ImageButton
-        android:id="@+id/btnEliminar"
-        android:layout_width="42dp"
-        android:layout_height="45dp"
-        android:padding="6dp"
-        android:src="@drawable/delete"
-        android:backgroundTint="#FF7575"/>
-
-    <ImageButton
-        android:id="@+id/btnEditar"
-        android:layout_width="42dp"
-        android:layout_height="45dp"
-        android:padding="6dp"
-        android:src="@drawable/vector"
-        android:backgroundTint="#2FFF6D"/>
 
 </LinearLayout>
