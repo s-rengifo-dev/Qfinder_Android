@@ -6,6 +6,7 @@ import com.sena.qfinder.models.ActividadResponse;
 import com.sena.qfinder.models.AsignacionMedicamentoResponse;
 import com.sena.qfinder.models.AsignarMedicamentoRequest;
 import com.sena.qfinder.models.AsignarMedicamentoResponse;
+import com.sena.qfinder.models.CitaMedica;
 import com.sena.qfinder.models.CodeVerificationRequest;
 import com.sena.qfinder.models.CodeVerificationResponse;
 import com.sena.qfinder.models.MedicamentoRequest;
@@ -83,6 +84,8 @@ public interface AuthService {
 
     @GET("api/paciente/listarPacientes")
     Call<PacienteListResponse> listarPacientes(@Header("Authorization") String token);
+    @GET("api/paciente/listarPacientes")
+    Call<PacienteListResponse> obtenerPacientes(@Header("Authorization") String token);
     @POST("api/auth/logout")
     Call<Void> logout();
 
@@ -159,6 +162,7 @@ public interface AuthService {
             @Header("Authorization") String token,
             @Path("id_paciente") int pacienteId
     );
+
     @GET("api/redes/listarRedes")
     Call<RedListResponse> listarRedes(@Header("Authorization") String token);
 
@@ -218,5 +222,40 @@ public interface AuthService {
     Call<RedResponse> obtenerIdRedPorNombre(
             @Header("Authorization") String token,
             @Query("nombre") String nombreRed
+    );
+
+    @POST("api/citaMedica/crearCita/{id_paciente}")
+    Call<CitaMedica> crearCitaMedica(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente,
+            @Body CitaMedica cita
+    );
+
+    @GET("api/citaMedica/listarCitas/{id_paciente}")
+    Call<List<CitaMedica>> listarCitasMedicas(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente
+    );
+
+    @GET("listarCitasId/{id_paciente}/{id_cita}")
+    Call<List<CitaMedica>> obtenerCitaPorId(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente,
+            @Path("id_cita") int idCita
+    );
+
+    @PUT("actualizarCita/{id_paciente}/{id_cita}")
+    Call<Void> actualizarCita(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente,
+            @Path("id_cita") int idCita,
+            @Body CitaMedica cita
+    );
+
+    @DELETE("eliminarCita/{id_paciente}/{id_cita}")
+    Call<Void> eliminarCita(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente,
+            @Path("id_cita") int idCita
     );
 }

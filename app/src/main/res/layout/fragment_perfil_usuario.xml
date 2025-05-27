@@ -10,10 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-
         <!-- Portada -->
-
-        <!-- Imagen de perfil centrada y superpuesta -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="220dp"
@@ -29,46 +26,10 @@
                 android:src="@drawable/img"
                 android:background="@drawable/circle_azul"
                 android:padding="10dp"
-                android:tint="@color/black"
                 android:contentDescription="Volver" />
 
             <!-- Botón editar (arriba a la derecha) -->
-            <ImageView
-                android:id="@+id/boton_imagen"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_marginTop="30dp"
-                android:layout_alignParentEnd="true"
-            android:src="@drawable/img_1"
-            app:tint="@color/black" />
-            <!-- Botón cerrar sesión (arriba a la izquierda) -->
 
-
-            <LinearLayout
-                android:id="@+id/ivLogout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginLeft="220dp"
-                android:layout_marginTop="-3dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/logout"
-                    android:tint="@color/black" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Cerrar sesión"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
         </RelativeLayout>
 
         <FrameLayout
@@ -77,7 +38,6 @@
             android:layout_marginTop="-60dp"
             android:gravity="center">
 
-            <!-- Contenedor horizontal para nombre y apellido -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -93,8 +53,7 @@
                     android:text="Nombre"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="@android:color/black"
-                    />
+                    android:textColor="@android:color/black" />
 
                 <TextView
                     android:id="@+id/tvApellido"
@@ -107,7 +66,6 @@
                     android:textColor="@android:color/black" />
             </LinearLayout>
 
-            <!-- Imagen de perfil superpuesta -->
             <FrameLayout
                 android:layout_width="130dp"
                 android:layout_height="130dp"
@@ -141,14 +99,41 @@
             </FrameLayout>
         </FrameLayout>
 
-
-
         <!-- Tarjetas de información personal -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="40dp">
+            android:padding="4dp">
+
+            <LinearLayout
+                android:id="@+id/btnEditar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:backgroundTint="#4B9AF6"
+                android:background="@drawable/rounded_blue_bg"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:layout_marginStart="287dp"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Editar"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/img_1" />
+            </LinearLayout>
+
 
             <!-- Teléfono -->
             <LinearLayout
@@ -174,8 +159,8 @@
                 <TextView
                     android:id="@+id/tvTelefono"
                     android:layout_width="wrap_content"
-                    android:textStyle="bold"
                     android:layout_height="wrap_content"
+                    android:textStyle="bold"
                     android:text="" />
             </LinearLayout>
 
@@ -265,6 +250,32 @@
                     android:textStyle="bold"
                     android:text="" />
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- Botón cerrar sesión (centrado debajo de identificación) -->
+        <LinearLayout
+            android:id="@+id/ivLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/logout"
+                android:tint="@color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cerrar sesión"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

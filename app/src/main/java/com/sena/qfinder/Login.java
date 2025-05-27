@@ -147,8 +147,14 @@ public class Login extends Fragment {
                     String token = response.body().getToken();
                     guardarDatosUsuario(email, token);
 
+
                     // Obtener el perfil completo del usuario para guardar el ID
                     obtenerPerfilUsuario(token);
+
+                    guardarDatosUsuario(email, response.body().getToken());
+
+                    iniciarSesionExitoso();
+
                 } else {
                     dismissProgressDialog();
                     Toast.makeText(getContext(), "Credenciales incorrectas", Toast.LENGTH_SHORT).show();

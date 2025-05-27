@@ -6,6 +6,7 @@
     <color name="fondoNotas">#F9F9F9</color>
     <color name="colorPrimary">#FF000000</color>
     <color name="iconInactive">#9E9E9E</color>
+    <color name="Botones">#4E9EFB</color>
     <color name="azulClaro">#A6218AFB</color>
     <color name="azulClaro2">#0772B8F8</color>
     <color name="azulBorder">#08053989</color>
@@ -33,7 +34,7 @@
     <color name="text_primary">#000000</color>
     <color name="text_secondary">#6200EE</color>
 
-
+    <color name="boton_borde_azul">#4E9EFB</color>
         <!-- Colores existentes -->
 
         <color name="colorPrimaryDark">#303F9F</color>

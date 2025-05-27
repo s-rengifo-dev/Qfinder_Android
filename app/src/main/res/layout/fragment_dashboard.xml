@@ -17,7 +17,7 @@
             android:layout_height="100dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="12dp"
             android:background="@drawable/top_nav_background"
             android:paddingStart="16dp"
             android:paddingEnd="16dp">
@@ -72,6 +72,7 @@
             <!-- ACTIVIDADES -->
             <TextView
                 android:id="@+id/tvActivitiesSectionTitle"
+                android:layout_marginBottom="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Actividades"
@@ -98,7 +99,8 @@
                     android:id="@+id/activitiesContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:layout_marginBottom="8dp">
 
                     <!-- EJEMPLO DE CARDVIEW PARA ACTIVIDADES (ESTE SE AÑADIRÁ DINÁMICAMENTE) -->
                     <androidx.cardview.widget.CardView
@@ -112,7 +114,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:padding="10dp">
 
                             <!-- Nombre del paciente arriba (Juan Carlos:) -->
                             <TextView

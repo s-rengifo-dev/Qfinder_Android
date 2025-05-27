@@ -6,7 +6,7 @@
     tools:context=".ListaAsignarMedicamentos">
 
     <!-- TODO: Update blank fragment layout -->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:id="@+id/layoutMedicamentos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,23 +14,25 @@
         android:background="#FFFFFF">
 
     <!-- Título -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#4B9AF6"
-        android:layout_marginBottom="25dp"
-        android:paddingVertical="10dp">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Medicamentos"
-        android:textColor="@color/black"
-        android:textSize="25sp"
-        android:fontFamily="sans-serif-black"
-        android:gravity="center"
-        />
-    </LinearLayout>
-    <Spinner
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="102dp"
+            android:layout_marginBottom="25dp"
+            android:background="#4B9AF6"
+            android:paddingVertical="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:gravity="center"
+                android:layout_marginTop="18sp"
+                android:text="Medicamentos"
+                android:textColor="@color/black"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <Spinner
         android:id="@+id/spinner_patients_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

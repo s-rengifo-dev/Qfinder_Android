@@ -1,5 +1,6 @@
 package com.sena.qfinder;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,10 +10,9 @@ import android.widget.LinearLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.sena.qfinder.ui.home.RecordatoriosFragment;
+import com.sena.qfinder.ui.home.CitasFragment;
 
 public class Fragment_Serivicios extends Fragment {
-
 
     public Fragment_Serivicios() {
         // Constructor requerido
@@ -23,14 +23,6 @@ public class Fragment_Serivicios extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment__serivicios, container, false);
 
-        //Llamamentos fragment medicamentos
-        LinearLayout cardGestionMedicamentos = view.findViewById(R.id.btnMedicamentos);
-        cardGestionMedicamentos.setOnClickListener(v -> {
-            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos());
-            transaction.addToBackStack(null); // Para poder volver atrás
-            transaction.commit();
-        });
 
         LinearLayout cardGestionPacientes = view.findViewById(R.id.cardGestionPacientes);
         cardGestionPacientes.setOnClickListener(v -> {
@@ -43,11 +35,8 @@ public class Fragment_Serivicios extends Fragment {
 
         LinearLayout cardRegistroSalud = view.findViewById(R.id.registrosalud);
         cardRegistroSalud.setOnClickListener(v -> {
-            // Reemplazar fragmento actual por GestionPacienteFragment
-            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new registro_salud()); // Asegúrate de que R.id.fragment_container exista
-            transaction.addToBackStack(null); // Para poder volver atrás
-            transaction.commit();
+            Intent intent = new Intent(getContext(), episodios_salud_menu.class); // Cambia RegistroSaludActivity por el nombre de tu actividad destino
+            startActivity(intent);
         });
 
         // Card para recordatorios
@@ -55,7 +44,7 @@ public class Fragment_Serivicios extends Fragment {
         cardRecordatorio.setOnClickListener(v -> {
             // Reemplazar fragmento actual por Actividad1Fragment
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new RecordatoriosFragment()); // Aquí carga el nuevo fragmento
+            transaction.replace(R.id.fragment_container, new CitasFragment()); // Aquí carga el nuevo fragmento
             transaction.addToBackStack(null); // Para poder volver atrás
             transaction.commit();
         });

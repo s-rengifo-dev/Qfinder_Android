@@ -8,7 +8,7 @@
     android:background="#FFFFFF"
     tools:context=".Actividad1Fragment">
 
-    <!-- Encabezado azul (se mantiene igual) -->
+    <!-- Encabezado azul -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="99dp">
@@ -28,10 +28,10 @@
             android:textStyle="bold"
             android:layout_centerInParent="true"
             android:layout_alignParentTop="true"
-            android:layout_marginTop="33dp"/>
+            android:layout_marginTop="35dp"/>
     </RelativeLayout>
 
-    <!-- Sección de selección de pacientes (reemplaza el Spinner) -->
+    <!-- Sección de selección de pacientes -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
             android:textSize="16sp"
             android:layout_marginBottom="8dp"/>
 
-        <!-- RecyclerView horizontal para las tarjetas de pacientes -->
+        <!-- RecyclerView horizontal para pacientes -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewPacientes"
             android:layout_width="match_parent"
@@ -57,7 +57,7 @@
             android:paddingEnd="8dp"/>
     </LinearLayout>
 
-    <!-- Tabla con RecyclerView (se mantiene igual) -->
+    <!-- Lista de actividades -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewActividades"
         android:layout_marginTop="16dp"
@@ -65,7 +65,7 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Botón agregar (mejorado con Material Design) -->
+    <!-- Botón para agregar actividad -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAgregarActividad"
         android:layout_width="wrap_content"
@@ -75,7 +75,7 @@
         android:layout_marginBottom="16dp"
         android:text="Agregar Actividad"
         android:textColor="#FFFFFF"
-        app:backgroundTint="#216AF4"
+        app:backgroundTint="@color/Botones"
         app:cornerRadius="8dp"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 </LinearLayout>

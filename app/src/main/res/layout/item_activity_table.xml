@@ -12,7 +12,6 @@
         android:id="@+id/activitiesTable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="6dp"
         android:stretchColumns="*"
         android:shrinkColumns="*"
         android:divider="@drawable/table_divider"

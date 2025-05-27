@@ -112,7 +112,7 @@
             android:text="Guardar"
             android:textAllCaps="false"
             android:textSize="18sp"
-            android:backgroundTint="@color/colorPrimary"
+            android:backgroundTint="@color/Botones"
             android:textColor="@android:color/white"/>
 
     </LinearLayout>

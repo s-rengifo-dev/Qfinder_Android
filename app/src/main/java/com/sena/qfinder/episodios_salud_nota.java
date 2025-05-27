@@ -24,6 +24,7 @@ import com.sena.qfinder.models.NotaEpisodioResponse;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,8 +39,8 @@ public class episodios_salud_nota extends AppCompatActivity {
     private EditText editTextFechaInicio, editTextFechaFin;
     private Button btnGuardar, btnGravedad;
 
-    private final Calendar calendarInicio = Calendar.getInstance();
-    private final Calendar calendarFin = Calendar.getInstance();
+    private final Calendar calendarInicio = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    private final Calendar calendarFin = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,12 +66,11 @@ public class episodios_salud_nota extends AppCompatActivity {
         editTextFechaInicio.setFocusable(false);
         editTextFechaFin.setFocusable(false);
 
-        // --------- RELLENAR AUTOMÁTICAMENTE FECHA INICIO ----------
         calendarInicio.setTimeInMillis(System.currentTimeMillis());
-        calendarInicio.add(Calendar.SECOND, -10); // restar 10 segundos para evitar error de fecha futura
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+        calendarInicio.add(Calendar.MINUTE, -2);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         editTextFechaInicio.setText(sdf.format(calendarInicio.getTime()));
-        // ----------------------------------------------------------
 
         final int[] estadoGravedad = {0};
         actualizarBotonGravedad(estadoGravedad[0]);
@@ -119,11 +119,10 @@ public class episodios_salud_nota extends AppCompatActivity {
                                 calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                                 calendar.set(Calendar.MINUTE, minute);
                                 calendar.set(Calendar.SECOND, 0);
+                                calendar.set(Calendar.MILLISECOND, 0);
 
-                                // Ajuste para evitar error con fecha "ligeramente futura"
-                                calendar.add(Calendar.MINUTE, -2);
-
-                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
+                                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
                                 campo.setText(sdf.format(calendar.getTime()));
                             },
                             calendar.get(Calendar.HOUR_OF_DAY),
@@ -145,9 +144,8 @@ public class episodios_salud_nota extends AppCompatActivity {
         String fechaInicio = editTextFechaInicio.getText().toString().trim();
         String fechaFin = editTextFechaFin.getText().toString().trim();
 
-        // Validaciones
-        if (descripcion.length() < 10) {
-            Toast.makeText(this, "La descripción debe tener al menos 10 caracteres", Toast.LENGTH_SHORT).show();
+        if (descripcion.length() < 5) {
+            Toast.makeText(this, "La descripción debe tener al menos 5 caracteres", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -157,26 +155,32 @@ public class episodios_salud_nota extends AppCompatActivity {
         }
 
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-            Calendar ahora = Calendar.getInstance();
-            Calendar inicioSeleccionado = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            Calendar ahora = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            Calendar inicioSeleccionado = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             inicioSeleccionado.setTime(sdf.parse(fechaInicio));
+            inicioSeleccionado.set(Calendar.SECOND, 0);
+            inicioSeleccionado.set(Calendar.MILLISECOND, 0);
 
             if (inicioSeleccionado.after(ahora)) {
-                Toast.makeText(this, "La fecha de inicio no puede ser en el futuro", Toast.LENGTH_SHORT).show();
-                return;
+                // Si la fecha de inicio es futura, la ajustamos a hace 5 segundos para evitar error 400
+                inicioSeleccionado.setTimeInMillis(ahora.getTimeInMillis() - 5000);
+                fechaInicio = sdf.format(inicioSeleccionado.getTime());
             }
 
             if (!fechaFin.isEmpty()) {
-                Calendar finSeleccionado = Calendar.getInstance();
+                Calendar finSeleccionado = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
                 finSeleccionado.setTime(sdf.parse(fechaFin));
+                finSeleccionado.set(Calendar.SECOND, 0);
+                finSeleccionado.set(Calendar.MILLISECOND, 0);
 
                 if (finSeleccionado.before(inicioSeleccionado)) {
                     Toast.makeText(this, "La fecha de fin no puede ser antes de la fecha de inicio", Toast.LENGTH_SHORT).show();
                     return;
                 }
             }
-
         } catch (Exception e) {
             Toast.makeText(this, "Error al validar fechas", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
@@ -198,10 +202,6 @@ public class episodios_salud_nota extends AppCompatActivity {
         int registradoPor = obtenerIdUsuarioRegistrado();
         String registradoPorRole = obtenerRolUsuarioRegistrado();
 
-        String tipo = "nota";
-        String origen = "usuario";
-        String fuenteDatos = "app_android";
-
         NotaEpisodioRequest nuevaNota = new NotaEpisodioRequest(
                 idPacienteSeleccionado,
                 fechaInicio,
@@ -211,9 +211,9 @@ public class episodios_salud_nota extends AppCompatActivity {
                 intervenciones.isEmpty() ? null : intervenciones,
                 registradoPor,
                 registradoPorRole,
-                origen,
-                fuenteDatos,
-                tipo
+                "usuario",
+                "app_android",
+                "nota"
         );
 
         AuthService authService = ApiClient.getClient().create(AuthService.class);
@@ -233,27 +233,25 @@ public class episodios_salud_nota extends AppCompatActivity {
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Log.e("API_ERROR", "Excepción al leer errorBody", e);
                     }
-
-                    String mensajeError = "Error al guardar la nota. Código: " + response.code() + " " + response.message() + "\n" + errorBody;
-                    Toast.makeText(episodios_salud_nota.this, mensajeError, Toast.LENGTH_LONG).show();
-                    Log.e("API_ERROR", mensajeError);
+                    Toast.makeText(episodios_salud_nota.this, "Error al guardar la nota: " + errorBody, Toast.LENGTH_LONG).show();
+                    Log.e("API_ERROR", "Respuesta no exitosa: " + response.code() + "\n" + errorBody);
                 }
             }
 
             @Override
             public void onFailure(Call<NotaEpisodioResponse> call, Throwable t) {
-                String mensajeError = "Error de red o fallo inesperado: " + t.getMessage();
-                Toast.makeText(episodios_salud_nota.this, mensajeError, Toast.LENGTH_LONG).show();
-                Log.e("API_FAILURE", mensajeError, t);
+                Toast.makeText(episodios_salud_nota.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.e("API_FAILURE", "Error en la llamada API", t);
             }
         });
     }
 
     private String obtenerTokenActual() {
-        SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
-        return prefs.getString("token", null);
+        SharedPreferences preferences = getSharedPreferences("MiPreferencias", MODE_PRIVATE);
+        String idUsuarioString = preferences.getString("id_usuario", "-1");
+        int idUsuario = Integer.parseInt(idUsuarioString);
+        return idUsuarioString;
     }
 
     private int obtenerIdUsuarioRegistrado() {

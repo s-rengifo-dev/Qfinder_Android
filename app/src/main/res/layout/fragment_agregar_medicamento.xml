@@ -71,7 +71,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end"
+        android:gravity="center"
+
         android:layout_marginTop="16dp">
 
         <Button
@@ -79,12 +80,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cancelar"
+
+            android:backgroundTint="@color/Botones"
             android:layout_marginEnd="8dp" />
 
         <Button
             android:id="@+id/btnGuardarMedicamento"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="@color/Botones"
             android:text="Guardar" />
 
     </LinearLayout>
