@@ -129,4 +129,14 @@
         <item name="android:background">#F9F9F9</item>
     </style>
 
+    <style name="CustomInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">#4E9EFB</item> <!-- Borde azul cuando está enfocado -->
+        <item name="boxBackgroundColor">#FFFFFF</item> <!-- Fondo blanco -->
+        <item name="hintTextColor">#4E9EFB</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:textColorHint">#4E9EFB</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+    </style>
+
 </resources>

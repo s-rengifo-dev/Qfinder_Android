@@ -6,7 +6,7 @@
     tools:context=".ListaMedicamentos">
 
     <!-- TODO: Update blank fragment layout -->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:id="@+id/layoutMedicamentos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,15 +20,15 @@
             android:background="#4B9AF6"
             android:layout_marginBottom="25dp"
             android:paddingVertical="10dp">
+
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="57dp"
+                android:gravity="center"
                 android:text="Medicamentos"
                 android:textColor="@color/black"
                 android:textSize="25sp"
-                android:fontFamily="sans-serif-black"
-                android:gravity="center"
-                />
+                android:textStyle="bold" />
         </LinearLayout>
         <ScrollView
             android:layout_width="match_parent"
@@ -79,7 +79,7 @@
                 android:background="#CFE3FF">
 
                 <!-- Encabezados -->
-                <TableRow android:background="#4787FF">
+                <TableRow android:background="@color/azulitoPrincipio">
                     <TextView android:text="Medicamento" android:textSize="15sp" android:textColor="@color/black" />
                     <TextView android:text="Dosis" android:textSize="15sp" android:textColor="@color/black" />
                     <TextView android:text="Descripción" android:textSize="15sp" android:textColor="@color/black" />
@@ -93,7 +93,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Agregar medicamento"
-                android:backgroundTint="#005BEA"
+                android:backgroundTint="@color/Botones"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"

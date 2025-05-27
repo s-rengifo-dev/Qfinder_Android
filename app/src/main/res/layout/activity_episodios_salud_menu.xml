@@ -142,7 +142,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="36dp"
-        android:src="@drawable/nuevoregistro"
-        android:backgroundTint="@color/fondo"
+        android:src="@drawable/img_9"
+        android:backgroundTint="#1279E2"
+        android:tint="@android:color/white"
         android:contentDescription="Agregar nuevo registro" />
 </FrameLayout>

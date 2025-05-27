@@ -116,7 +116,7 @@
             android:text="Guardar"
             android:textColor="#FFFFFF"
             android:textAllCaps="false"
-            android:backgroundTint="#4285F4"
+            android:backgroundTint="@color/Botones"
             android:paddingVertical="12dp" />
     </LinearLayout>
 </ScrollView>

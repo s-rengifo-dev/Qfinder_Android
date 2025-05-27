@@ -113,8 +113,13 @@ public class RegistrarPaciente extends Fragment {
                     editFechaNacimiento.clearFocus();
                 }, year, month, day);
 
+        // 🔒 Impedir seleccionar el mismo día o fechas futuras
+        calendar.add(Calendar.DAY_OF_MONTH, -1); // Resta un día para excluir hoy
+        datePickerDialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
+
         datePickerDialog.show();
     }
+
 
     private void registrarPaciente() {
         String nombre = editNombre.getText().toString().trim();

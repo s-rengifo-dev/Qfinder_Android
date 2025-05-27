@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:text="Nombre del Usuario"
-            android:textColor="#E53935" />
+            android:textColor="@color/azulito" />
 
         <TextView
             android:id="@+id/txtContenidoMensaje"

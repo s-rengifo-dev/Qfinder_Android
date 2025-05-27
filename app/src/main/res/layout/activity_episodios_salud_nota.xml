@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".EpisodiosSaludNotaActivity">
+    tools:context=".episodios_salud_nota">
 
     <!-- ScrollView con todo el contenido -->
     <ScrollView
@@ -82,7 +82,7 @@
                     android:id="@+id/gravedad"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginLeft="5dp"
                     android:backgroundTint="@color/baja"
                     android:text="Baja"
                     android:textAlignment="center"
@@ -90,11 +90,11 @@
                     android:textSize="12sp"/>
 
                 <Button
-                    android:id="@+id/btnGuardar"
+                    android:id="@+id/GuardarNota"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
-                    android:backgroundTint="@color/azulClaro"
+                    android:layout_marginLeft="5dp"
+                    android:backgroundTint="@color/Botones"
                     android:text="Guardar"
                     android:textStyle="bold"
                     android:textAlignment="center"
