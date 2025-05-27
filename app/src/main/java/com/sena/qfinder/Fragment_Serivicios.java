@@ -9,7 +9,7 @@ import android.widget.LinearLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.sena.qfinder.ui.home.RecordatoriosFragment;
+import com.sena.qfinder.ui.home.CitasFragment;
 
 public class Fragment_Serivicios extends Fragment {
 
@@ -55,7 +55,7 @@ public class Fragment_Serivicios extends Fragment {
         cardRecordatorio.setOnClickListener(v -> {
             // Reemplazar fragmento actual por Actividad1Fragment
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new RecordatoriosFragment()); // Aquí carga el nuevo fragmento
+            transaction.replace(R.id.fragment_container, new CitasFragment()); // Aquí carga el nuevo fragmento
             transaction.addToBackStack(null); // Para poder volver atrás
             transaction.commit();
         });

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="opciones_orden">
+        <item>Más recientes</item>
+        <item>Más antiguos</item>
+        <item>Alfabéticamente</item>
+    </string-array>
+    <string-array name="estados_cita">
+        <item>Programada</item>
+        <item>Completada</item>
+        <item>Cancelada</item>
+    </string-array>
+</resources>

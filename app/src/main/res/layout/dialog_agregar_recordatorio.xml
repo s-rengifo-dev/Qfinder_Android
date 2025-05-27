@@ -3,66 +3,76 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="16dp">
 
-    android:elevation="8dp">
-    <!-- android:background="@drawable/bg_dialog_white" -->
-    <!-- Spinner para tipo de recordatorio -->
-    <Spinner
-        android:id="@+id/spinnerTipo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/tipos_recordatorio"/>
-
-    <!-- Campo Título -->
-    <EditText
-        android:id="@+id/etTitulo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Título" />
-
-    <!-- Fecha y hora (de momento como texto o luego con date picker) -->
     <TextView
-        android:id="@+id/tvFechaHora"
+        android:id="@+id/tvTituloDialogo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=" 1 de mayo 2025 - 10:00 am"
-        android:drawableStart="@drawable/baseline_access_time_24"
-        android:padding="8dp"/>
+        android:text="Nueva cita"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
 
-    <!-- Checkboxes -->
-
-    <CheckBox
-        android:id="@+id/checkUnDiaAntes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableStart="@drawable/baseline_add_alert_24"
-        android:text="Recordarme 1 día antes"
-        />
-
-    <CheckBox
-        android:id="@+id/checkMismoDia"
-        android:drawableStart="@drawable/ic_calendar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Programar para recordar el mismo día" />
-
-    <!-- Descripción -->
-    <EditText
-        android:id="@+id/etDescripcion"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:hint="Descripción"
-        android:gravity="top"
-        android:inputType="textMultiLine" />
-
-    <!-- Botón Guardar -->
-    <Button
-        android:id="@+id/btnGuardar"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Guardar"
-        android:layout_gravity="center"
-        android:backgroundTint="#1983ff"
-        android:textColor="#fff"/>
+        android:layout_marginBottom="8dp"
+        android:hint="Título">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences"
+            android:maxLength="100"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="Descripción">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine|textCapSentences"
+            android:lines="3"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Estado"
+        android:layout_marginBottom="4dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerEstado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btnCancelar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancelar"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btnGuardar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Guardar"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/colorPrimary"/>
+    </LinearLayout>
 </LinearLayout>
