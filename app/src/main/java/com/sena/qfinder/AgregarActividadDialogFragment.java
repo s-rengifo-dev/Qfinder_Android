@@ -1,10 +1,14 @@
 package com.sena.qfinder;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -28,6 +32,7 @@ import com.sena.qfinder.models.ActividadRequest;
 import com.sena.qfinder.models.ActividadResponse;
 import com.sena.qfinder.models.PacienteListResponse;
 import com.sena.qfinder.models.PacienteResponse;
+import com.sena.qfinder.ui.home.ActivityAlarmReceiver;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -329,6 +334,16 @@ public class AgregarActividadDialogFragment extends DialogFragment {
                     ActividadResponse actividadResponse = response.body();
                     if (actividadResponse.isSuccess()) {
                         Toast.makeText(getContext(), "Actividad creada exitosamente", Toast.LENGTH_SHORT).show();
+
+                        // Programar alarma solo si el estado es "pendiente"
+                        if ("pendiente".equals(request.getEstado())) {
+                            programarAlarma(actividadResponse.getData().getIdPaciente(),
+                                    request.getTipoActividad(),
+                                    request.getDescripcion(),
+                                    fechaSeleccionada,
+                                    horaSeleccionada);
+                        }
+
                         if (listener != null) {
                             listener.onActividadGuardada();
                         }
@@ -347,6 +362,67 @@ public class AgregarActividadDialogFragment extends DialogFragment {
                 Log.e("API", "Error al crear actividad", t);
             }
         });
+    }
+
+    private void programarAlarma(int actividadId, String titulo, String descripcion, String fecha, String hora) {
+        try {
+            // Convertir fecha y hora a milisegundos
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            Date date = sdf.parse(fecha + " " + hora);
+
+            if (date == null) {
+                Log.e("Alarma", "Fecha/hora inválida");
+                return;
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+
+            // Crear intent para el BroadcastReceiver
+            Intent intent = new Intent(requireContext(), ActivityAlarmReceiver.class);
+            intent.putExtra("actividad_id", actividadId);
+            intent.putExtra("titulo", titulo);
+            intent.putExtra("descripcion", descripcion);
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    requireContext(),
+                    actividadId, // Usamos el ID de la actividad como requestCode
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            // Obtener el AlarmManager
+            AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(Context.ALARM_SERVICE);
+
+            if (alarmManager != null) {
+                // Configurar la alarma según la versión de Android
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            calendar.getTimeInMillis(),
+                            pendingIntent
+                    );
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    alarmManager.setExact(
+                            AlarmManager.RTC_WAKEUP,
+                            calendar.getTimeInMillis(),
+                            pendingIntent
+                    );
+                } else {
+                    alarmManager.set(
+                            AlarmManager.RTC_WAKEUP,
+                            calendar.getTimeInMillis(),
+                            pendingIntent
+                    );
+                }
+
+                Log.d("Alarma", "Alarma programada para: " + calendar.getTime());
+                Toast.makeText(getContext(), "Recordatorio programado", Toast.LENGTH_SHORT).show();
+            }
+        } catch (ParseException e) {
+            Log.e("Alarma", "Error al programar alarma", e);
+            Toast.makeText(getContext(), "Error al programar recordatorio", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

@@ -11,7 +11,6 @@ public class QfinderApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Inicializar Firebase
         try {
             if (FirebaseApp.getApps(this).isEmpty()) {
                 FirebaseApp.initializeApp(this);

@@ -2,6 +2,7 @@ package com.sena.qfinder;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.sena.qfinder.api.ApiClient;
 import com.sena.qfinder.api.AuthService;
+import com.sena.qfinder.controller.MainActivity;
 import com.sena.qfinder.models.NotaEpisodioRequest;
 import com.sena.qfinder.models.NotaEpisodioResponse;
 
@@ -55,7 +57,19 @@ public class episodios_salud_nota extends AppCompatActivity {
         });
 
         idPacienteSeleccionado = getIntent().getIntExtra("id_paciente", -1);
+        if (idPacienteSeleccionado == -1) {
+            Toast.makeText(this, "Error: No se ha seleccionado un paciente", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
+        inicializarVistas();
+        configurarFechaInicioPredeterminada();
+        configurarBotonGravedad();
+        configurarListeners();
+    }
+
+    private void inicializarVistas() {
         btnGravedad = findViewById(R.id.gravedad);
         btnGuardar = findViewById(R.id.btnGuardar);
         editTextDescripcion = findViewById(R.id.editTextDescripcion);
@@ -65,13 +79,17 @@ public class episodios_salud_nota extends AppCompatActivity {
 
         editTextFechaInicio.setFocusable(false);
         editTextFechaFin.setFocusable(false);
+    }
 
+    private void configurarFechaInicioPredeterminada() {
         calendarInicio.setTimeInMillis(System.currentTimeMillis());
         calendarInicio.add(Calendar.MINUTE, -2);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         editTextFechaInicio.setText(sdf.format(calendarInicio.getTime()));
+    }
 
+    private void configurarBotonGravedad() {
         final int[] estadoGravedad = {0};
         actualizarBotonGravedad(estadoGravedad[0]);
 
@@ -80,10 +98,11 @@ public class episodios_salud_nota extends AppCompatActivity {
             if (estadoGravedad[0] > 2) estadoGravedad[0] = 0;
             actualizarBotonGravedad(estadoGravedad[0]);
         });
+    }
 
+    private void configurarListeners() {
         editTextFechaInicio.setOnClickListener(v -> mostrarSelectorFechaHora(editTextFechaInicio, calendarInicio));
         editTextFechaFin.setOnClickListener(v -> mostrarSelectorFechaHora(editTextFechaFin, calendarFin));
-
         btnGuardar.setOnClickListener(v -> guardarNota());
     }
 
@@ -139,19 +158,37 @@ public class episodios_salud_nota extends AppCompatActivity {
     }
 
     private void guardarNota() {
+        if (!validarCampos()) {
+            return;
+        }
+
+        String token = obtenerTokenConVerificacion();
+        if (token == null) {
+            return;
+        }
+
+        int userId = obtenerIdUsuarioRegistrado();
+        if (userId == -1) {
+            Toast.makeText(this, "No se pudo identificar al usuario", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        crearYEnviarNota(token, userId);
+    }
+
+    private boolean validarCampos() {
         String descripcion = editTextDescripcion.getText().toString().trim();
-        String intervenciones = editTextIntervenciones.getText().toString().trim();
         String fechaInicio = editTextFechaInicio.getText().toString().trim();
         String fechaFin = editTextFechaFin.getText().toString().trim();
 
         if (descripcion.length() < 5) {
             Toast.makeText(this, "La descripción debe tener al menos 5 caracteres", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
 
         if (fechaInicio.isEmpty()) {
             Toast.makeText(this, "Seleccione la fecha y hora de inicio", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
 
         try {
@@ -165,9 +202,8 @@ public class episodios_salud_nota extends AppCompatActivity {
             inicioSeleccionado.set(Calendar.MILLISECOND, 0);
 
             if (inicioSeleccionado.after(ahora)) {
-                // Si la fecha de inicio es futura, la ajustamos a hace 5 segundos para evitar error 400
                 inicioSeleccionado.setTimeInMillis(ahora.getTimeInMillis() - 5000);
-                fechaInicio = sdf.format(inicioSeleccionado.getTime());
+                editTextFechaInicio.setText(sdf.format(inicioSeleccionado.getTime()));
             }
 
             if (!fechaFin.isEmpty()) {
@@ -178,29 +214,24 @@ public class episodios_salud_nota extends AppCompatActivity {
 
                 if (finSeleccionado.before(inicioSeleccionado)) {
                     Toast.makeText(this, "La fecha de fin no puede ser antes de la fecha de inicio", Toast.LENGTH_SHORT).show();
-                    return;
+                    return false;
                 }
             }
         } catch (Exception e) {
             Toast.makeText(this, "Error al validar fechas", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-            return;
+            Log.e("VALIDACION_FECHAS", "Error al validar fechas", e);
+            return false;
         }
 
-        if (idPacienteSeleccionado == -1) {
-            Toast.makeText(this, "Error: paciente no seleccionado", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        return true;
+    }
 
-        String tokenGuardado = obtenerTokenActual();
-        if (tokenGuardado == null) {
-            Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String token = "Bearer " + tokenGuardado;
-
-        int registradoPor = obtenerIdUsuarioRegistrado();
-        String registradoPorRole = obtenerRolUsuarioRegistrado();
+    private void crearYEnviarNota(String token, int userId) {
+        String descripcion = editTextDescripcion.getText().toString().trim();
+        String intervenciones = editTextIntervenciones.getText().toString().trim();
+        String fechaInicio = editTextFechaInicio.getText().toString().trim();
+        String fechaFin = editTextFechaFin.getText().toString().trim();
+        String rolUsuario = obtenerRolUsuarioRegistrado();
 
         NotaEpisodioRequest nuevaNota = new NotaEpisodioRequest(
                 idPacienteSeleccionado,
@@ -209,8 +240,8 @@ public class episodios_salud_nota extends AppCompatActivity {
                 nivelGravedadActual,
                 descripcion,
                 intervenciones.isEmpty() ? null : intervenciones,
-                registradoPor,
-                registradoPorRole,
+                userId,
+                rolUsuario,
                 "usuario",
                 "app_android",
                 "nota"
@@ -222,20 +253,16 @@ public class episodios_salud_nota extends AppCompatActivity {
         call.enqueue(new Callback<NotaEpisodioResponse>() {
             @Override
             public void onResponse(Call<NotaEpisodioResponse> call, Response<NotaEpisodioResponse> response) {
+                if (response.code() == 401) {
+                    manejarTokenInvalido();
+                    return;
+                }
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(episodios_salud_nota.this, "Nota guardada correctamente", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
-                    String errorBody = "";
-                    try {
-                        if (response.errorBody() != null) {
-                            errorBody = response.errorBody().string();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    Toast.makeText(episodios_salud_nota.this, "Error al guardar la nota: " + errorBody, Toast.LENGTH_LONG).show();
-                    Log.e("API_ERROR", "Respuesta no exitosa: " + response.code() + "\n" + errorBody);
+                    manejarErrorRespuesta(response);
                 }
             }
 
@@ -247,20 +274,81 @@ public class episodios_salud_nota extends AppCompatActivity {
         });
     }
 
-    private String obtenerTokenActual() {
-        SharedPreferences preferences = getSharedPreferences("MiPreferencias", MODE_PRIVATE);
-        String idUsuarioString = preferences.getString("id_usuario", "-1");
-        int idUsuario = Integer.parseInt(idUsuarioString);
-        return idUsuarioString;
+    private void manejarErrorRespuesta(Response<NotaEpisodioResponse> response) {
+        String errorBody = "";
+        try {
+            if (response.errorBody() != null) {
+                errorBody = response.errorBody().string();
+            }
+        } catch (Exception e) {
+            Log.e("API_ERROR", "Error al leer errorBody", e);
+        }
+
+        String mensajeError = "Error al guardar la nota";
+        if (!errorBody.isEmpty()) {
+            mensajeError += ": " + errorBody;
+        }
+
+        Toast.makeText(this, mensajeError, Toast.LENGTH_LONG).show();
+        Log.e("API_ERROR", "Respuesta no exitosa: " + response.code() + "\n" + errorBody);
+    }
+
+    private String obtenerTokenConVerificacion() {
+        SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
+        String token = prefs.getString("token", null);
+
+        if (token == null || token.isEmpty()) {
+            Toast.makeText(this, "Sesión expirada. Por favor inicie sesión nuevamente.", Toast.LENGTH_SHORT).show();
+            redirigirALogin();
+            return null;
+        }
+
+        return "Bearer " + token;
     }
 
     private int obtenerIdUsuarioRegistrado() {
         SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
-        return prefs.getInt("id_usuario", -1);
+
+        // Primero intentamos obtener como String (formato más común)
+        String idString = prefs.getString("id_usuario", null);
+        if (idString != null) {
+            try {
+                return Integer.parseInt(idString);
+            } catch (NumberFormatException e) {
+                Log.e("USER_ID", "Error al convertir ID de usuario a int: " + idString, e);
+            }
+        }
+
+        // Si no está como String o falla la conversión, intentamos como int
+        try {
+            return prefs.getInt("id_usuario", -1);
+        } catch (ClassCastException e) {
+            Log.e("USER_ID", "Error al obtener ID como int", e);
+            return -1;
+        }
     }
 
     private String obtenerRolUsuarioRegistrado() {
         SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
         return prefs.getString("rol_usuario", "Usuario");
+    }
+
+    private void manejarTokenInvalido() {
+        Toast.makeText(this, "Sesión expirada. Por favor inicie sesión nuevamente.", Toast.LENGTH_SHORT).show();
+        limpiarSesionYRedirigir();
+    }
+
+    private void limpiarSesionYRedirigir() {
+        SharedPreferences.Editor editor = getSharedPreferences("usuario", MODE_PRIVATE).edit();
+        editor.clear();
+        editor.apply();
+        redirigirALogin();
+    }
+
+    private void redirigirALogin() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 }
