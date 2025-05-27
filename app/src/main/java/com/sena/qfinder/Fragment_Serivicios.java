@@ -60,6 +60,16 @@ public class Fragment_Serivicios extends Fragment {
             transaction.commit();
         });
 
+        // Card para recordatorios
+        LinearLayout cardMedicamentos = view.findViewById(R.id.btnMedicamentos);
+        cardMedicamentos.setOnClickListener(v -> {
+            // Reemplazar fragmento actual por Actividad1Fragment
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos()); // Aquí carga el nuevo fragmento
+            transaction.addToBackStack(null); // Para poder volver atrás
+            transaction.commit();
+        });
+
 
 
         return view;

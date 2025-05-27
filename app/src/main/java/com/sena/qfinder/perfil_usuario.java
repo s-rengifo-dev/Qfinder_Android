@@ -36,8 +36,8 @@ public class perfil_usuario extends Fragment implements EditarUsuarioDialogFragm
 
     private TextView tvNombre, tvApellido, tvTelefono, tvCorreo, tvDireccion, tvIdentificacion;
     private LinearLayout cerrarSesion;
-
-    private ImageView logoEditar,btnBack;
+    private LinearLayout logoEditar;  // Antes era ImageView
+    private ImageView btnBack;
 
     private AuthService authService;
     private Call<PerfilUsuarioResponse> perfilCall;
@@ -61,7 +61,7 @@ public class perfil_usuario extends Fragment implements EditarUsuarioDialogFragm
         btnBack = view.findViewById(R.id.btnBack);
 
         cerrarSesion = view.findViewById(R.id.ivLogout);
-        logoEditar = view.findViewById(R.id.boton_imagen);
+        logoEditar = view.findViewById(R.id.btnEditar);
 
         setupRetrofit();
         cargarPerfil();
