@@ -68,7 +68,7 @@ public class episodios_salud_menu extends AppCompatActivity {
         listViewNotas = findViewById(R.id.listViewNotas);
         cantidadRegistros = findViewById(R.id.cantidadRegistros);
         searchInput = findViewById(R.id.searchInput);
-        recyclerPacientes = findViewById(R.id.recyclerPacientes);
+        recyclerPacientes = findViewById(R.id.recyclerPaciente);
 
         notaAdapter = new NotaEpisodioAdapter(this, notasFiltradas);
         listViewNotas.setAdapter(notaAdapter);
