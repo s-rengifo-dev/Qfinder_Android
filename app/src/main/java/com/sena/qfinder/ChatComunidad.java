@@ -14,9 +14,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,13 +26,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sena.qfinder.api.AuthService;
 import com.sena.qfinder.api.ChatService;
 import com.sena.qfinder.models.Mensaje;
 import com.sena.qfinder.models.RedResponse;
+import com.sena.qfinder.ui.home.DashboardFragment;
 
 import org.json.JSONObject;
 
@@ -69,6 +75,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     private EditText etMensaje;
     private Button btnEnviar;
     private Button btnUnirmeComunidad;
+    private ImageView volverComunidad;
     private TextView txtTitulo;
 
     private ChatService chatService;
@@ -118,11 +125,17 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             return view;
         }
 
+        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.GONE);
+        }
+
         setupViews(view);
         setupRecyclerView();
         setupButtons();
+        setupBackButton();
         configurarEstadoInicial();
-        configurarTeclado(view);
+        configurarComportamientoTeclado();
 
         return view;
     }
@@ -135,6 +148,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         btnEnviar = view.findViewById(R.id.btnEnviar);
         btnUnirmeComunidad = view.findViewById(R.id.btnUnirmeComunidad);
         txtTitulo = view.findViewById(R.id.txtTitulo);
+        volverComunidad=view.findViewById(R.id.btnvolver);
 
         if (nombreComunidad != null) {
             txtTitulo.setText(nombreComunidad);
@@ -147,6 +161,12 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         recyclerView.setAdapter(mensajeAdapter);
     }
 
+
+    private void setupBackButton() {
+        if (volverComunidad != null) {
+            volverComunidad.setOnClickListener(v -> navigateBack());
+        }
+    }
     private void setupButtons() {
         btnEnviar.setOnClickListener(v -> {
             if (validarSesion()) {
@@ -169,20 +189,29 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         });
     }
 
-    private void configurarTeclado(View rootView) {
+    private void configurarComportamientoTeclado() {
+        requireActivity().getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        final View rootView = getView();
+        if (rootView == null) return;
+
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            private int previousKeyboardHeight = -1;
+
             @Override
             public void onGlobalLayout() {
                 Rect r = new Rect();
                 rootView.getWindowVisibleDisplayFrame(r);
                 int screenHeight = rootView.getRootView().getHeight();
-                int keypadHeight = screenHeight - r.bottom;
+                int keyboardHeight = screenHeight - r.bottom;
 
-                if (keypadHeight > screenHeight * 0.15) {
-                    if (mensajesActivos.size() > 0) {
-                        recyclerView.postDelayed(() -> {
-                            recyclerView.smoothScrollToPosition(mensajesActivos.size() - 1);
-                        }, 100);
+                if (Math.abs(keyboardHeight - previousKeyboardHeight) > 100 || previousKeyboardHeight == -1) {
+                    previousKeyboardHeight = keyboardHeight;
+
+                    if (keyboardHeight > screenHeight * 0.15) {
+                        // Teclado visible
+                        scrollToBottomWithDelay(150);
                     }
                 }
             }
@@ -437,10 +466,38 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             mensajesActivos.clear();
             mensajesActivos.addAll(mensajes);
             mensajeAdapter.notifyDataSetChanged();
+            scrollToBottomImmediately();
 
             if (mensajesActivos.size() > 0) {
                 recyclerView.scrollToPosition(mensajesActivos.size() - 1);
             }
+        });
+    }
+
+    private void scrollToBottomWithDelay(int delayMillis) {
+        if (mensajesActivos.isEmpty()) return;
+
+        recyclerView.postDelayed(() -> {
+            // Usa scrollToPosition para un movimiento instantáneo
+            recyclerView.scrollToPosition(mensajesActivos.size() - 1);
+
+            // O si prefieres smoothScroll:
+            // recyclerView.smoothScrollToPosition(mensajesActivos.size() - 1);
+        }, delayMillis);
+    }
+
+    private void scrollToBottomImmediately() {
+        if (mensajesActivos.isEmpty()) return;
+
+        recyclerView.post(() -> {
+            recyclerView.scrollToPosition(mensajesActivos.size() - 1);
+            recyclerView.post(() -> {
+                View lastItem = recyclerView.getLayoutManager().findViewByPosition(mensajesActivos.size() - 1);
+                if (lastItem != null) {
+                    int target = lastItem.getBottom() + recyclerView.getPaddingBottom();
+                    recyclerView.smoothScrollBy(0, target - recyclerView.getHeight());
+                }
+            });
         });
     }
 
@@ -462,6 +519,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                             existente.setEstado("enviado");
                             existente.setHora(mensaje.getHora());
                             mensajeAdapter.notifyItemChanged(i);
+                            scrollToBottomImmediately();
                         }
                         break;
                     }
@@ -504,6 +562,8 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             Log.d(TAG, "Mensaje enviado con éxito");
         });
     }
+
+
 
     private void mostrarOpcionUnirse() {
         requireActivity().runOnUiThread(() -> {
@@ -621,6 +681,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             mensajesActivos.add(nuevoMensaje);
             mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
             recyclerView.scrollToPosition(mensajesActivos.size() - 1);
+            scrollToBottomImmediately();
 
             chatService.enviarMensaje(nuevoMensaje);
             Log.d(TAG, "Mensaje local agregado con ID: " + mensajeId);
@@ -679,10 +740,21 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (chatService != null) {
-            chatService.cleanup();
+    public void onDestroyView() {
+        super.onDestroyView();
+        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+        }
+    }
+    private void navigateBack() {
+        FragmentManager fragmentManager = getParentFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack();
+        } else {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.fragment_container, new Comunidad());
+            transaction.commit();
         }
     }
 }

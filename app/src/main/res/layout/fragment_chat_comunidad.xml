@@ -1,38 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
     android:fitsSystemWindows="true">
 
-    <!-- Encabezado fijo en la parte superior -->
+    <!-- Header -->
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_alignParentTop="true"
-        android:orientation="horizontal"
         android:background="#FFFFFF"
-        android:padding="8dp"
-        android:elevation="4dp">
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <ImageView
+            android:id="@+id/btnvolver"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/flecha"/>
 
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/imgcomunidad"
-            android:layout_gravity="center_vertical" />
+            android:layout_marginLeft="20sp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/imgcomunidad" />
 
         <TextView
             android:id="@+id/txtTitulo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:layout_gravity="center_vertical"
-            android:paddingStart="8dp" />
+            android:layout_weight="1"
+            android:paddingStart="8dp"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/btnInfo"
@@ -51,13 +57,13 @@
             android:id="@+id/btnUnirmeComunidad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Unirme"
-            android:textSize="12sp"
             android:backgroundTint="#D6EFFF"
-            android:textColor="#007AFF" />
+            android:text="Unirme"
+            android:textColor="#007AFF"
+            android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- RecyclerView para los mensajes -->
+    <!-- RecyclerView para mensajes -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerChat"
         android:layout_width="match_parent"
@@ -68,42 +74,41 @@
         android:padding="8dp"
         android:scrollbars="vertical"/>
 
-    <!-- Contenedor para input y aviso -->
+    <!-- Contenedor de input FIJO -->
     <LinearLayout
         android:id="@+id/layoutInputContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:elevation="8dp"
         android:orientation="vertical">
 
-        <!-- Aviso para unirse -->
         <LinearLayout
             android:id="@+id/layoutAviso"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:background="#F5F5F5"
-            android:padding="12dp"
-            android:gravity="center">
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="12dp">
 
             <TextView
                 android:id="@+id/txtAviso"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:text="Únete a esta comunidad para poder interactuar con los demás miembros"
-                android:textSize="12sp"
                 android:textColor="#888888"
-                android:gravity="center" />
+                android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Layout para enviar mensajes -->
         <LinearLayout
             android:id="@+id/layoutEnviarMensaje"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="#FFFFFF"
             android:orientation="horizontal"
             android:padding="8dp"
-            android:background="#FFFFFF"
             android:visibility="gone">
 
             <EditText
@@ -111,21 +116,21 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Escribe un mensaje"
                 android:background="@drawable/bg_card"
-                android:padding="10dp"
+                android:hint="Escribe un mensaje"
                 android:imeOptions="actionSend"
                 android:inputType="textCapSentences|textMultiLine"
-                android:maxLines="3"/>
+                android:maxLines="3"
+                android:padding="10dp" />
 
             <Button
                 android:id="@+id/btnEnviar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enviar"
+                android:layout_marginStart="8dp"
                 android:backgroundTint="#4AA8F6"
-                android:textColor="#FFFFFF"
-                android:layout_marginStart="8dp"/>
+                android:text="Enviar"
+                android:textColor="#FFFFFF" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
