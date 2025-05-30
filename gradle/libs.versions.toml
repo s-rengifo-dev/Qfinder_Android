@@ -16,7 +16,9 @@ constraintlayout = "2.1.4"
 materialVersion = "1.7.0"
 retrofit = "2.9.0"
 threetenabp = "1.4.5"
-googleServices = "4.4.1" # Añade esta línea
+googleServices = "4.4.1"
+firebaseStorage = "21.0.2"
+firebaseAppcheckDebug = "18.0.0" # Añade esta línea
 [libraries]
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
 firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
@@ -33,6 +35,8 @@ material-v170 = { module = "com.google.android.material:material", version.ref =
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit2-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
+firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug", version.ref = "firebaseAppcheckDebug" }
 
 [plugins]
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

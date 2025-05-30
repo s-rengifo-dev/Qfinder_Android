@@ -20,25 +20,47 @@ public class PacienteRequest {
     @SerializedName("identificacion")
     private String identificacion;
 
-    // Constructor
+    @SerializedName("imagen_paciente")
+    private String imagenPerfil;
+
     public PacienteRequest(String nombre, String apellido, String fechaNacimiento,
-                           String sexo, String diagnosticoPrincipal, String identificacion) {
+                           String sexo, String diagnosticoPrincipal, String identificacion, String imagenPerfil) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.fechaNacimiento = fechaNacimiento;
         this.sexo = sexo;
         this.diagnosticoPrincipal = diagnosticoPrincipal;
         this.identificacion = identificacion;
+        this.imagenPerfil = imagenPerfil;
     }
 
-    // Setters necesarios para edición
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public void setApellido(String apellido) { this.apellido = apellido; }
-    public void setFechaNacimiento(String fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
-    public void setSexo(String sexo) { this.sexo = sexo; }
-    public void setDiagnosticoPrincipal(String diagnosticoPrincipal) { this.diagnosticoPrincipal = diagnosticoPrincipal; }
-    public void setIdentificacion(String identificacion) { this.identificacion = identificacion; }
+    // Setters
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    // Getters (ya los tienes bien)
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public void setFechaNacimiento(String fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public void setSexo(String sexo) {
+        this.sexo = sexo;
+    }
+
+    public void setDiagnosticoPrincipal(String diagnosticoPrincipal) {
+        this.diagnosticoPrincipal = diagnosticoPrincipal;
+    }
+
+    public void setIdentificacion(String identificacion) {
+        this.identificacion = identificacion;
+    }
+
+    public void setImagenPerfil(String imagenPerfil) {
+        this.imagenPerfil = imagenPerfil;
+    }
+
 }
-
