@@ -3,21 +3,22 @@ package com.sena.qfinder;
 import android.app.Application;
 import android.util.Log;
 
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.FirebaseDatabase;
+import com.sena.qfinder.utils.AppLifecycleHandler;
+import com.sena.qfinder.utils.FirebaseInitializer;
 
 public class QfinderApplication extends Application {
+    private static final String TAG = "QFinderApplication";
+
     @Override
     public void onCreate() {
         super.onCreate();
 
-        try {
-            if (FirebaseApp.getApps(this).isEmpty()) {
-                FirebaseApp.initializeApp(this);
-                FirebaseDatabase.getInstance().setPersistenceEnabled(true); // Opcional: para caché offline
-            }
-        } catch (Exception e) {
-            Log.e("QfinderApp", "Error inicializando Firebase", e);
-        }
+        // Inicializar Firebase
+        FirebaseInitializer.initialize(this);
+
+        // Registrar el lifecycle handler
+        registerActivityLifecycleCallbacks(new AppLifecycleHandler());
+
+        Log.d(TAG, "Application initialized");
     }
 }

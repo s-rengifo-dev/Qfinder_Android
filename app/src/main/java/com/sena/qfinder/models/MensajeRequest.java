@@ -11,8 +11,15 @@ public class MensajeRequest {
         this.nombreUsuario = nombreUsuario;
     }
 
-    // Getters
-    public String getContenido() { return contenido; }
-    public String getIdUsuario() { return idUsuario; }
-    public String getNombreUsuario() { return nombreUsuario; }
+    public String getContenido() {
+        return contenido;
+    }
+
+    public String getIdUsuario() {
+        return idUsuario;
+    }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
 }
