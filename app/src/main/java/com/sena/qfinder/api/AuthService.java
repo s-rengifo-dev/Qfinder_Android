@@ -1,8 +1,10 @@
 package com.sena.qfinder.api;
 
+import com.google.gson.JsonObject;
 import com.sena.qfinder.models.ActividadListResponse;
 import com.sena.qfinder.models.ActividadRequest;
 import com.sena.qfinder.models.ActividadResponse;
+import com.sena.qfinder.models.ApiResponse;
 import com.sena.qfinder.models.AsignacionMedicamentoResponse;
 import com.sena.qfinder.models.AsignarMedicamentoRequest;
 import com.sena.qfinder.models.AsignarMedicamentoResponse;
@@ -205,7 +207,7 @@ public interface AuthService {
             @Header("Authorization") String token
     );
     @GET("api/chat/{id_red}/mensajes")
-    Call<List<Mensaje>> obtenerMensajes(
+    Call<ApiResponse<List<Mensaje>>> obtenerMensajes(
             @Header("Authorization") String token,
             @Path("id_red") int idRed,
             @Query("limite") int limite
@@ -258,4 +260,16 @@ public interface AuthService {
             @Path("id_paciente") int idPaciente,
             @Path("id_cita") int idCita
     );
+    // En tu interfaz AuthService
+    @POST("api/firebase/register-fcm")
+    Call<ResponseBody> registerFcmToken(
+            @Header("Authorization") String token,
+            @Body JsonObject fcmTokenData
+    );
+    @POST("api/medicamentos/marcar-tomado/{id}")
+    Call<ResponseBody> markMedicationAsTaken(
+            @Header("Authorization") String token,
+            @Path("id") String medicamentoId
+    );
+
 }

@@ -97,7 +97,8 @@ dependencies {
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
-
+    implementation ("com.google.firebase:firebase-messaging:23.0.0")// Versión más reciente
+    implementation ("com.google.firebase:firebase-analytics:21.0.0")
     // Otras dependencias
     implementation(libs.threetenabp)
     implementation(libs.retrofit)

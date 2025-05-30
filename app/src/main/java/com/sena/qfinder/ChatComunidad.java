@@ -1,7 +1,10 @@
 package com.sena.qfinder;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
@@ -28,15 +31,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.JsonObject;
 import com.sena.qfinder.api.AuthService;
 import com.sena.qfinder.api.ChatService;
 import com.sena.qfinder.models.Mensaje;
 import com.sena.qfinder.models.RedResponse;
-import com.sena.qfinder.ui.home.DashboardFragment;
+import com.sena.qfinder.utils.Constants;
 
 import org.json.JSONObject;
 
@@ -81,6 +86,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     private ChatService chatService;
     private SharedPreferences sharedPreferences;
     private AuthService authService;
+    private BroadcastReceiver notificationReceiver;
 
     public static ChatComunidad newInstance(String nombreComunidad) {
         ChatComunidad fragment = new ChatComunidad();
@@ -114,6 +120,9 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             nombreComunidad = getArguments().getString("nombre_comunidad");
             Log.d(TAG, "Comunidad recibida: " + nombreComunidad);
         }
+
+        // Registrar el receptor de notificaciones
+        registerNotificationReceiver();
     }
 
     @Override
@@ -140,6 +149,94 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Actualizar el token FCM (código comentado por brevedad)
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+        }
+
+        // Limpiar el receptor de notificaciones
+        unregisterNotificationReceiver();
+
+        if (chatService != null) {
+            chatService.cleanup();
+        }
+    }
+
+    private void registerNotificationReceiver() {
+        notificationReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent != null && Constants.FCM_NOTIFICATION_RECEIVED.equals(intent.getAction())) {
+                    handleIncomingNotification(intent);
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(Constants.FCM_NOTIFICATION_RECEIVED);
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(notificationReceiver, filter);
+    }
+
+    private void unregisterNotificationReceiver() {
+        if (notificationReceiver != null) {
+            LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(notificationReceiver);
+        }
+    }
+
+    private void handleIncomingNotification(Intent intent) {
+        String type = intent.getStringExtra("type");
+        String comunidadId = intent.getStringExtra("comunidadId");
+
+        // Solo manejar notificaciones de chat para esta comunidad
+        if ("chat".equals(type) && idRed != null && idRed.equals(comunidadId)) {
+            String mensajeId = intent.getStringExtra("mensajeId");
+            String senderId = intent.getStringExtra("senderId");
+            String senderName = intent.getStringExtra("senderName");
+            String message = intent.getStringExtra("message");
+            long fechaEnvio = intent.getLongExtra("fecha_envio", System.currentTimeMillis());
+            String hora = intent.getStringExtra("hora");
+
+            if (hora == null) {
+                hora = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
+            }
+
+            // Verificar si el mensaje ya existe
+            boolean mensajeExistente = false;
+            for (Mensaje m : mensajesActivos) {
+                if (m.getId() != null && m.getId().equals(mensajeId)) {
+                    mensajeExistente = true;
+                    break;
+                }
+            }
+
+            if (!mensajeExistente) {
+                Mensaje nuevoMensaje = new Mensaje();
+                nuevoMensaje.setId(mensajeId);
+                nuevoMensaje.setNombreUsuario(senderName);
+                nuevoMensaje.setContenido(message);
+                nuevoMensaje.setHora(hora);
+                nuevoMensaje.setComunidad(nombreComunidad);
+                nuevoMensaje.setIdUsuario(senderId);
+                nuevoMensaje.setFecha_envio(fechaEnvio);
+                nuevoMensaje.setEstado("recibido");
+
+                requireActivity().runOnUiThread(() -> {
+                    mensajesActivos.add(nuevoMensaje);
+                    mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
+                    scrollToBottomImmediately();
+                });
+            }
+        }
+    }
+
     private void setupViews(View view) {
         recyclerView = view.findViewById(R.id.recyclerChat);
         layoutAviso = view.findViewById(R.id.layoutAviso);
@@ -148,7 +245,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         btnEnviar = view.findViewById(R.id.btnEnviar);
         btnUnirmeComunidad = view.findViewById(R.id.btnUnirmeComunidad);
         txtTitulo = view.findViewById(R.id.txtTitulo);
-        volverComunidad=view.findViewById(R.id.btnvolver);
+        volverComunidad = view.findViewById(R.id.btnvolver);
 
         if (nombreComunidad != null) {
             txtTitulo.setText(nombreComunidad);
@@ -161,12 +258,12 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         recyclerView.setAdapter(mensajeAdapter);
     }
 
-
     private void setupBackButton() {
         if (volverComunidad != null) {
             volverComunidad.setOnClickListener(v -> navigateBack());
         }
     }
+
     private void setupButtons() {
         btnEnviar.setOnClickListener(v -> {
             if (validarSesion()) {
@@ -210,7 +307,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                     previousKeyboardHeight = keyboardHeight;
 
                     if (keyboardHeight > screenHeight * 0.15) {
-                        // Teclado visible
                         scrollToBottomWithDelay(150);
                     }
                 }
@@ -346,7 +442,8 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                         if (response.isSuccessful() && response.body() != null) {
                             JSONObject json = new JSONObject(response.body().string());
                             if (json.getBoolean("success")) {
-                                chatService.authenticateWithFirebase(json.getString("firebaseToken"));
+                                // CORRECCIÓN CLAVE: Usar prefijo "ext_" para Firebase
+                                chatService.authenticateWithFirebase("ext_" + idUsuario);
                             } else {
                                 handleVerificacionFallida();
                             }
@@ -478,11 +575,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         if (mensajesActivos.isEmpty()) return;
 
         recyclerView.postDelayed(() -> {
-            // Usa scrollToPosition para un movimiento instantáneo
             recyclerView.scrollToPosition(mensajesActivos.size() - 1);
-
-            // O si prefieres smoothScroll:
-            // recyclerView.smoothScrollToPosition(mensajesActivos.size() - 1);
         }, delayMillis);
     }
 
@@ -509,38 +602,43 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             for (Mensaje mensaje : mensajes) {
                 boolean mensajeExistente = false;
 
+                // Buscar por ID primero
                 for (int i = 0; i < mensajesActivos.size(); i++) {
                     Mensaje existente = mensajesActivos.get(i);
-
                     if (mensaje.getId() != null && mensaje.getId().equals(existente.getId())) {
                         mensajeExistente = true;
 
+                        // Actualizar estado si estaba "enviando"
                         if ("enviando".equals(existente.getEstado())) {
                             existente.setEstado("enviado");
                             existente.setHora(mensaje.getHora());
                             mensajeAdapter.notifyItemChanged(i);
-                            scrollToBottomImmediately();
                         }
-                        break;
-                    }
-
-                    if (mensaje.getContenido().equals(existente.getContenido()) &&
-                            Math.abs(mensaje.getFecha_envio() - existente.getFecha_envio()) < 2000 &&
-                            mensaje.getIdUsuario().equals(existente.getIdUsuario())) {
-                        mensajeExistente = true;
                         break;
                     }
                 }
 
+                // Si no se encontró por ID, buscar por contenido y tiempo
+                if (!mensajeExistente) {
+                    for (int i = 0; i < mensajesActivos.size(); i++) {
+                        Mensaje existente = mensajesActivos.get(i);
+                        if (mensaje.getContenido().equals(existente.getContenido()) &&
+                                Math.abs(mensaje.getFecha_envio() - existente.getFecha_envio()) < 2000 &&
+                                mensaje.getIdUsuario().equals(existente.getIdUsuario())) {
+                            mensajeExistente = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Agregar solo si es nuevo
                 if (!mensajeExistente) {
                     mensajesActivos.add(mensaje);
                     mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
                 }
             }
 
-            if (!mensajes.isEmpty()) {
-                recyclerView.scrollToPosition(mensajesActivos.size() - 1);
-            }
+            scrollToBottomImmediately();
         });
     }
 
@@ -562,8 +660,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             Log.d(TAG, "Mensaje enviado con éxito");
         });
     }
-
-
 
     private void mostrarOpcionUnirse() {
         requireActivity().runOnUiThread(() -> {
@@ -683,16 +779,16 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             recyclerView.scrollToPosition(mensajesActivos.size() - 1);
             scrollToBottomImmediately();
 
-            chatService.enviarMensaje(nuevoMensaje);
-            Log.d(TAG, "Mensaje local agregado con ID: " + mensajeId);
+            try {
+                chatService.enviarMensaje(nuevoMensaje);
+                Log.d(TAG, "Mensaje local agregado con ID: " + mensajeId);
+            } catch (Exception e) {
+                Log.e(TAG, "Error al enviar mensaje", e);
+                nuevoMensaje.setEstado("error");
+                mensajeAdapter.notifyItemChanged(mensajesActivos.size() - 1);
+                showToast("Error al enviar mensaje");
+            }
         }
-    }
-
-    private boolean hayConexionInternet() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) requireActivity()
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     private void mostrarDialogoInconsistencia() {
@@ -739,14 +835,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                 .show();
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
-        if (bottomNavigationView != null) {
-            bottomNavigationView.setVisibility(View.VISIBLE);
-        }
-    }
     private void navigateBack() {
         FragmentManager fragmentManager = getParentFragmentManager();
         if (fragmentManager.getBackStackEntryCount() > 0) {
@@ -756,5 +844,9 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             transaction.replace(R.id.fragment_container, new Comunidad());
             transaction.commit();
         }
+    }
+
+    private void sendTokenToServer(String token) {
+        // Implementación opcional para enviar token FCM al servidor
     }
 }
