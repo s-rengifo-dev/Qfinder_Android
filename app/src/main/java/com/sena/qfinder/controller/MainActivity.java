@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.FirebaseApp;
 //import com.google.firebase.appcheck.FirebaseAppCheck;
 //import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
-import com.sena.qfinder.Inicio;
+import com.sena.qfinder.ui.home.Inicio;
 import com.sena.qfinder.R;
 
 public class MainActivity extends AppCompatActivity {

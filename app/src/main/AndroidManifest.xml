@@ -8,14 +8,17 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".QfinderApplication"
@@ -32,21 +35,21 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".episodios_salud_nota"
+            android:name=".ui.notas.episodios_salud_nota"
             android:exported="false" />
         <service
-            android:name=".services.MyFirebaseMessagingService"
+            android:name=".data.services.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <receiver android:name=".services.NotificationActionReceiver" />
-        <receiver android:name=".ui.home.ActivityAlarmReceiver"
+        <receiver android:name=".data.services.NotificationActionReceiver" />
+        <receiver android:name=".utils.ActivityAlarmReceiver"
             android:exported="false" />
 
         <activity
-            android:name=".episodios_salud_menu"
+            android:name=".ui.home.episodios_salud_menu"
             android:windowSoftInputMode="adjustResize"
             android:exported="false" />
 
@@ -62,14 +65,14 @@
             android:value="true" />
 
         <activity
-            android:name=".controller.Registro_usuario"
+            android:name=".ui.auth.Registro_usuario"
             android:exported="false" />
         <activity
             android:name=".controller.MainActivityDash"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:exported="false" />
         <activity
-            android:name=".controller.Registro_paciente"
+            android:name=".ui.paciente.Registro_paciente"
             android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity

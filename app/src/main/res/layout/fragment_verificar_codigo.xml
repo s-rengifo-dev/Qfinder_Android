@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:color/white"
-    tools:context=".Fragment_verificar_codigo">
+    tools:context=".ui.auth.Fragment_verificar_codigo">
 
     <!-- Toolbar personalizada -->
     <LinearLayout

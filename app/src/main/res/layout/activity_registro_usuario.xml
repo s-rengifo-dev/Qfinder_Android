@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".controller.Registro_usuario">
+    tools:context=".ui.auth.Registro_usuario">
 
   <!-- Solo un FrameLayout como contenedor principal -->
 

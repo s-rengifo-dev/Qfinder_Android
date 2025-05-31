@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    tools:context=".Actividad1Fragment">
+    tools:context=".ui.actividad.Actividad1Fragment">
 
     <!-- Encabezado azul -->
     <RelativeLayout

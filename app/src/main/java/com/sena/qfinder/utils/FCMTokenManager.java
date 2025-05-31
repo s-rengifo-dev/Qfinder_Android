@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.JsonObject;
-import com.sena.qfinder.api.AuthService;
+import com.sena.qfinder.data.api.AuthService;
 
 import java.util.concurrent.TimeUnit;
 

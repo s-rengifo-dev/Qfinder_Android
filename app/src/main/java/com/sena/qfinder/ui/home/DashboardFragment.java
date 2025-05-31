@@ -19,27 +19,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.sena.qfinder.Actividad1Fragment;
-import com.sena.qfinder.AgregarMedicamentoUsuario;
-import com.sena.qfinder.ListaAsignarMedicamentos;
-import com.sena.qfinder.Medicamentos;
+import com.sena.qfinder.ui.actividad.Actividad1Fragment;
+import com.sena.qfinder.ui.medicamento.ListaAsignarMedicamentos;
 import com.sena.qfinder.R;
-import com.sena.qfinder.RegistrarPaciente;
-import com.sena.qfinder.api.AuthService;
-import com.sena.qfinder.api.ApiClient;
-import com.sena.qfinder.models.ActividadGetResponse;
-import com.sena.qfinder.models.ActividadListResponse;
-import com.sena.qfinder.models.AsignacionMedicamentoResponse;
-import com.sena.qfinder.models.PacienteListResponse;
-import com.sena.qfinder.models.PacienteResponse;
-import com.sena.qfinder.models.PerfilUsuarioResponse;
+import com.sena.qfinder.ui.paciente.RegistrarPaciente;
+import com.sena.qfinder.data.api.AuthService;
+import com.sena.qfinder.data.api.ApiClient;
+import com.sena.qfinder.data.models.ActividadGetResponse;
+import com.sena.qfinder.data.models.ActividadListResponse;
+import com.sena.qfinder.data.models.AsignacionMedicamentoResponse;
+import com.sena.qfinder.data.models.PacienteListResponse;
+import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.data.models.PerfilUsuarioResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
