@@ -70,9 +70,7 @@ public class ChatService {
         this.apiToken = apiToken;
         this.mAuth = FirebaseAuth.getInstance();
 
-        Log.d(TAG, "Inicializando ChatService | Red: " + idRed + " | Token: " +
-                (apiToken != null ? "***" + apiToken.substring(Math.max(0, apiToken.length() - 4)) : "NULL"));
-
+        Log.d(TAG, "Inicializando ChatService | Red: " + idRed);
         initializeServices();
         obtenerTokenFirebase();
     }
@@ -349,9 +347,6 @@ public class ChatService {
                     if (response.isSuccessful() && response.body() != null) {
                         ApiResponse<MensajesResponse> apiResponse = response.body();
 
-                        // DEBUG: Registrar respuesta completa
-                        Log.d(TAG, "Respuesta API mensajes: " + new Gson().toJson(apiResponse));
-
                         if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                             List<Mensaje> mensajes = apiResponse.getData().getMessages();
 
@@ -414,19 +409,7 @@ public class ChatService {
                     boolean esMiembro = response.isSuccessful() && response.code() == 200;
                     Log.d(TAG, "Membresía verificada: " + (esMiembro ? "MIEMBRO" : "NO MIEMBRO"));
 
-                    // Sincronizar con Firebase
-                    if (esMiembro && mAuth.getCurrentUser() != null) {
-                        DatabaseReference ref = FirebaseDatabase.getInstance()
-                                .getReference("comunidades")
-                                .child(idRedActual)
-                                .child("miembros")
-                                .child(mAuth.getCurrentUser().getUid());
-
-                        ref.setValue(true)
-                                .addOnSuccessListener(aVoid -> Log.d(TAG, "Membresía sincronizada en Firebase"))
-                                .addOnFailureListener(e -> Log.e(TAG, "Error sincronizando membresía", e));
-                    }
-
+                    // SOLUCIÓN CLAVE: Eliminamos la sincronización con Firebase
                     notifyMembresiaVerificada(esMiembro);
                 }
 
