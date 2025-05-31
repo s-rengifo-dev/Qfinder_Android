@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,7 +34,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.gson.JsonObject;
 import com.sena.qfinder.api.AuthService;
 import com.sena.qfinder.api.ChatService;
 import com.sena.qfinder.models.Mensaje;
@@ -71,6 +68,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     private String idUsuario;
     private String nombreUsuario;
     private int reintentosVerificacion = 0;
+    private boolean isInitialLoad = true;
 
     private RecyclerView recyclerView;
     private MensajeAdapter mensajeAdapter;
@@ -121,7 +119,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             Log.d(TAG, "Comunidad recibida: " + nombreComunidad);
         }
 
-        // Registrar el receptor de notificaciones
         registerNotificationReceiver();
     }
 
@@ -152,7 +149,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     @Override
     public void onResume() {
         super.onResume();
-        // Actualizar el token FCM (código comentado por brevedad)
     }
 
     @Override
@@ -163,7 +159,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             bottomNavigationView.setVisibility(View.VISIBLE);
         }
 
-        // Limpiar el receptor de notificaciones
         unregisterNotificationReceiver();
 
         if (chatService != null) {
@@ -195,7 +190,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         String type = intent.getStringExtra("type");
         String comunidadId = intent.getStringExtra("comunidadId");
 
-        // Solo manejar notificaciones de chat para esta comunidad
         if ("chat".equals(type) && idRed != null && idRed.equals(comunidadId)) {
             String mensajeId = intent.getStringExtra("mensajeId");
             String senderId = intent.getStringExtra("senderId");
@@ -208,16 +202,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                 hora = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
             }
 
-            // Verificar si el mensaje ya existe
-            boolean mensajeExistente = false;
-            for (Mensaje m : mensajesActivos) {
-                if (m.getId() != null && m.getId().equals(mensajeId)) {
-                    mensajeExistente = true;
-                    break;
-                }
-            }
-
-            if (!mensajeExistente) {
+            if (!existeMensaje(mensajeId)) {
                 Mensaje nuevoMensaje = new Mensaje();
                 nuevoMensaje.setId(mensajeId);
                 nuevoMensaje.setNombreUsuario(senderName);
@@ -235,6 +220,15 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                 });
             }
         }
+    }
+
+    private boolean existeMensaje(String id) {
+        for (Mensaje m : mensajesActivos) {
+            if (m.getId() != null && m.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void setupViews(View view) {
@@ -433,35 +427,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         try {
             chatService = new ChatService(requireContext(), idRed, token);
             chatService.setCallback(this);
-
-            Call<ResponseBody> call = authService.verificarMembresia("Bearer " + token, Integer.parseInt(idRed));
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    try {
-                        if (response.isSuccessful() && response.body() != null) {
-                            JSONObject json = new JSONObject(response.body().string());
-                            if (json.getBoolean("success")) {
-                                // CORRECCIÓN CLAVE: Usar prefijo "ext_" para Firebase
-                                chatService.authenticateWithFirebase("ext_" + idUsuario);
-                            } else {
-                                handleVerificacionFallida();
-                            }
-                        } else {
-                            handleVerificacionFallida();
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error parsing response", e);
-                        handleVerificacionFallida();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e(TAG, "Error verifying membership", t);
-                    handleVerificacionFallida();
-                }
-            });
+            chatService.verificarMembresia(MAX_REINTENTOS);
         } catch (Exception e) {
             Log.e(TAG, "Error al inicializar chat", e);
             showErrorDialog("Error", "No se pudo iniciar el chat");
@@ -487,13 +453,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                 chatService.verificarMembresia(MAX_REINTENTOS);
             }
         });
-    }
-
-    private void handleVerificacionFallida() {
-        Log.e(TAG, "Falló la verificación de membresía con Firebase");
-        if (chatService != null) {
-            chatService.verificarMembresia(MAX_REINTENTOS);
-        }
     }
 
     @Override
@@ -537,7 +496,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     public void onFirebaseConnected(boolean connected) {
         requireActivity().runOnUiThread(() -> {
             if (!connected) {
-                showToast("Sin conexión con Firebase");
+//                showToast("Sin conexión con Firebase");
                 layoutAviso.setVisibility(View.VISIBLE);
                 btnUnirmeComunidad.setText("Reconectar");
                 btnUnirmeComunidad.setOnClickListener(v -> {
@@ -548,7 +507,6 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                 layoutEnviarMensaje.setVisibility(View.GONE);
             } else {
                 if (chatService != null && obtenerEstadoUnion(nombreComunidad)) {
-                    chatService.iniciarEscuchaMensajes();
                     layoutAviso.setVisibility(View.GONE);
                     layoutEnviarMensaje.setVisibility(View.VISIBLE);
                 }
@@ -560,13 +518,12 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     public void onMensajesCargados(List<Mensaje> mensajes) {
         requireActivity().runOnUiThread(() -> {
             Log.d(TAG, "Mensajes iniciales cargados: " + mensajes.size());
-            mensajesActivos.clear();
-            mensajesActivos.addAll(mensajes);
-            mensajeAdapter.notifyDataSetChanged();
-            scrollToBottomImmediately();
 
-            if (mensajesActivos.size() > 0) {
-                recyclerView.scrollToPosition(mensajesActivos.size() - 1);
+            // Solo usar si no hay mensajes de Firebase
+            if (mensajesActivos.isEmpty()) {
+                mensajesActivos.addAll(mensajes);
+                mensajeAdapter.notifyDataSetChanged();
+                scrollToBottomImmediately();
             }
         });
     }
@@ -599,46 +556,19 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         requireActivity().runOnUiThread(() -> {
             Log.d(TAG, "Nuevos mensajes recibidos: " + mensajes.size());
 
+            List<Mensaje> nuevos = new ArrayList<>();
             for (Mensaje mensaje : mensajes) {
-                boolean mensajeExistente = false;
-
-                // Buscar por ID primero
-                for (int i = 0; i < mensajesActivos.size(); i++) {
-                    Mensaje existente = mensajesActivos.get(i);
-                    if (mensaje.getId() != null && mensaje.getId().equals(existente.getId())) {
-                        mensajeExistente = true;
-
-                        // Actualizar estado si estaba "enviando"
-                        if ("enviando".equals(existente.getEstado())) {
-                            existente.setEstado("enviado");
-                            existente.setHora(mensaje.getHora());
-                            mensajeAdapter.notifyItemChanged(i);
-                        }
-                        break;
-                    }
-                }
-
-                // Si no se encontró por ID, buscar por contenido y tiempo
-                if (!mensajeExistente) {
-                    for (int i = 0; i < mensajesActivos.size(); i++) {
-                        Mensaje existente = mensajesActivos.get(i);
-                        if (mensaje.getContenido().equals(existente.getContenido()) &&
-                                Math.abs(mensaje.getFecha_envio() - existente.getFecha_envio()) < 2000 &&
-                                mensaje.getIdUsuario().equals(existente.getIdUsuario())) {
-                            mensajeExistente = true;
-                            break;
-                        }
-                    }
-                }
-
-                // Agregar solo si es nuevo
-                if (!mensajeExistente) {
-                    mensajesActivos.add(mensaje);
-                    mensajeAdapter.notifyItemInserted(mensajesActivos.size() - 1);
+                if (!existeMensaje(mensaje.getId())) {
+                    nuevos.add(mensaje);
                 }
             }
 
-            scrollToBottomImmediately();
+            if (!nuevos.isEmpty()) {
+                int startPos = mensajesActivos.size();
+                mensajesActivos.addAll(nuevos);
+                mensajeAdapter.notifyItemRangeInserted(startPos, nuevos.size());
+                scrollToBottomImmediately();
+            }
         });
     }
 
@@ -738,7 +668,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             btnUnirmeComunidad.setVisibility(View.GONE);
 
             if (chatService != null) {
-                chatService.cargarMensajesIniciales();
+                chatService.detenerEscuchaMensajes();
                 chatService.iniciarEscuchaMensajes();
             }
         });
@@ -844,9 +774,5 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             transaction.replace(R.id.fragment_container, new Comunidad());
             transaction.commit();
         }
-    }
-
-    private void sendTokenToServer(String token) {
-        // Implementación opcional para enviar token FCM al servidor
     }
 }

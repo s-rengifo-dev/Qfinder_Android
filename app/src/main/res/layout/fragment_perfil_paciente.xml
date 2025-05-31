@@ -98,18 +98,12 @@
                 android:layout_height="130dp"
                 android:layout_marginLeft="20dp">
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/circle_azul"
-                    android:scaleType="centerCrop" />
 
                 <ImageView
-                    android:id="@+id/imgAvatar"
+                    android:id="@+id/ivFotoPerfil"
                     android:layout_width="110dp"
                     android:layout_height="110dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/cuidador"
                     android:scaleType="centerCrop"
                     android:background="@drawable/circle_white_border_azul"
                     android:padding="4dp" />

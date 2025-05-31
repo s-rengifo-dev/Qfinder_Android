@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.appcheck.debug)
 
     // Testing
     testImplementation(libs.junit)
@@ -82,9 +84,15 @@ dependencies {
 
     implementation("com.google.zxing:core:3.4.1")
 
+    //glide
+
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+    implementation (platform("com.google.firebase:firebase-bom:33.14.0"))
     implementation ("androidx.core:core:1.10.1")
+    implementation ("com.google.firebase:firebase-analytics")
 
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")

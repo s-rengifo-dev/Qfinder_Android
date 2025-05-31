@@ -11,11 +11,13 @@ import com.sena.qfinder.models.AsignarMedicamentoResponse;
 import com.sena.qfinder.models.CitaMedica;
 import com.sena.qfinder.models.CodeVerificationRequest;
 import com.sena.qfinder.models.CodeVerificationResponse;
+import com.sena.qfinder.models.FirebaseTokenResponse;
 import com.sena.qfinder.models.MedicamentoRequest;
 import com.sena.qfinder.models.MedicamentoResponse;
 import com.sena.qfinder.models.MedicamentoSimpleResponse;
 import com.sena.qfinder.models.Mensaje;
 import com.sena.qfinder.models.MensajeRequest;
+import com.sena.qfinder.models.MensajesResponse;
 import com.sena.qfinder.models.NotaEpisodio;
 import com.sena.qfinder.models.NotaEpisodioListResponse;
 import com.sena.qfinder.models.NotaEpisodioRequest;
@@ -207,11 +209,16 @@ public interface AuthService {
             @Header("Authorization") String token
     );
     @GET("api/chat/{id_red}/mensajes")
-    Call<ApiResponse<List<Mensaje>>> obtenerMensajes(
+    Call<ApiResponse<MensajesResponse>> obtenerMensajes(
             @Header("Authorization") String token,
             @Path("id_red") int idRed,
             @Query("limite") int limite
     );
+        @POST("api/firebase/token/{id_red}")
+        Call<FirebaseTokenResponse> getFirebaseToken(
+                @Header("Authorization") String authHeader,
+                @Path("id_red") int redId
+        );
 
     @POST("api/chat/{id_red}/enviar")
     Call<ResponseBody> enviarMensaje(
