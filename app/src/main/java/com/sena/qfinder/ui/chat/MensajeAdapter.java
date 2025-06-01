@@ -66,11 +66,22 @@ public class MensajeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     // Método para actualizar los mensajes
-    public void actualizarMensajes(List<Mensaje> nuevosMensajes) {
-        mensajes.clear();
-        mensajes.addAll(nuevosMensajes);
-        notifyDataSetChanged();
+    public void agregarMensajesUnicos(List<Mensaje> nuevosMensajes) {
+        for (Mensaje nuevo : nuevosMensajes) {
+            boolean yaExiste = false;
+            for (Mensaje existente : mensajes) {
+                if (existente.getId().equals(nuevo.getId())) {
+                    yaExiste = true;
+                    break;
+                }
+            }
+            if (!yaExiste) {
+                mensajes.add(nuevo);
+                notifyItemInserted(mensajes.size() - 1);
+            }
+        }
     }
+
 
     // ViewHolder para mensajes enviados
     private static class SentMessageHolder extends RecyclerView.ViewHolder {
