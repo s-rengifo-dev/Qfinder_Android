@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -28,8 +27,7 @@ import com.sena.qfinder.Comunidad;
 import com.sena.qfinder.utils.Constants;
 import com.sena.qfinder.Fragment_Serivicios;
 import com.sena.qfinder.R;
-import com.sena.qfinder.perfil_usuario;
-import com.sena.qfinder.services.MyFirebaseMessagingService;
+import com.sena.qfinder.PerfilUsuario;
 import com.sena.qfinder.ui.home.DashboardFragment;
 import com.sena.qfinder.utils.FCMTokenManager;
 
@@ -133,7 +131,7 @@ public class MainActivityDash extends AppCompatActivity {
                 } else if (itemId == R.id.nav_comunidad) {
                     selectedFragment = new Comunidad();
                 } else if (itemId == R.id.nav_profile) {
-                    selectedFragment = new perfil_usuario();
+                    selectedFragment = new PerfilUsuario();
                 }
 
                 if (selectedFragment != null) {

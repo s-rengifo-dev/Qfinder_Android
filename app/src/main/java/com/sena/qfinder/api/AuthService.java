@@ -97,6 +97,12 @@ public interface AuthService {
             @Path("id_paciente") int pacienteId,
             @Body PacienteRequest pacienteRequest
     );
+
+    @PUT("api/auth/actualizarUser")
+    Call<Void> actualizarUsuario(
+            @Header("Authorization") String token,
+            @Body UsuarioRequest request
+    );
     // EPISODIOS DE SALUD
     @GET("api/episodios/episodioSalud/{id_paciente}")
     Call<NotaEpisodioListResponse> obtenerEpisodios(
