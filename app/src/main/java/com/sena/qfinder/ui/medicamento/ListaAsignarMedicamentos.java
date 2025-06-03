@@ -24,6 +24,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.ApiClient;
@@ -212,14 +213,15 @@ public class ListaAsignarMedicamentos extends Fragment {
                     paciente.getDiagnostico_principal() : "Sin diagnóstico";
             String fechaNacimiento = paciente.getFecha_nacimiento() != null ?
                     paciente.getFecha_nacimiento() : "Fecha desconocida";
+            String imagenUrl = paciente.getImagen_paciente();
 
             addPatientCard(nombreCompleto, fechaNacimiento, diagnostico,
-                    R.drawable.perfil_paciente, paciente.getId());
+                    imagenUrl, paciente.getId());
         }
     }
 
     private void addPatientCard(String name, String birthDate, String conditions,
-                                int imageResId, int patientId) {
+                                String imagenUrl, int patientId) {
         View patientCard = LayoutInflater.from(getContext())
                 .inflate(R.layout.item_patient_card, patientsContainer, false);
         patientCard.setTag(patientId);
@@ -241,7 +243,17 @@ public class ListaAsignarMedicamentos extends Fragment {
             tvConditions.setText("• Sin diagnóstico");
         }
 
-        ivProfile.setImageResource(imageResId);
+        if (imagenUrl != null && !imagenUrl.isEmpty()) {
+            Glide.with(requireContext())
+                    .load(imagenUrl)
+                    .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
+                    .error(R.drawable.perfil_familiar) // Imagen si hay error
+                    .circleCrop() // Para hacerla circular
+                    .into(ivProfile);
+        } else {
+            ivProfile.setImageResource(R.drawable.perfil_familiar);
+        }
+
 
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;

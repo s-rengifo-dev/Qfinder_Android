@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 import com.prolificinteractive.materialcalendarview.DayViewFacade;
@@ -144,20 +146,34 @@ public class CitasFragment extends Fragment {
             String nombreCompleto = paciente.getNombre() + " " + paciente.getApellido();
             String diagnostico = paciente.getDiagnostico_principal() != null ?
                     paciente.getDiagnostico_principal() : "Sin diagnóstico";
+            String imagenUrl = paciente.getImagen_paciente();
 
-            addPatientCard(nombreCompleto, diagnostico, R.drawable.perfil_paciente, paciente.getId());
+            addPatientCard(nombreCompleto, diagnostico, imagenUrl, paciente.getId());
         }
     }
 
-    private void addPatientCard(String name, String conditions, int imageResId, int patientId) {
+    private void addPatientCard(String name, String conditions, String imagenUrl, int patientId) {
         View patientCard = currentInflater.inflate(R.layout.item_patient_card, patientsContainer, false);
         patientCard.setTag(patientId);
 
         TextView tvName = patientCard.findViewById(R.id.tvPatientName);
         TextView tvConditions = patientCard.findViewById(R.id.tvPatientConditions);
+        ImageView ivProfile = patientCard.findViewById(R.id.ivPatientProfile);
 
         tvName.setText(name);
         tvConditions.setText(conditions != null && !conditions.isEmpty() ? "• " + conditions : "• Sin diagnóstico");
+
+        if (imagenUrl != null && !imagenUrl.isEmpty()) {
+            Glide.with(requireContext())
+                    .load(imagenUrl)
+                    .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
+                    .error(R.drawable.perfil_familiar) // Imagen si hay error
+                    .circleCrop() // Para hacerla circular
+                    .into(ivProfile);
+        } else {
+            ivProfile.setImageResource(R.drawable.perfil_familiar);
+        }
+
 
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;
