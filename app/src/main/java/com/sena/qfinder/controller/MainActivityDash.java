@@ -24,10 +24,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.sena.qfinder.ui.home.Comunidad;
+import com.sena.qfinder.ui.home.PerfilUsuario;
 import com.sena.qfinder.utils.Constants;
 import com.sena.qfinder.ui.home.Fragment_Serivicios;
 import com.sena.qfinder.R;
-import com.sena.qfinder.ui.home.perfil_usuario;
+
 import com.sena.qfinder.ui.home.DashboardFragment;
 import com.sena.qfinder.utils.FCMTokenManager;
 
@@ -131,7 +132,7 @@ public class MainActivityDash extends AppCompatActivity {
                 } else if (itemId == R.id.nav_comunidad) {
                     selectedFragment = new Comunidad();
                 } else if (itemId == R.id.nav_profile) {
-                    selectedFragment = new perfil_usuario();
+                    selectedFragment = new PerfilUsuario();
                 }
 
                 if (selectedFragment != null) {

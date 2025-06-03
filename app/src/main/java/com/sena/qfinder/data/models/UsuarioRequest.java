@@ -1,6 +1,7 @@
 package com.sena.qfinder.data.models;
 
 import java.io.Serializable;
+
 public class UsuarioRequest implements Serializable {
 
     private String nombre_usuario;
@@ -8,14 +9,20 @@ public class UsuarioRequest implements Serializable {
     private String direccion_usuario;
     private String telefono_usuario;
     private String correo_usuario;
+    private String imagen_usuario;
+    private boolean manejarImagenes;  // <-- nuevo campo
 
-    // Constructor
-    public UsuarioRequest(String nombre_usuario, String apellido_usuario, String direccion_usuario, String telefono_usuario, String correo_usuario) {
+    // Constructor con el nuevo parámetro manejarImagenes
+    public UsuarioRequest(String nombre_usuario, String apellido_usuario, String direccion_usuario,
+                          String telefono_usuario, String correo_usuario, String imagen_usuario,
+                          boolean manejarImagenes) {
         this.nombre_usuario = nombre_usuario;
         this.apellido_usuario = apellido_usuario;
         this.direccion_usuario = direccion_usuario;
         this.telefono_usuario = telefono_usuario;
         this.correo_usuario = correo_usuario;
+        this.imagen_usuario = imagen_usuario;
+        this.manejarImagenes = manejarImagenes;
     }
 
     // Getters
@@ -39,6 +46,14 @@ public class UsuarioRequest implements Serializable {
         return correo_usuario;
     }
 
+    public String getImagen_usuario() {
+        return imagen_usuario;
+    }
+
+    public boolean isManejarImagenes() {
+        return manejarImagenes;
+    }
+
     // Setters
     public void setNombre_usuario(String nombre_usuario) {
         this.nombre_usuario = nombre_usuario;
@@ -59,7 +74,12 @@ public class UsuarioRequest implements Serializable {
     public void setCorreo_usuario(String correo_usuario) {
         this.correo_usuario = correo_usuario;
     }
+
+    public void setImagen_usuario(String imagen_usuario) {
+        this.imagen_usuario = imagen_usuario;
+    }
+
+    public void setManejarImagenes(boolean manejarImagenes) {
+        this.manejarImagenes = manejarImagenes;
+    }
 }
-
-
-

@@ -9,6 +9,10 @@ public class PerfilUsuarioResponse {
     private String direccion_usuario;
     private String identificacion_usuario;
 
+    private String imagen_usuario;
+
+    private boolean manejarImagenes;
+
     // Constructor vacío (importante para Retrofit)
     public PerfilUsuarioResponse() {
     }
@@ -40,4 +44,11 @@ public class PerfilUsuarioResponse {
     public String getId_usuario() {
         return id_usuario;
     }
+    public String getImagen_usuario() {
+        return imagen_usuario;
+    }
+    public boolean isManejarImagenes() { return manejarImagenes; }
+    public void setManejarImagenes(boolean manejarImagenes) { this.manejarImagenes = manejarImagenes; }
+
+
 }

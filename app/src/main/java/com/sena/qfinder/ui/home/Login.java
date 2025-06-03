@@ -187,7 +187,8 @@ public class Login extends Fragment {
                             perfil.getCorreo_usuario(),
                             perfil.getTelefono_usuario(),
                             perfil.getDireccion_usuario(),
-                            perfil.getIdentificacion_usuario()
+                            perfil.getIdentificacion_usuario(),
+                            perfil.getImagen_usuario()
                     );
 
                     iniciarSesionExitoso();
@@ -214,7 +215,7 @@ public class Login extends Fragment {
 
     private void guardarDatosCompletosUsuario(String idUsuario, String nombre, String apellido,
                                               String correo, String telefono, String direccion,
-                                              String identificacion) {
+                                              String identificacion, String imagenUsuario) {
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         preferences.edit()
                 .putString("id_usuario", idUsuario)
