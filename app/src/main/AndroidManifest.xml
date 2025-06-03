@@ -32,7 +32,15 @@
         tools:targetApi="31">
         <receiver android:name=".utils.ActivityAlarmReceiver"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="true">
+            <intent-filter>
+                <!-- Eventos de sistema esenciales -->
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".ui.notas.episodios_salud_nota"
             android:exported="false" />
@@ -51,7 +59,7 @@
         </activity>
         <receiver android:name=".utils.SnoozeReceiver"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="true"/>
         <service
             android:name=".data.services.MyFirebaseMessagingService"
             android:exported="false">

@@ -12,11 +12,13 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
 import com.sena.qfinder.R;
+import com.sena.qfinder.utils.AlarmFullScreenActivity;
 
 public class ActivityAlarmReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "actividades_channel";
@@ -79,7 +81,7 @@ public class ActivityAlarmReceiver extends BroadcastReceiver {
 
         // Construir la notificación
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_actividad_notify)
+                .setSmallIcon(R.drawable.ic_actividad)
                 .setContentTitle(titulo != null ? titulo : "¡Recordatorio de Actividad!")
                 .setContentText(descripcion != null ? descripcion : "Tienes una actividad programada")
                 .setSubText("Programado para: " + fecha + " a las " + hora)
@@ -171,4 +173,6 @@ public class ActivityAlarmReceiver extends BroadcastReceiver {
         }
         Log.d(TAG, "Alarma reprogramada para: " + triggerAtMillis);
     }
+
+
 }
