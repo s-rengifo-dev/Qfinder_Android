@@ -154,13 +154,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void showChatNotification(Map<String, String> data) {
         String comunidadId = data.get("comunidadId");
         String mensajeId = data.get("mensajeId");
-        String senderName = data.get("senderName");
-        String message = data.get("message");
-        String imageUrl = data.get("imageUrl");
+
+        // Ajustamos a los campos reales que llegan en el payload
+        String senderName = data.get("title");   // viene como 'title' según tu log
+        String message = data.get("body");       // viene como 'body'
+        String imageUrl = data.get("imageUrl");  // opcional
+
+        // Fallbacks por si falta algún dato
+        if (senderName == null || senderName.trim().isEmpty()) {
+            senderName = "Nuevo mensaje";
+        }
+        if (message == null || message.trim().isEmpty()) {
+            message = "Tienes un nuevo mensaje";
+        }
 
         Intent intent = new Intent(this, ChatComunidad.class);
         intent.putExtra("id_red", comunidadId);
-        intent.putExtra("nombre_comunidad", data.get("comunidadNombre"));
+        intent.putExtra("nombre_comunidad", data.get("comunidadNombre")); // si existe
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -172,7 +182,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_chat_notification)
-                .setContentTitle(senderName != null ? senderName : "Nuevo mensaje")
+                .setContentTitle(senderName)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
@@ -187,14 +197,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .bigPicture(bitmap)
                         .setSummaryText(message);
 
-                // Solo establecer bigLargeIcon si tenemos una miniatura
+                // Miniatura opcional
                 Bitmap thumbnail = createThumbnail(bitmap);
                 if (thumbnail != null) {
                     style.bigLargeIcon(thumbnail);
+                    builder.setLargeIcon(thumbnail);
                 }
 
-                builder.setLargeIcon(thumbnail)
-                        .setStyle(style);
+                builder.setStyle(style);
             } catch (Exception e) {
                 Log.e(TAG, "Error loading image for notification", e);
             }
@@ -202,6 +212,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         showNotification(builder, generateNotificationId(comunidadId));
     }
+
 
     private Bitmap createThumbnail(Bitmap original) {
         if (original == null) return null;

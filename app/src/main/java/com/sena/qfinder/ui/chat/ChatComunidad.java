@@ -22,8 +22,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -31,7 +29,6 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sena.qfinder.ui.home.Comunidad;
 import com.sena.qfinder.R;
@@ -40,7 +37,6 @@ import com.sena.qfinder.data.services.ChatService;
 import com.sena.qfinder.data.models.Mensaje;
 import com.sena.qfinder.data.models.RedResponse;
 import com.sena.qfinder.utils.Constants;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,7 +48,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -989,7 +984,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
      * @param message Mensaje a mostrar
      */
     private void showToast(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+//        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
     /**

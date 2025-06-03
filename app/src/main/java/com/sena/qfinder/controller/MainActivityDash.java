@@ -172,7 +172,7 @@ public class MainActivityDash extends AppCompatActivity {
             Log.d(TAG, "Nuevo mensaje en comunidad: " + comunidadId);
 
             // Mostrar notificación o actualizar UI
-            Toast.makeText(this, "Nuevo mensaje en " + comunidadId, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Nuevo mensaje en " + comunidadId, Toast.LENGTH_SHORT).show();
         } else if ("medication".equals(type)) {
             String medicamento = intent.getStringExtra("medicamentoNombre");
             Log.d(TAG, "Recordatorio de medicamento: " + medicamento);
