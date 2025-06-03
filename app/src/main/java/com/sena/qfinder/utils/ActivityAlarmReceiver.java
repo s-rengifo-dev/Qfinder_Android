@@ -12,21 +12,27 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
 import com.sena.qfinder.R;
-import com.sena.qfinder.utils.AlarmFullScreenActivity;
+import com.sena.qfinder.database.DatabaseHelper;
+import com.sena.qfinder.database.entity.AlarmaEntity;
 
 public class ActivityAlarmReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "actividades_channel";
     private static final String TAG = "ActivityAlarmReceiver";
+    private static PowerManager.WakeLock wakeLock;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "Alarma recibida!");
+
+        // Adquirir WakeLock para mantener el dispositivo activo
+        acquireWakeLock(context);
 
         int actividadId = intent.getIntExtra("actividad_id", -1);
         String titulo = intent.getStringExtra("titulo");
@@ -34,8 +40,38 @@ public class ActivityAlarmReceiver extends BroadcastReceiver {
         String fecha = intent.getStringExtra("fecha");
         String hora = intent.getStringExtra("hora");
 
+        // Iniciar servicio de sonido persistente
+        startAlarmSoundService(context);
+
         mostrarNotificacion(context, actividadId, titulo, descripcion, fecha, hora);
         lanzarPantallaCompleta(context, actividadId, titulo, descripcion, fecha, hora);
+    }
+
+    private void acquireWakeLock(Context context) {
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        wakeLock = pm.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK |
+                        PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                        PowerManager.ON_AFTER_RELEASE,
+                TAG + "::AlarmWakeLock"
+        );
+        wakeLock.acquire(10 * 60 * 1000L /*10 minutos*/);
+
+        // Liberar WakeLock después de 1 minuto (tiempo de seguridad)
+        new android.os.Handler().postDelayed(() -> {
+            if (wakeLock != null && wakeLock.isHeld()) {
+                wakeLock.release();
+            }
+        }, 60 * 1000);
+    }
+
+    private void startAlarmSoundService(Context context) {
+        Intent serviceIntent = new Intent(context, AlarmSoundService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent);
+        } else {
+            context.startService(serviceIntent);
+        }
     }
 
     private void mostrarNotificacion(Context context, int actividadId, String titulo,
@@ -132,9 +168,22 @@ public class ActivityAlarmReceiver extends BroadcastReceiver {
         context.startActivity(fullScreenIntent);
     }
 
-    // Método para reprogramar alarmas (usado por SnoozeReceiver)
     public static void programarAlarma(Context context, int actividadId, String titulo,
                                        String descripcion, String fecha, String hora, long triggerAtMillis) {
+        // Guardar alarma en base de datos para persistencia
+        AlarmaEntity alarma = new AlarmaEntity(
+                actividadId,
+                titulo,
+                descripcion,
+                fecha,
+                hora,
+                triggerAtMillis,
+                true
+        );
+
+        DatabaseHelper dbHelper = DatabaseHelper.getInstance(context);
+        dbHelper.guardarAlarma(alarma);
+
         Intent intent = new Intent(context, ActivityAlarmReceiver.class);
         intent.putExtra("actividad_id", actividadId);
         intent.putExtra("titulo", titulo);
@@ -151,6 +200,16 @@ public class ActivityAlarmReceiver extends BroadcastReceiver {
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
+            // Verificar permisos para Android 12+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (!alarmManager.canScheduleExactAlarms()) {
+                    Intent permissionIntent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(permissionIntent);
+                    return;
+                }
+            }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
@@ -171,8 +230,6 @@ public class ActivityAlarmReceiver extends BroadcastReceiver {
                 );
             }
         }
-        Log.d(TAG, "Alarma reprogramada para: " + triggerAtMillis);
+        Log.d(TAG, "Alarma programada para: " + triggerAtMillis);
     }
-
-
 }

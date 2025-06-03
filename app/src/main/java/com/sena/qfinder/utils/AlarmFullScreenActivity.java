@@ -1,9 +1,7 @@
 package com.sena.qfinder.utils;
 
 import android.app.NotificationManager;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -15,12 +13,20 @@ import com.sena.qfinder.R;
 
 public class AlarmFullScreenActivity extends AppCompatActivity {
 
-    private MediaPlayer mediaPlayer;
+    private int actividadId;
+    private String titulo, descripcion, fecha, hora;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm_fullscreen);
+
+        // Obtener datos de la alarma
+        actividadId = getIntent().getIntExtra("actividad_id", -1);
+        titulo = getIntent().getStringExtra("titulo");
+        descripcion = getIntent().getStringExtra("descripcion");
+        fecha = getIntent().getStringExtra("fecha");
+        hora = getIntent().getStringExtra("hora");
 
         // Configurar para mostrar sobre bloqueo de pantalla
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -28,56 +34,44 @@ public class AlarmFullScreenActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        int actividadId = getIntent().getIntExtra("actividad_id", -1);
-        String titulo = getIntent().getStringExtra("titulo");
-        String descripcion = getIntent().getStringExtra("descripcion");
-        String fecha = getIntent().getStringExtra("fecha");
-        String hora = getIntent().getStringExtra("hora");
-
-        TextView tvTitulo = findViewById(R.id.tvAlarmTitle);
-        TextView tvDetalle = findViewById(R.id.tvAlarmDetail);
+        // Inicializar UI
+        TextView tvTitulo = findViewById(R.id.tvTitulo);
+        TextView tvDetalles = findViewById(R.id.tvDetalles);
+        TextView tvHorario = findViewById(R.id.tvHorario);
         Button btnDismiss = findViewById(R.id.btnDismiss);
         Button btnSnooze = findViewById(R.id.btnSnooze);
 
-        tvTitulo.setText(titulo != null ? titulo : "¡RECORDATORIO DE ACTIVIDAD!");
-        tvDetalle.setText((descripcion != null ? descripcion + "\n\n" : "")
-                + "Programado para: " + fecha + " a las " + hora);
+        // Mostrar información de la alarma
+        tvTitulo.setText(titulo != null ? titulo : "¡Alarma!");
+        tvDetalles.setText(descripcion != null ? descripcion : "Tienes una actividad programada");
+        tvHorario.setText(String.format("Programado para: %s a las %s", fecha, hora));
 
-        // Reproducir sonido de alarma
-        try {
-            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-            if (alarmSound == null) {
-                alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            }
-            mediaPlayer = MediaPlayer.create(this, alarmSound);
-
-            if (mediaPlayer != null) {
-                mediaPlayer.setLooping(true);
-                mediaPlayer.start();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        btnDismiss.setOnClickListener(v -> finish());
+        // Configurar botones
+        btnDismiss.setOnClickListener(v -> {
+            stopAlarmSound();
+            finish();
+        });
 
         btnSnooze.setOnClickListener(v -> {
             // Posponer 10 minutos
             SnoozeReceiver.snoozeAlarm(this, actividadId, titulo, descripcion, fecha, hora);
+            stopAlarmSound();
             finish();
         });
+    }
+
+    private void stopAlarmSound() {
+        // Detener servicio de sonido
+        Intent serviceIntent = new Intent(this, AlarmSoundService.class);
+        stopService(serviceIntent);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        }
+        stopAlarmSound();
 
         // Cancelar notificación asociada
-        int actividadId = getIntent().getIntExtra("actividad_id", -1);
         if (actividadId != -1) {
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             if (nm != null) {
