@@ -1,5 +1,6 @@
 package com.sena.qfinder.ui.actividad;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -8,8 +9,10 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.textfield.TextInputEditText;
@@ -49,6 +53,9 @@ import retrofit2.Response;
 public class AgregarActividadDialogFragment extends DialogFragment {
 
     private static final String ARG_PACIENTE_ID = "paciente_id";
+    private static final int REQUEST_CODE_POST_NOTIFICATION = 1001;
+    private static final int REQUEST_CODE_EXACT_ALARM_PERMISSION = 1002;
+
     private AutoCompleteTextView spinnerPacientes;
     private TextInputEditText etTipoActividad, etFecha, etHora, etDuracion, etDescripcion, etObservaciones;
     private AutoCompleteTextView spinnerIntensidad, spinnerEstado;
@@ -57,6 +64,12 @@ public class AgregarActividadDialogFragment extends DialogFragment {
     private String horaSeleccionada = "";
     private List<PacienteResponse> listaPacientes = new ArrayList<>();
     private int pacienteId;
+    // Variables para guardar datos temporales de la alarma
+    private int tempActividadId;
+    private String tempTitulo;
+    private String tempDescripcion;
+    private String tempFecha;
+    private String tempHora;
 
     public interface OnActividadGuardadaListener {
         void onActividadGuardada();
@@ -101,7 +114,7 @@ public class AgregarActividadDialogFragment extends DialogFragment {
 
     private void initViews(View view) {
         spinnerPacientes = view.findViewById(R.id.spinnerPaciente);
-        spinnerPacientes.setEnabled(false); // Disable patient selection
+        spinnerPacientes.setEnabled(false);
         etTipoActividad = view.findViewById(R.id.etTipoActividad);
         etFecha = view.findViewById(R.id.etFecha);
         etHora = view.findViewById(R.id.etHora);
@@ -334,19 +347,22 @@ public class AgregarActividadDialogFragment extends DialogFragment {
                     if (actividadResponse.isSuccess()) {
                         Toast.makeText(getContext(), "Actividad creada exitosamente", Toast.LENGTH_SHORT).show();
 
+                        // Guardar datos temporales para programar alarma
+                        tempActividadId = actividadResponse.getData().getIdActividad();
+                        tempTitulo = request.getTipoActividad();
+                        tempDescripcion = request.getDescripcion();
+                        tempFecha = fechaSeleccionada;
+                        tempHora = horaSeleccionada;
+
                         // Programar alarma solo si el estado es "pendiente"
                         if ("pendiente".equals(request.getEstado())) {
-                            programarAlarma(actividadResponse.getData().getIdPaciente(),
-                                    request.getTipoActividad(),
-                                    request.getDescripcion(),
-                                    fechaSeleccionada,
-                                    horaSeleccionada);
+                            programarAlarmaDespuesDeVerificarPermisos();
+                        } else {
+                            if (listener != null) {
+                                listener.onActividadGuardada();
+                            }
+                            dismiss();
                         }
-
-                        if (listener != null) {
-                            listener.onActividadGuardada();
-                        }
-                        dismiss();
                     } else {
                         Toast.makeText(getContext(), "Error: " + actividadResponse.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -363,9 +379,90 @@ public class AgregarActividadDialogFragment extends DialogFragment {
         });
     }
 
+    private void programarAlarmaDespuesDeVerificarPermisos() {
+        // Verificar permisos para Android 13+ (notificaciones)
+        if (checkNotificationPermission()) {
+            // Verificar permisos para Android 12+ (alarmas exactas)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(Context.ALARM_SERVICE);
+                if (alarmManager.canScheduleExactAlarms()) {
+                    programarAlarma(tempActividadId, tempTitulo, tempDescripcion, tempFecha, tempHora);
+                    terminarGuardado();
+                } else {
+                    // Solicitar permiso para alarmas exactas
+                    Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    startActivityForResult(intent, REQUEST_CODE_EXACT_ALARM_PERMISSION);
+                    Toast.makeText(getContext(), "Por favor concede permiso para alarmas exactas", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                programarAlarma(tempActividadId, tempTitulo, tempDescripcion, tempFecha, tempHora);
+                terminarGuardado();
+            }
+        } else {
+            // Solicitar permiso para notificaciones
+            requestNotificationPermission();
+        }
+    }
+
+    private void terminarGuardado() {
+        if (listener != null) {
+            listener.onActividadGuardada();
+        }
+        dismiss();
+    }
+
+    // Verificar permisos de notificación para Android 13+
+    private boolean checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // Para versiones anteriores no se necesita permiso
+    }
+
+    // Solicitar permiso de notificación
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    REQUEST_CODE_POST_NOTIFICATION
+            );
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                programarAlarmaDespuesDeVerificarPermisos();
+            } else {
+                Toast.makeText(getContext(), "Permiso de notificaciones denegado. Las alarmas no funcionarán", Toast.LENGTH_SHORT).show();
+                terminarGuardado();
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_EXACT_ALARM_PERMISSION) {
+            // Verificar nuevamente si se concedió el permiso
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(Context.ALARM_SERVICE);
+                if (alarmManager.canScheduleExactAlarms()) {
+                    programarAlarma(tempActividadId, tempTitulo, tempDescripcion, tempFecha, tempHora);
+                } else {
+                    Toast.makeText(getContext(), "Permiso no concedido. Las alarmas exactas no están disponibles", Toast.LENGTH_SHORT).show();
+                }
+            }
+            terminarGuardado();
+        }
+    }
     private void programarAlarma(int actividadId, String titulo, String descripcion, String fecha, String hora) {
         try {
-            // Convertir fecha y hora a milisegundos
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             Date date = sdf.parse(fecha + " " + hora);
 
@@ -377,50 +474,61 @@ public class AgregarActividadDialogFragment extends DialogFragment {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
 
+            // Verificar si la hora ya pasó
+            if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
+                Toast.makeText(getContext(), "La hora programada ya ha pasado", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             // Crear intent para el BroadcastReceiver
             Intent intent = new Intent(requireContext(), ActivityAlarmReceiver.class);
             intent.putExtra("actividad_id", actividadId);
             intent.putExtra("titulo", titulo);
             intent.putExtra("descripcion", descripcion);
+            intent.putExtra("fecha", fecha);
+            intent.putExtra("hora", hora);
+
+            // Configurar flags para PendingIntent
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                flags |= PendingIntent.FLAG_IMMUTABLE;
+            }
 
             PendingIntent pendingIntent = PendingIntent.getBroadcast(
                     requireContext(),
-                    actividadId, // Usamos el ID de la actividad como requestCode
+                    actividadId,
                     intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                    flags
             );
 
             // Obtener el AlarmManager
             AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager == null) return;
 
-            if (alarmManager != null) {
-                // Configurar la alarma según la versión de Android
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            calendar.getTimeInMillis(),
-                            pendingIntent
-                    );
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    alarmManager.setExact(
-                            AlarmManager.RTC_WAKEUP,
-                            calendar.getTimeInMillis(),
-                            pendingIntent
-                    );
-                } else {
-                    alarmManager.set(
-                            AlarmManager.RTC_WAKEUP,
-                            calendar.getTimeInMillis(),
-                            pendingIntent
-                    );
-                }
-
-                Log.d("Alarma", "Alarma programada para: " + calendar.getTime());
-                Toast.makeText(getContext(), "Recordatorio programado", Toast.LENGTH_SHORT).show();
+            // Programar la alarma
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        calendar.getTimeInMillis(),
+                        pendingIntent
+                );
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                alarmManager.setExact(
+                        AlarmManager.RTC_WAKEUP,
+                        calendar.getTimeInMillis(),
+                        pendingIntent
+                );
+            } else {
+                alarmManager.set(
+                        AlarmManager.RTC_WAKEUP,
+                        calendar.getTimeInMillis(),
+                        pendingIntent
+                );
             }
+
+            Log.d("Alarma", "Alarma programada para: " + calendar.getTime());
         } catch (ParseException e) {
             Log.e("Alarma", "Error al programar alarma", e);
-            Toast.makeText(getContext(), "Error al programar recordatorio", Toast.LENGTH_SHORT).show();
         }
     }
 
