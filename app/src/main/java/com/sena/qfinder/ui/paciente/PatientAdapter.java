@@ -3,11 +3,13 @@ package com.sena.qfinder.ui.paciente;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.sena.qfinder.R;
 import com.sena.qfinder.data.models.PacienteResponse;
 
@@ -56,15 +58,32 @@ public class PatientAdapter extends RecyclerView.Adapter<PatientAdapter.PatientV
         private TextView tvPatientName;
         private TextView tvPatientConditions;
 
+        private ImageView ivProfile;
+
         public PatientViewHolder(@NonNull View itemView) {
             super(itemView);
             tvPatientName = itemView.findViewById(R.id.tvPatientName);
             tvPatientConditions = itemView.findViewById(R.id.tvPatientConditions);
+            ivProfile = itemView.findViewById(R.id.ivPatientProfile);
         }
 
         public void bind(PacienteResponse patient) {
             tvPatientName.setText(patient.getNombre() + " " + patient.getApellido());
             tvPatientConditions.setText(patient.getDiagnostico_principal() != null ? patient.getDiagnostico_principal() : "Sin diagnóstico");
+
+
+            String imagenUrl = patient.getImagen_paciente();
+            if (imagenUrl != null && !imagenUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(imagenUrl)
+                        .placeholder(R.drawable.perfil_familiar)
+                        .error(R.drawable.perfil_familiar)
+                        .circleCrop()
+                        .into(ivProfile);
+            } else {
+                ivProfile.setImageResource(R.drawable.perfil_familiar);
+            }
         }
     }
 }
+
