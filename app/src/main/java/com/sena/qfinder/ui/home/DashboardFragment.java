@@ -25,6 +25,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.sena.qfinder.ui.actividad.Actividad1Fragment;
 import com.sena.qfinder.ui.medicamento.ListaAsignarMedicamentos;
 import com.sena.qfinder.R;
@@ -124,6 +125,8 @@ public class DashboardFragment extends Fragment {
             return;
         }
 
+        ImageView ivUserProfile = rootView.findViewById(R.id.ivUserProfile); // Asegúrate de tener este ImageView en tu layout
+
         Retrofit retrofit = ApiClient.getClient();
         AuthService authService = retrofit.create(AuthService.class);
         Call<PerfilUsuarioResponse> call = authService.obtenerPerfil("Bearer " + token);
@@ -136,12 +139,42 @@ public class DashboardFragment extends Fragment {
                     String nombreCompleto = usuario.getNombre_usuario() + " " + usuario.getApellido_usuario();
                     tvUserName.setText(nombreCompleto);
 
+                    // Guardar nombre en SharedPreferences
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString("nombre_completo", nombreCompleto);
+
+                    // Guardar URL de la imagen si existe
+                    if (usuario.getImagen_usuario() != null && !usuario.getImagen_usuario().isEmpty()) {
+                        editor.putString("imagen_usuario", usuario.getImagen_usuario());
+
+                        // Cargar imagen con Glide
+                        Glide.with(requireContext())
+                                .load(usuario.getImagen_usuario())
+                                .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
+                                .error(R.drawable.perfil_familiar) // Imagen si hay error
+                                .circleCrop() // Para hacerla circular
+                                .into(ivUserProfile);
+                    } else {
+                        ivUserProfile.setImageResource(R.drawable.perfil_familiar);
+                    }
+
                     editor.apply();
                 } else {
                     String nombreGuardado = preferences.getString("nombre_completo", "Usuario");
                     tvUserName.setText(nombreGuardado);
+
+                    // Cargar imagen guardada si existe
+                    String imagenGuardada = preferences.getString("imagen_usuario", null);
+                    if (imagenGuardada != null && !imagenGuardada.isEmpty()) {
+                        Glide.with(requireContext())
+                                .load(imagenGuardada)
+                                .placeholder(R.drawable.perfil_familiar)
+                                .error(R.drawable.perfil_familiar)
+                                .circleCrop()
+                                .into(ivUserProfile);
+                    } else {
+                        ivUserProfile.setImageResource(R.drawable.perfil_familiar);
+                    }
                 }
             }
 
@@ -150,6 +183,19 @@ public class DashboardFragment extends Fragment {
                 Log.e("DashboardFragment", "Error al obtener perfil", t);
                 String nombreGuardado = preferences.getString("nombre_completo", "Usuario");
                 tvUserName.setText(nombreGuardado);
+
+                // Cargar imagen guardada si existe
+                String imagenGuardada = preferences.getString("imagen_usuario", null);
+                if (imagenGuardada != null && !imagenGuardada.isEmpty()) {
+                    Glide.with(requireContext())
+                            .load(imagenGuardada)
+                            .placeholder(R.drawable.perfil_familiar)
+                            .error(R.drawable.perfil_familiar)
+                            .circleCrop()
+                            .into(ivUserProfile);
+                } else {
+                    ivUserProfile.setImageResource(R.drawable.perfil_familiar);
+                }
             }
         });
     }
@@ -240,8 +286,10 @@ public class DashboardFragment extends Fragment {
                     paciente.getDiagnostico_principal() : "Sin diagnóstico";
 
             String fecha_nacimiento = paciente.getFecha_nacimiento();
+            String imagenPaciente=paciente.getImagen_paciente();
+
             addPatientCard(nombreCompleto, fecha_nacimiento, diagnostico,
-                    R.drawable.perfil_paciente, paciente.getId());
+                    imagenPaciente, paciente.getId());
         }
 
         View addCard = currentInflater.inflate(R.layout.item_add_patient_card, patientsContainer, false);
@@ -249,7 +297,7 @@ public class DashboardFragment extends Fragment {
         patientsContainer.addView(addCard);
     }
 
-    private void addPatientCard(String name, String relation, String conditions, int imageResId, int patientId) {
+    private void addPatientCard(String name, String relation, String conditions, String imageUrl, int patientId) {
         View patientCard = currentInflater.inflate(R.layout.item_patient_card, patientsContainer, false);
         patientCard.setTag(patientId);
 
@@ -270,7 +318,17 @@ public class DashboardFragment extends Fragment {
             tvConditions.setText("• Sin diagnóstico");
         }
 
-        ivProfile.setImageResource(imageResId);
+        // Cargar imagen con Glide
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(requireContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
+                    .error(R.drawable.perfil_familiar) // Imagen si hay error
+                    .circleCrop() // Para hacerla circular
+                    .into(ivProfile);
+        } else {
+            ivProfile.setImageResource(R.drawable.perfil_familiar);
+        }
 
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;

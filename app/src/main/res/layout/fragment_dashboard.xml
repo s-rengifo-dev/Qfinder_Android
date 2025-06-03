@@ -23,6 +23,7 @@
             android:paddingEnd="16dp">
 
             <ImageView
+                android:id="@+id/ivUserProfile"
                 android:layout_width="40dp"
                 android:layout_height="70dp"
                 android:src="@drawable/perfil_familiar"
