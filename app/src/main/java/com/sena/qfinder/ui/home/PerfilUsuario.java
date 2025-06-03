@@ -194,8 +194,7 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
                     usuarioActual.getDireccion_usuario(),
                     usuarioActual.getTelefono_usuario(),
                     usuarioActual.getCorreo_usuario(),
-                    usuarioActual.getImagen_usuario(),
-                    usuarioActual.isManejarImagenes()
+                    usuarioActual.getImagen_usuario()
             );
 
             EditarUsuarioDialogFragment dialog = EditarUsuarioDialogFragment.newInstance(userRequest, this);

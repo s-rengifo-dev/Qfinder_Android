@@ -1,10 +1,12 @@
 package com.sena.qfinder.ui.auth;
 
-import android.app.Activity;
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,14 +17,17 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.gson.Gson;
 import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.AuthService;
 import com.sena.qfinder.data.models.UsuarioRequest;
@@ -52,9 +57,11 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         void onUsuarioActualizado(UsuarioRequest nuevoUsuario);
     }
 
-
     private static OnUsuarioActualizadoListener tempListener;
     private OnUsuarioActualizadoListener listener;
+
+    private ActivityResultLauncher<String> permisoLauncher;
+    private ActivityResultLauncher<String> imagenPickerLauncher;
 
     public static EditarUsuarioDialogFragment newInstance(UsuarioRequest usuario, OnUsuarioActualizadoListener listener) {
         EditarUsuarioDialogFragment fragment = new EditarUsuarioDialogFragment();
@@ -71,6 +78,35 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         listener = tempListener;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        storage = FirebaseStorage.getInstance();
+
+        permisoLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        abrirSelectorDeImagen();
+                    } else {
+                        Toast.makeText(getContext(), "Permiso denegado para acceder a imágenes", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        imagenPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                new ActivityResultCallback<Uri>() {
+                    @Override
+                    public void onActivityResult(Uri uri) {
+                        if (uri != null) {
+                            selectedImageUri = uri;
+                            imagen.setImageURI(selectedImageUri);
+                            guardarUriTemporal(uri.toString());
+                        }
+                    }
+                });
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -85,8 +121,6 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         imagen = view.findViewById(R.id.imgAvatar);
         btnGuardar = view.findViewById(R.id.btnGuardar);
 
-        storage = FirebaseStorage.getInstance();
-
         if (getArguments() != null) {
             usuario = (UsuarioRequest) getArguments().getSerializable("usuario");
             if (usuario != null) {
@@ -95,53 +129,29 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
                 telefonoEditText.setText(usuario.getTelefono_usuario());
                 emailEditText.setText(usuario.getCorreo_usuario());
                 direccionEditText.setText(usuario.getDireccion_usuario());
-
-                if (usuario.getImagen_usuario() != null && !usuario.getImagen_usuario().isEmpty()) {
-                    Glide.with(this)
-                            .load(usuario.getImagen_usuario())
-                            .placeholder(R.drawable.perfil_paciente)
-                            .error(R.drawable.perfil_paciente)
-                            .circleCrop()
-                            .into(imagen);
-                }
             }
+        }
+
+        // Mostrar imagen temporal si existe, de lo contrario cargar la del backend
+        String uriStr = obtenerUriTemporal();
+        if (uriStr != null) {
+            selectedImageUri = Uri.parse(uriStr);
+            imagen.setImageURI(selectedImageUri);
+        } else if (usuario != null && usuario.getImagen_usuario() != null && !usuario.getImagen_usuario().isEmpty()) {
+            Glide.with(this)
+                    .load(usuario.getImagen_usuario())
+                    .placeholder(R.drawable.perfil_paciente)
+                    .error(R.drawable.perfil_paciente)
+                    .circleCrop()
+                    .into(imagen);
         }
 
         setupRetrofit();
 
+        imagen.setOnClickListener(v -> verificarPermisoDeImagen());
         btnGuardar.setOnClickListener(v -> guardarCambios());
-        imagen.setOnClickListener(v -> abrirSelectorDeImagen());
 
         return view;
-    }
-
-    private void abrirSelectorDeImagen() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, 1001);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1001 && resultCode == Activity.RESULT_OK && data != null) {
-            selectedImageUri = data.getData();
-            imagen.setImageURI(selectedImageUri);
-        }
-    }
-
-    private void subirImagenAFirebase(Uri imagenUri) {
-        StorageReference imageRef = storage.getReference()
-                .child("imagenes_usuarios/" + UUID.randomUUID().toString() + ".jpg");
-
-        imageRef.putFile(imagenUri)
-                .addOnSuccessListener(taskSnapshot -> imageRef.getDownloadUrl()
-                        .addOnSuccessListener(uri -> enviarDatosUsuario(uri.toString())))
-                .addOnFailureListener(e -> {
-                    Log.e("FIREBASE", "Error al subir imagen", e);
-                    Toast.makeText(getContext(), "Error al subir imagen", Toast.LENGTH_SHORT).show();
-                    btnGuardar.setEnabled(true);
-                });
     }
 
     private void setupRetrofit() {
@@ -149,17 +159,63 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
                 .baseUrl("https://qfinder-production.up.railway.app/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-
         authService = retrofit.create(AuthService.class);
+    }
+
+    private void verificarPermisoDeImagen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permisoLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+            } else {
+                abrirSelectorDeImagen();
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permisoLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+            } else {
+                abrirSelectorDeImagen();
+            }
+        }
+    }
+
+    private void abrirSelectorDeImagen() {
+        imagenPickerLauncher.launch("image/*");
     }
 
     private void guardarCambios() {
         btnGuardar.setEnabled(false);
+
         if (selectedImageUri != null) {
             subirImagenAFirebase(selectedImageUri);
         } else {
-            enviarDatosUsuario(usuario != null ? usuario.getImagen_usuario() : null);
+            String urlVieja = (usuario != null ? usuario.getImagen_usuario() : null);
+            enviarDatosUsuario(urlVieja);
         }
+    }
+
+    private void subirImagenAFirebase(Uri imagenUri) {
+        StorageReference imageRef = storage
+                .getReference()
+                .child("imagenes_usuarios/" + UUID.randomUUID().toString() + ".jpg");
+
+        imageRef.putFile(imagenUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    imageRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> {
+                                String downloadUrl = uri.toString();
+                                enviarDatosUsuario(downloadUrl);
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(getContext(), "No se pudo obtener URL de la imagen", Toast.LENGTH_SHORT).show();
+                                btnGuardar.setEnabled(true);
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error al subir imagen: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    btnGuardar.setEnabled(true);
+                });
     }
 
     private void enviarDatosUsuario(String urlImagen) {
@@ -175,23 +231,25 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
             return;
         }
 
-        // Aquí el cambio principal: agregamos el booleano manejarImagenes
-        UsuarioRequest request = new UsuarioRequest(nombre, apellido, direccion, telefono, email, urlImagen, true);
+        UsuarioRequest request = new UsuarioRequest(
+                nombre,
+                apellido,
+                direccion,
+                telefono,
+                email,
+                urlImagen
+        );
 
-        SharedPreferences prefs = getContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        SharedPreferences prefs = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = prefs.getString("token", null);
 
         if (token == null) {
-            Toast.makeText(getContext(), "Token no disponible. Por favor inicia sesión de nuevo.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Token no disponible. Inicia sesión nuevamente.", Toast.LENGTH_SHORT).show();
             btnGuardar.setEnabled(true);
             return;
         }
 
-        Log.d("EDITAR_USUARIO", "Request JSON: " + new Gson().toJson(request));
-        Log.d("EDITAR_USUARIO", "Token: Bearer " + token);
-
         Call<ResponseBody> call = authService.actualizarUsuario(request, "Bearer " + token);
-
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
@@ -201,17 +259,10 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
                     if (listener != null) {
                         listener.onUsuarioActualizado(request);
                     }
+                    limpiarUriTemporal();
                     dismiss();
                 } else {
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Respuesta vacía";
-                        Log.e("EDITAR_USUARIO", "Error al actualizar: " + response.code());
-                        Log.e("EDITAR_USUARIO", "Cuerpo del error: " + errorBody);
-                        Toast.makeText(getContext(), "Error " + response.code() + ": " + errorBody, Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(getContext(), "Error desconocido al procesar la respuesta", Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(getContext(), "Error " + response.code(), Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -219,11 +270,9 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
                 btnGuardar.setEnabled(true);
                 Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.e("EDITAR_USUARIO", "Fallo de red", t);
             }
         });
     }
-
 
     @Override
     public void onStart() {
@@ -232,5 +281,22 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
             int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.95);
             getDialog().getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
+    }
+
+    // ---------- MÉTODOS PARA GUARDAR/RECUPERAR LA URI TEMPORAL DE LA IMAGEN ----------
+
+    private void guardarUriTemporal(String uriStr) {
+        SharedPreferences prefs = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        prefs.edit().putString("uriTemporal", uriStr).apply();
+    }
+
+    private String obtenerUriTemporal() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        return prefs.getString("uriTemporal", null);
+    }
+
+    private void limpiarUriTemporal() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        prefs.edit().remove("uriTemporal").apply();
     }
 }

@@ -1,10 +1,13 @@
 package com.sena.qfinder.ui.paciente;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.bumptech.glide.Glide;
@@ -54,6 +58,8 @@ public class EditarPacienteDialogFragment extends DialogFragment {
     private AuthService authService;
     private FirebaseStorage storage;
     private OnPacienteActualizadoListener listener;
+    private static final int REQUEST_IMAGE_PICK = 1001;
+    private static final int REQUEST_IMAGE_PERMISSION = 1002;
 
     public interface OnPacienteActualizadoListener {
         void onPacienteActualizado(PacienteResponse pacienteActualizado);
@@ -86,14 +92,12 @@ public class EditarPacienteDialogFragment extends DialogFragment {
         storage = FirebaseStorage.getInstance();
         setupRetrofit();
 
-        // Prellenar campos
         nombreEditText.setText(paciente.getNombre());
         apellidoEditText.setText(paciente.getApellido());
         identificacionEditText.setText(paciente.getIdentificacion());
         fechaNacimientoEditText.setText(convertirFechaParaMostrar(paciente.getFecha_nacimiento()));
         diagnosticoEditText.setText(paciente.getDiagnostico_principal());
 
-        // Cargar imagen actual
         if (paciente.getImagen_paciente() != null && !paciente.getImagen_paciente().isEmpty()) {
             Glide.with(this)
                     .load(paciente.getImagen_paciente() + "?t=" + System.currentTimeMillis())
@@ -110,24 +114,59 @@ public class EditarPacienteDialogFragment extends DialogFragment {
         sexoSpinner.setSelection(paciente.getSexo().equalsIgnoreCase("masculino") ? 0 : 1);
 
         fechaNacimientoEditText.setOnClickListener(v -> mostrarDatePicker());
-        imagen.setOnClickListener(v -> abrirSelectorDeImagen());
+        imagen.setOnClickListener(v -> verificarPermisoDeImagen());
         btnGuardar.setOnClickListener(v -> guardarCambios());
 
         return view;
     }
 
+    private void verificarPermisoDeImagen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_MEDIA_IMAGES)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_IMAGE_PERMISSION);
+            } else {
+                abrirSelectorDeImagen();
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_IMAGE_PERMISSION);
+            } else {
+                abrirSelectorDeImagen();
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_IMAGE_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                abrirSelectorDeImagen();
+            } else {
+                Toast.makeText(getContext(), "Permiso denegado para acceder a imágenes", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     private void abrirSelectorDeImagen() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        startActivityForResult(intent, 1001);
+        startActivityForResult(intent, REQUEST_IMAGE_PICK);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1001 && resultCode == Activity.RESULT_OK && data != null) {
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK && data != null) {
             selectedImageUri = data.getData();
-            imagen.setImageURI(selectedImageUri);  // Muestra la imagen seleccionada
+            if (selectedImageUri != null) {
+                imagen.setImageURI(selectedImageUri);
+                Log.i("FIREBASE", "Imagen seleccionada URI: " + selectedImageUri.toString());
+            } else {
+                Toast.makeText(getContext(), "Error al obtener la imagen", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -157,21 +196,33 @@ public class EditarPacienteDialogFragment extends DialogFragment {
         if (selectedImageUri != null) {
             subirImagenAFirebase(selectedImageUri);
         } else {
-            // Usar la imagen que ya tenía el paciente si no cambió
             enviarPaciente(paciente.getImagen_paciente());
         }
     }
 
     private void subirImagenAFirebase(Uri imagenUri) {
+        if (imagenUri == null) {
+            Log.e("FIREBASE", "La URI de la imagen es nula");
+            Toast.makeText(getContext(), "Imagen inválida", Toast.LENGTH_SHORT).show();
+            btnGuardar.setEnabled(true);
+            return;
+        }
+
         StorageReference imageRef = storage.getReference()
                 .child("imagenes_pacientes/" + UUID.randomUUID().toString() + ".jpg");
 
         imageRef.putFile(imagenUri)
-                .addOnSuccessListener(taskSnapshot -> imageRef.getDownloadUrl()
-                        .addOnSuccessListener(uri -> enviarPaciente(uri.toString())))
+                .addOnSuccessListener(taskSnapshot -> {
+                    Log.i("FIREBASE", "Imagen subida correctamente");
+                    imageRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> {
+                                Log.i("FIREBASE", "URL imagen: " + uri.toString());
+                                enviarPaciente(uri.toString());
+                            });
+                })
                 .addOnFailureListener(e -> {
                     Log.e("FIREBASE", "Error al subir imagen", e);
-                    Toast.makeText(getContext(), "Error al subir imagen", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error al subir imagen: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     btnGuardar.setEnabled(true);
                 });
     }
@@ -211,7 +262,6 @@ public class EditarPacienteDialogFragment extends DialogFragment {
                 if (response.isSuccessful()) {
                     Toast.makeText(getContext(), "Paciente actualizado correctamente", Toast.LENGTH_SHORT).show();
                     if (listener != null) {
-                        // Actualizar el objeto paciente con los nuevos datos
                         paciente.setNombre(nombre);
                         paciente.setApellido(apellido);
                         paciente.setIdentificacion(identificacion);
