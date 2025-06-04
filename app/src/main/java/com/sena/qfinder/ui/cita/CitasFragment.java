@@ -259,33 +259,31 @@ public class CitasFragment extends Fragment {
         for (CitaMedica cita : todasLasCitas) {
             if (cita.getFechaCita() != null && !cita.getFechaCita().isEmpty()) {
                 try {
-                    Date date = sdf.parse(cita.getFechaCita());
-                    if (date != null) {
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.setTime(date);
+                    // Extraemos directamente año, mes y día del string
+                    String fechaPart = cita.getFechaCita().split("T")[0];
+                    String[] partes = fechaPart.split("-");
 
-                        LocalDate localDate = LocalDate.of(
-                                calendar.get(Calendar.YEAR),
-                                calendar.get(Calendar.MONTH) + 1,
-                                calendar.get(Calendar.DAY_OF_MONTH)
-                        );
-                        CalendarDay calendarDay = CalendarDay.from(localDate);
+                    int year = Integer.parseInt(partes[0]);
+                    int month = Integer.parseInt(partes[1]); // Ya viene como 1-12
+                    int day = Integer.parseInt(partes[2]);
 
-                        String estado = cita.getEstadoCita() != null ? cita.getEstadoCita().toLowerCase() : "";
-                        switch (estado) {
-                            case "completada":
-                                fechasCompletadas.add(calendarDay);
-                                break;
-                            case "cancelada":
-                                fechasCanceladas.add(calendarDay);
-                                break;
-                            default: // pendiente u otros
-                                fechasPendientes.add(calendarDay);
-                                break;
-                        }
+                    // Creamos CalendarDay directamente
+                    CalendarDay calendarDay = CalendarDay.from(year, month - 1, day); // Restamos 1 para CalendarDay
+
+                    String estado = cita.getEstadoCita() != null ? cita.getEstadoCita().toLowerCase() : "";
+                    switch (estado) {
+                        case "completada":
+                            fechasCompletadas.add(calendarDay);
+                            break;
+                        case "cancelada":
+                            fechasCanceladas.add(calendarDay);
+                            break;
+                        default:
+                            fechasPendientes.add(calendarDay);
+                            break;
                     }
-                } catch (ParseException e) {
-                    Log.e(TAG, "Error al parsear fecha: " + cita.getFechaCita(), e);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error al procesar fecha: " + cita.getFechaCita(), e);
                 }
             }
         }
@@ -388,11 +386,24 @@ public class CitasFragment extends Fragment {
                 return;
             }
 
-            String fechaCita = String.format(Locale.getDefault(), "%04d-%02d-%02dT00:00:00Z",
-                    selectedDate.getYear(), selectedDate.getMonth() + 1, selectedDate.getDay());
+            // SOLUCIÓN DEFINITIVA - FORMATO CORRECTO
+            // Usamos Calendar para manejar correctamente los meses
+            Calendar calendarCita = Calendar.getInstance();
+            calendarCita.set(selectedDate.getYear(), selectedDate.getMonth(), selectedDate.getDay(), 12, 0);
 
-            String fechaRecordatorio = String.format(Locale.getDefault(), "%04d-%02d-%02dT23:00:00Z",
-                    selectedDate.getYear(), selectedDate.getMonth() + 1, selectedDate.getDay() - 1);
+            Calendar calendarRecordatorio = Calendar.getInstance();
+            calendarRecordatorio.set(selectedDate.getYear(), selectedDate.getMonth(), selectedDate.getDay() - 1, 8, 0);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            String fechaCita = sdf.format(calendarCita.getTime());
+            String fechaRecordatorio = sdf.format(calendarRecordatorio.getTime());
+
+            // DEBUG
+            Log.d("FECHAS_CORREGIDAS", "Fecha seleccionada (UI): " + selectedDate);
+            Log.d("FECHAS_CORREGIDAS", "Fecha cita (enviada): " + fechaCita);
+            Log.d("FECHAS_CORREGIDAS", "Fecha recordatorio: " + fechaRecordatorio);
 
             CitaMedica nuevaCita = new CitaMedica();
             nuevaCita.setTitulo(titulo);
@@ -407,7 +418,6 @@ public class CitasFragment extends Fragment {
         });
 
         btnCancelar.setOnClickListener(v -> dialog.dismiss());
-
         dialog.show();
     }
 

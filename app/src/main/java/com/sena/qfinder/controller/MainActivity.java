@@ -3,6 +3,7 @@ package com.sena.qfinder.controller;
 import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -27,10 +28,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences preferences = getSharedPreferences("usuario", MODE_PRIVATE);
+        String token = preferences.getString("token", null);
+
+        if (token != null && !token.isEmpty()) {
+            // Sesión activa, ir directo al dashboard
+            startActivity(new Intent(this, MainActivityDash.class));
+            finish(); // evitar volver a esta actividad al presionar atrás
+            return; // salir del método para no cargar el resto
+        }
+
         setContentView(R.layout.activity_main);
 
         // 1. Limpiar alarmas residuales
-//        cleanUpStaleAlarms();
+//    cleanUpStaleAlarms();
 
         // 2. Verificar optimizaciones para Xiaomi
         if (Build.MANUFACTURER.equalsIgnoreCase("xiaomi")) {
@@ -39,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 3. Configuración de fragmento inicial
         if (savedInstanceState == null) {
-            loadFragment(new Inicio());
+            loadFragment(new Inicio()); // Fragmento para login o inicio
             isInicioFragmentShown = true;
         }
 
