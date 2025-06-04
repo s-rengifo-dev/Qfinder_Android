@@ -72,12 +72,6 @@ public class Comunidad extends Fragment {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        FloatingActionButton fab = view.findViewById(R.id.fabAddComunidad);
-        fab.setOnClickListener(v -> {
-            Log.d(TAG, "Clic en botón añadir comunidad");
-            mostrarDialogoCrearRed();
-        });
-
         cargarRedes();
 
         return view;
