@@ -19,11 +19,23 @@ public class SnoozeReceiver extends BroadcastReceiver {
         String fecha = intent.getStringExtra("fecha");
         String hora = intent.getStringExtra("hora");
 
+        // Validar datos antes de posponer
+        if (titulo == null || fecha == null || hora == null) {
+            Log.e(TAG, "Datos incompletos al posponer alarma");
+            return;
+        }
+
         snoozeAlarm(context, actividadId, titulo, descripcion, fecha, hora);
     }
 
     public static void snoozeAlarm(Context context, int actividadId, String titulo,
                                    String descripcion, String fecha, String hora) {
+        // Validar datos críticos
+        if (titulo == null || fecha == null || hora == null) {
+            Log.e(TAG, "No se puede posponer alarma con datos nulos");
+            return;
+        }
+
         // Reprogramar para 10 minutos después
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, 10);

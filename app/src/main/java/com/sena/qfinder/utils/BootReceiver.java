@@ -22,7 +22,13 @@ public class BootReceiver extends BroadcastReceiver {
             List<AlarmaEntity> alarmas = dbHelper.obtenerTodasAlarmas();
 
             for (AlarmaEntity alarma : alarmas) {
-                if (alarma.isActive() && alarma.getTimestamp() > System.currentTimeMillis()) {
+                // Validar datos y estado de la alarma
+                if (alarma.isActive() &&
+                        alarma.getTimestamp() > System.currentTimeMillis() &&
+                        alarma.getTitulo() != null &&
+                        alarma.getFecha() != null &&
+                        alarma.getHora() != null) {
+
                     ActivityAlarmReceiver.programarAlarma(
                             context,
                             alarma.getId(),

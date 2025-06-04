@@ -36,6 +36,7 @@ import com.sena.qfinder.data.models.ActividadResponse;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
 import com.sena.qfinder.utils.ActivityAlarmReceiver;
+import com.sena.qfinder.utils.AlarmReceiver;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -481,7 +482,7 @@ public class AgregarActividadDialogFragment extends DialogFragment {
             }
 
             // Crear intent para el BroadcastReceiver
-            Intent intent = new Intent(requireContext(), ActivityAlarmReceiver.class);
+            Intent intent = new Intent(requireContext(), AlarmReceiver.class);
             intent.putExtra("actividad_id", actividadId);
             intent.putExtra("titulo", titulo);
             intent.putExtra("descripcion", descripcion);
