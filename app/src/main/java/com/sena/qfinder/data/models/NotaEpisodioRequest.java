@@ -3,7 +3,6 @@ package com.sena.qfinder.data.models;
 import com.google.gson.annotations.SerializedName;
 
 public class NotaEpisodioRequest {
-
     @SerializedName("id_paciente")
     private int idPaciente;
 
@@ -13,8 +12,11 @@ public class NotaEpisodioRequest {
     @SerializedName("fecha_hora_fin")
     private String fechaHoraFin;
 
-    @SerializedName("severidad")
-    private String severidad;
+    @SerializedName("tipo")
+    private String tipo; // Cambiado de severidad a tipo
+
+    @SerializedName("titulo")
+    private String titulo; // Nuevo campo
 
     @SerializedName("descripcion")
     private String descripcion;
@@ -34,25 +36,38 @@ public class NotaEpisodioRequest {
     @SerializedName("fuente_datos")
     private String fuenteDatos;
 
-    @SerializedName("tipo")
-    private String tipo;
-
+    // Eliminado el campo 'severidad'
     public NotaEpisodioRequest(int idPaciente, String fechaHoraInicio, String fechaHoraFin,
-                               String severidad, String descripcion, String intervenciones,
+                               String tipo, String titulo, String descripcion, String intervenciones,
                                int registradoPor, String registradoPorRole, String origen,
-                               String fuenteDatos, String tipo) {
+                               String fuenteDatos) {
         this.idPaciente = idPaciente;
         this.fechaHoraInicio = fechaHoraInicio;
         this.fechaHoraFin = fechaHoraFin;
-        this.severidad = severidad;
+        this.tipo = tipo;
+        this.titulo = titulo;
         this.descripcion = descripcion;
         this.intervenciones = intervenciones;
         this.registradoPor = registradoPor;
         this.registradoPorRole = registradoPorRole;
         this.origen = origen;
         this.fuenteDatos = fuenteDatos;
-        this.tipo = tipo;
     }
 
-    // Getters opcionales aquí...
+    // Getters...
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
 }

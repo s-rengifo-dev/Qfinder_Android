@@ -56,7 +56,7 @@ public class NotaEpisodioAdapter extends BaseAdapter {
             holder = new ViewHolder();
             holder.tvTitulo = convertView.findViewById(R.id.tvTituloNota);
             holder.tvDescripcion = convertView.findViewById(R.id.textDescripcion);
-            holder.tvSeveridad = convertView.findViewById(R.id.textSeveridad);
+            holder.tvTipo = convertView.findViewById(R.id.textSeveridad); // Ahora muestra el tipo
             holder.tvFecha = convertView.findViewById(R.id.textFecha);
             convertView.setTag(holder);
         } else {
@@ -65,8 +65,8 @@ public class NotaEpisodioAdapter extends BaseAdapter {
 
         NotaEpisodio nota = notas.get(position);
 
-        // Título: resumen de la descripción (hasta 30 chars)
-        String titulo = nota.getDescripcion() != null ? nota.getDescripcion() : "";
+        // Usar título directamente
+        String titulo = nota.getTitulo() != null ? nota.getTitulo() : "";
         if (titulo.length() > 30) {
             titulo = titulo.substring(0, 30) + "...";
         }
@@ -75,8 +75,8 @@ public class NotaEpisodioAdapter extends BaseAdapter {
         // Descripción: intervenciones o fallback
         holder.tvDescripcion.setText(nota.getIntervenciones() != null ? nota.getIntervenciones() : "Sin intervenciones");
 
-        // Severidad (texto)
-        holder.tvSeveridad.setText("Severidad: " + (nota.getSeveridad() != null ? nota.getSeveridad() : "N/A"));
+        // Tipo (antes severidad)
+        holder.tvTipo.setText("Tipo: " + (nota.getTipo() != null ? nota.getTipo() : "N/A"));
 
         // Fecha formateada
         String fechaFormateada = nota.getFechaHoraInicio() != null ? nota.getFechaHoraInicio() : "";
@@ -94,7 +94,7 @@ public class NotaEpisodioAdapter extends BaseAdapter {
     private static class ViewHolder {
         TextView tvTitulo;
         TextView tvDescripcion;
-        TextView tvSeveridad;
+        TextView tvTipo; // Cambiado de severidad a tipo
         TextView tvFecha;
     }
 }

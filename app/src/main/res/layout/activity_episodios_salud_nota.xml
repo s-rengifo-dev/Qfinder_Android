@@ -16,221 +16,238 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/barraInferior"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:orientation="vertical">
 
-            <!-- Encabezado -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="99dp">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_header" />
-
-                <TextView
-                    android:id="@+id/tituloServicios"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Episodios salud"
-                    android:textColor="#000000"
-                    android:textSize="26sp"
-                    android:textStyle="bold"
-                    android:layout_centerInParent="true"
-                    android:layout_marginTop="33dp"/>
-            </RelativeLayout>
-
-            <!-- Barra superior -->
+            <!-- Encabezado simplificado -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:background="@color/fondoNotas"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp">
+                android:layout_height="80dp"
+                android:layout_marginBottom="25dp"
+                android:background="#4B9AF6"
+                android:padding="10dp">
 
                 <ImageView
                     android:id="@+id/btnVolver"
-                    android:layout_width="wrap_content"
+                    android:layout_width="25dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/back" />
+
+                <TextView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/flecharegreso"
-                    android:layout_marginEnd="12dp"/>
+                    android:layout_marginTop="13dp"
+                    android:gravity="center"
+                    android:text="Episodio Salud"
+                    android:textColor="@color/black"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+            <!-- Barra superior simplificada -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/fondoNotas"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
 
                 <EditText
                     android:id="@+id/editTextTitulo"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Título..."
+                    android:hint="Título del episodio"
                     android:maxLines="1"
                     android:inputType="textCapSentences"
                     android:background="@null"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
 
                 <Button
-                    android:id="@+id/gravedad"
+                    android:id="@+id/btnTipoEpisodio"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:layout_marginLeft="5dp"
+                    android:layout_marginLeft="16dp"
                     android:backgroundTint="@color/baja"
-                    android:text="Baja"
+                    android:text="Tipo"
                     android:textAlignment="center"
                     android:textColor="@color/black"
-                    android:textSize="12sp"/>
+                    android:textSize="14sp"/>
 
                 <Button
                     android:id="@+id/btnGuardar"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:layout_marginLeft="5dp"
+                    android:layout_marginLeft="16dp"
                     android:backgroundTint="@color/Botones"
                     android:text="Guardar"
                     android:textStyle="bold"
                     android:textAlignment="center"
                     android:textColor="@color/black"
-                    android:textSize="12sp"/>
-
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/opcionesnotas"
-                    android:layout_marginStart="8dp"/>
+                    android:textSize="14sp"/>
             </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
+                android:layout_height="1dp"
                 android:layout_marginVertical="8dp"
                 android:background="?android:attr/listDivider"/>
 
-            <EditText
-                android:id="@+id/editTextFechaInicio"
+            <!-- Sección de fechas -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Fecha inicio"
-                android:focusable="false"
-                android:clickable="true"
-                android:background="@android:color/transparent"
-                android:textColor="@android:color/black"
-                android:layout_marginTop="8dp"/>
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:padding="8dp">
 
-            <EditText
-                android:id="@+id/editTextFechaFin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Fecha fin"
-                android:focusable="false"
-                android:clickable="true"
-                android:background="@android:color/transparent"
-                android:textColor="@android:color/black"
-                android:layout_marginTop="8dp"/>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingEnd="8dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Fecha inicio"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+
+                    <EditText
+                        android:id="@+id/editTextFechaInicio"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Seleccionar fecha"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:background="@drawable/border_edittext"
+                        android:textColor="@android:color/black"
+                        android:padding="12dp"
+                        android:textSize="16sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingStart="8dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Fecha fin (opcional)"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+
+                    <EditText
+                        android:id="@+id/editTextFechaFin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Seleccionar fecha"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:background="@drawable/border_edittext"
+                        android:textColor="@android:color/black"
+                        android:padding="12dp"
+                        android:textSize="16sp"/>
+                </LinearLayout>
+            </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
+                android:layout_height="1dp"
                 android:layout_marginVertical="8dp"
                 android:background="?android:attr/listDivider"/>
 
-            <EditText
-                android:id="@+id/editTextDescripcion"
+            <!-- Descripción con más espacio -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:gravity="top|start"
-                android:padding="12dp"
-                android:hint="Descripción..."
-                android:background="@android:color/transparent"
-                android:textColor="@android:color/black"
-                android:textSize="16sp"
-                android:inputType="textMultiLine"
-                android:maxLines="6"
-                android:scrollbars="vertical"
-                android:overScrollMode="always" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Descripción del episodio"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <EditText
+                    android:id="@+id/editTextDescripcion"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:gravity="top|start"
+                    android:padding="16dp"
+                    android:hint="Describa el episodio de salud..."
+                    android:background="@drawable/border_edittext"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:inputType="textMultiLine"
+                    android:maxLines="10"
+                    android:scrollbars="vertical"
+                    android:overScrollMode="always" />
+            </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
+                android:layout_height="1dp"
                 android:layout_marginVertical="8dp"
                 android:background="?android:attr/listDivider"/>
 
-            <EditText
-                android:id="@+id/editTextIntervenciones"
+            <!-- Intervenciones con más espacio -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:gravity="top|start"
-                android:padding="12dp"
-                android:hint="Intervenciones..."
-                android:background="@android:color/transparent"
-                android:textColor="@android:color/black"
-                android:textSize="16sp"
-                android:inputType="textMultiLine"
-                android:maxLines="5"
-                android:scrollbars="vertical"
-                android:overScrollMode="always"
-                android:layout_marginTop="8dp" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="Intervenciones realizadas (opcional)"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/editTextIntervenciones"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:gravity="top|start"
+                    android:padding="16dp"
+                    android:hint="Describa las intervenciones realizadas..."
+                    android:background="@drawable/border_edittext"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:inputType="textMultiLine"
+                    android:maxLines="8"
+                    android:scrollbars="vertical"
+                    android:overScrollMode="always"/>
+            </LinearLayout>
+
+            <!-- Estado (oculto, se maneja internamente) -->
+            <TextView
+                android:id="@+id/textEstado"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
         </LinearLayout>
     </ScrollView>
-
-    <!-- Barra inferior flotante, se mueve con el teclado -->
-    <LinearLayout
-        android:id="@+id/barraInferior"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:background="@color/fondoNotas"
-        android:orientation="horizontal"
-        android:gravity="bottom"
-        android:weightSum="5"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/checkbox"
-            android:layout_gravity="center"/>
-
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/alineaciontexto"
-            android:layout_gravity="center"/>
-
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/colortexto"
-            android:layout_gravity="center"/>
-
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/colorfondotext"
-            android:layout_gravity="center"/>
-
-        <Spinner
-            android:id="@+id/spinner_tamano_letra"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center"/>
-    </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

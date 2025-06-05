@@ -35,12 +35,12 @@ import retrofit2.Response;
 
 public class episodios_salud_nota extends AppCompatActivity {
 
-    private String nivelGravedadActual = "baja";
+    private String tipoEpisodioActual = "general";
     private int idPacienteSeleccionado = -1;
 
-    private EditText editTextDescripcion, editTextIntervenciones;
+    private EditText editTextTitulo, editTextDescripcion, editTextIntervenciones;
     private EditText editTextFechaInicio, editTextFechaFin;
-    private Button btnGuardar, btnGravedad;
+    private Button btnGuardar, btnTipoEpisodio;
 
     private final Calendar calendarInicio = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     private final Calendar calendarFin = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -66,13 +66,14 @@ public class episodios_salud_nota extends AppCompatActivity {
 
         inicializarVistas();
         configurarFechaInicioPredeterminada();
-        configurarBotonGravedad();
+        configurarBotonTipoEpisodio();
         configurarListeners();
     }
 
     private void inicializarVistas() {
-        btnGravedad = findViewById(R.id.gravedad);
+        btnTipoEpisodio = findViewById(R.id.btnTipoEpisodio);
         btnGuardar = findViewById(R.id.btnGuardar);
+        editTextTitulo = findViewById(R.id.editTextTitulo);
         editTextDescripcion = findViewById(R.id.editTextDescripcion);
         editTextIntervenciones = findViewById(R.id.editTextIntervenciones);
         editTextFechaInicio = findViewById(R.id.editTextFechaInicio);
@@ -90,14 +91,14 @@ public class episodios_salud_nota extends AppCompatActivity {
         editTextFechaInicio.setText(sdf.format(calendarInicio.getTime()));
     }
 
-    private void configurarBotonGravedad() {
-        final int[] estadoGravedad = {0};
-        actualizarBotonGravedad(estadoGravedad[0]);
+    private void configurarBotonTipoEpisodio() {
+        final int[] estadoTipo = {0};
+        actualizarBotonTipoEpisodio(estadoTipo[0]);
 
-        btnGravedad.setOnClickListener(v -> {
-            estadoGravedad[0]++;
-            if (estadoGravedad[0] > 2) estadoGravedad[0] = 0;
-            actualizarBotonGravedad(estadoGravedad[0]);
+        btnTipoEpisodio.setOnClickListener(v -> {
+            estadoTipo[0]++;
+            if (estadoTipo[0] > 2) estadoTipo[0] = 0;
+            actualizarBotonTipoEpisodio(estadoTipo[0]);
         });
     }
 
@@ -107,22 +108,22 @@ public class episodios_salud_nota extends AppCompatActivity {
         btnGuardar.setOnClickListener(v -> guardarNota());
     }
 
-    private void actualizarBotonGravedad(int estado) {
+    private void actualizarBotonTipoEpisodio(int estado) {
         switch (estado) {
             case 0:
-                nivelGravedadActual = "baja";
-                btnGravedad.setBackgroundColor(ContextCompat.getColor(this, R.color.baja));
-                btnGravedad.setText("Baja");
+                tipoEpisodioActual = "general";
+                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.baja));
+                btnTipoEpisodio.setText("General");
                 break;
             case 1:
-                nivelGravedadActual = "media";
-                btnGravedad.setBackgroundColor(ContextCompat.getColor(this, R.color.media));
-                btnGravedad.setText("Media");
+                tipoEpisodioActual = "agudo";
+                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.media));
+                btnTipoEpisodio.setText("Agudo");
                 break;
             case 2:
-                nivelGravedadActual = "alta";
-                btnGravedad.setBackgroundColor(ContextCompat.getColor(this, R.color.alta));
-                btnGravedad.setText("Alta");
+                tipoEpisodioActual = "crónico";
+                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.alta));
+                btnTipoEpisodio.setText("Crónico");
                 break;
         }
     }
@@ -178,9 +179,15 @@ public class episodios_salud_nota extends AppCompatActivity {
     }
 
     private boolean validarCampos() {
+        String titulo = editTextTitulo.getText().toString().trim();
         String descripcion = editTextDescripcion.getText().toString().trim();
         String fechaInicio = editTextFechaInicio.getText().toString().trim();
         String fechaFin = editTextFechaFin.getText().toString().trim();
+
+        if (titulo.isEmpty()) {
+            Toast.makeText(this, "Ingrese un título para el episodio", Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
         if (descripcion.length() < 5) {
             Toast.makeText(this, "La descripción debe tener al menos 5 caracteres", Toast.LENGTH_SHORT).show();
@@ -228,6 +235,7 @@ public class episodios_salud_nota extends AppCompatActivity {
     }
 
     private void crearYEnviarNota(String token, int userId) {
+        String titulo = editTextTitulo.getText().toString().trim();
         String descripcion = editTextDescripcion.getText().toString().trim();
         String intervenciones = editTextIntervenciones.getText().toString().trim();
         String fechaInicio = editTextFechaInicio.getText().toString().trim();
@@ -238,14 +246,14 @@ public class episodios_salud_nota extends AppCompatActivity {
                 idPacienteSeleccionado,
                 fechaInicio,
                 fechaFin.isEmpty() ? null : fechaFin,
-                nivelGravedadActual,
+                tipoEpisodioActual,
+                titulo,
                 descripcion,
                 intervenciones.isEmpty() ? null : intervenciones,
                 userId,
                 rolUsuario,
                 "usuario",
-                "app_android",
-                "nota"
+                "app_android"
         );
 
         AuthService authService = ApiClient.getClient().create(AuthService.class);
@@ -260,7 +268,7 @@ public class episodios_salud_nota extends AppCompatActivity {
                 }
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(episodios_salud_nota.this, "Nota guardada correctamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(episodios_salud_nota.this, "Episodio guardado correctamente", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
                     manejarErrorRespuesta(response);
@@ -285,7 +293,7 @@ public class episodios_salud_nota extends AppCompatActivity {
             Log.e("API_ERROR", "Error al leer errorBody", e);
         }
 
-        String mensajeError = "Error al guardar la nota";
+        String mensajeError = "Error al guardar el episodio";
         if (!errorBody.isEmpty()) {
             mensajeError += ": " + errorBody;
         }
