@@ -8,6 +8,16 @@ public class RedResponse {
     private String message;
     private boolean unido;
 
+    private String imagen_red;
+
+    public String getImagen_red() {
+        return imagen_red;
+    }
+
+    public void setImagen_red(String imagen_red) {
+        this.imagen_red = imagen_red;
+    }
+
     // Constructor vacío (necesario para Retrofit)
     public RedResponse() {}
 

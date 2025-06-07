@@ -10,11 +10,22 @@ public class Mensaje {
     private String idUsuario;
     private String estado; // Nuevo campo: "enviado", "pendiente", "error"
 
+    private String imagen_red;
+
     public Mensaje() {}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getNombreUsuario() { return nombreUsuario; }
+
+    public String getImagen_red() {
+        return imagen_red;
+    }
+
+    public void setImagen_red(String imagen_red) {
+        this.imagen_red = imagen_red;
+    }
+
     public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
     public String getContenido() { return contenido; }
     public void setContenido(String contenido) { this.contenido = contenido; }

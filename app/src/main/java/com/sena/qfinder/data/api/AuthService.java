@@ -188,22 +188,16 @@ public interface AuthService {
             @Body RedRequest request
     );
 
-    @DELETE("api/redes/eliminar/{id}")
-    Call<Void> eliminarRed(
+    @DELETE("api/membresiaRed/abandonarRed/{id_red}")
+    Call<ResponseBody> abandonarRed(
             @Header("Authorization") String token,
-            @Path("id") int idRed
+            @Path("id_red") int idRed
     );
     @POST("api/membresiaRed/unirseRed/{id_red}")
     Call<ResponseBody> unirseRed(
             @Header("Authorization") String token,
             @Path("id_red") int idRed
     );
-    @DELETE("api/membresiaRed/salirRed/{id_red}")
-    Call<ResponseBody> salirRed(
-            @Header("Authorization") String token,
-            @Path("id_red") int idRed
-    );
-
     @GET("api/membresiaRed/verificarMembresia/{id_red}")
     Call<ResponseBody> verificarMembresia(
             @Header("Authorization") String token,
