@@ -53,7 +53,6 @@ public class ListaAsignarMedicamentos extends Fragment {
 
     private Button btnOpenModalAsignar;
     private Calendar startDate, endDate;
-    private boolean isSelectingStartDate = true;
     private SimpleDateFormat dateFormatter;
     private LinearLayout patientsContainer, medicamentosContainer;
     private Spinner spinnerPatientsMain;
@@ -70,7 +69,8 @@ public class ListaAsignarMedicamentos extends Fragment {
     private Call<AsignarMedicamentoResponse> asignarMedicamentoCall;
     private Call<List<MedicamentoResponse>> listarMedicamentosCall;
 
-    public ListaAsignarMedicamentos() {}
+    public ListaAsignarMedicamentos() {
+    }
 
     public static ListaAsignarMedicamentos newInstance() {
         return new ListaAsignarMedicamentos();
@@ -80,6 +80,10 @@ public class ListaAsignarMedicamentos extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        // Initialize dates here
+        startDate = Calendar.getInstance();
+        endDate = Calendar.getInstance();
+        endDate.add(Calendar.DAY_OF_MONTH, 7); // Default end date: today + 7 days
     }
 
     @Override
@@ -246,14 +250,13 @@ public class ListaAsignarMedicamentos extends Fragment {
         if (imagenUrl != null && !imagenUrl.isEmpty()) {
             Glide.with(requireContext())
                     .load(imagenUrl)
-                    .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
-                    .error(R.drawable.perfil_familiar) // Imagen si hay error
-                    .circleCrop() // Para hacerla circular
+                    .placeholder(R.drawable.perfil_familiar)
+                    .error(R.drawable.perfil_familiar)
+                    .circleCrop()
                     .into(ivProfile);
         } else {
             ivProfile.setImageResource(R.drawable.perfil_familiar);
         }
-
 
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;
@@ -294,7 +297,6 @@ public class ListaAsignarMedicamentos extends Fragment {
                     Log.d("API_RESPONSE", "Cuerpo de respuesta: " + new Gson().toJson(asignaciones));
                     if (asignaciones != null && !asignaciones.isEmpty()) {
                         mostrarMedicamentosAsignados(asignaciones);
-
                     } else {
                         showEmptyState("No hay medicamentos asignados para " + selectedPatientName);
                     }
@@ -344,9 +346,6 @@ public class ListaAsignarMedicamentos extends Fragment {
     }
 
     private void agregarItemMedicamento(AsignacionMedicamentoResponse asignacion) {
-        Log.d("MEDICAMENTO_DEBUG", "Asignación recibida: " + new Gson().toJson(asignacion));
-        Log.d("MEDICAMENTO_DEBUG", "ID Medicamento: " + asignacion.getIdAsignacion());
-        Log.d("MEDICAMENTO_DEBUG", "Objeto Medicamento: " + (asignacion.getMedicamento() != null ? "Presente" : "Nulo"));
         View itemView = LayoutInflater.from(getContext())
                 .inflate(R.layout.item_medicamento_asignado, medicamentosContainer, false);
 
@@ -388,7 +387,6 @@ public class ListaAsignarMedicamentos extends Fragment {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             Calendar hoy = Calendar.getInstance();
 
-            // Solo intentar parsear si ambas fechas existen
             if (fechaInicio != null && fechaFin != null) {
                 Calendar inicio = Calendar.getInstance();
                 inicio.setTime(sdf.parse(fechaInicio));
@@ -436,14 +434,31 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         Spinner spinnerPatients = viewInflated.findViewById(R.id.spinner_patients);
         Spinner spinnerMedications = viewInflated.findViewById(R.id.spinner_medications);
-        LinearLayout layoutDatePicker = viewInflated.findViewById(R.id.layout_date_picker);
-        TextView tvSelectedDates = viewInflated.findViewById(R.id.tv_selected_dates);
+
+        LinearLayout layoutStartDate = viewInflated.findViewById(R.id.layout_start_date);
+        TextView tvStartDate = viewInflated.findViewById(R.id.tv_start_date);
+
+        LinearLayout layoutEndDate = viewInflated.findViewById(R.id.layout_end_date);
+        TextView tvEndDate = viewInflated.findViewById(R.id.tv_end_date);
+
         EditText etDosage = viewInflated.findViewById(R.id.et_dosage);
         EditText etFrequency = viewInflated.findViewById(R.id.et_description);
         Button btnSave = viewInflated.findViewById(R.id.btn_save);
 
         setupSpinners(spinnerPatients, spinnerMedications);
-        setupDatePicker(layoutDatePicker, tvSelectedDates);
+
+        // Initialize dates for this dialog
+        final Calendar dialogStartDate = Calendar.getInstance();
+        final Calendar dialogEndDate = Calendar.getInstance();
+        dialogEndDate.add(Calendar.DAY_OF_MONTH, 0);
+
+        // Set initial dates
+        tvStartDate.setText(dateFormatter.format(dialogStartDate.getTime()));
+        tvEndDate.setText(dateFormatter.format(dialogEndDate.getTime()));
+
+        // Setup date pickers
+        layoutStartDate.setOnClickListener(v -> showDatePickerDialog(dialogStartDate, tvStartDate, true, dialogEndDate, tvEndDate));
+        layoutEndDate.setOnClickListener(v -> showDatePickerDialog(dialogEndDate, tvEndDate, false, dialogStartDate, null));
 
         // Seleccionar el paciente actual por defecto
         if (selectedPatientId != -1 && pacientesMap.containsKey(selectedPatientId)) {
@@ -455,12 +470,13 @@ public class ListaAsignarMedicamentos extends Fragment {
         }
 
         btnSave.setOnClickListener(v -> {
-            if (validarCampos(spinnerPatients, spinnerMedications, etDosage, tvSelectedDates)) {
+            if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequency, tvStartDate, tvEndDate)) {
                 String pacienteNombre = spinnerPatients.getSelectedItem().toString();
                 String medicamentoNombre = spinnerMedications.getSelectedItem().toString();
                 String dosis = etDosage.getText().toString();
                 String frecuencia = etFrequency.getText().toString();
-                String[] fechas = tvSelectedDates.getText().toString().split(" - ");
+                String fechaInicio = tvStartDate.getText().toString();
+                String fechaFin = tvEndDate.getText().toString();
 
                 int idPaciente = obtenerIdPorNombre(pacientesMap, pacienteNombre);
                 int idMedicamento = obtenerIdPorNombre(medicamentosMap, medicamentoNombre);
@@ -473,8 +489,8 @@ public class ListaAsignarMedicamentos extends Fragment {
                 AsignarMedicamentoRequest request = new AsignarMedicamentoRequest(
                         idPaciente,
                         idMedicamento,
-                        fechas[0],
-                        fechas[1],
+                        fechaInicio,
+                        fechaFin,
                         dosis,
                         frecuencia
                 );
@@ -485,6 +501,32 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
         builder.create().show();
+    }
+
+    private void showDatePickerDialog(final Calendar dateToSet, final TextView textView,
+                                      final boolean isStartDate,
+                                      final Calendar minDate, final TextView dependentTextView) {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+                (view, year, month, dayOfMonth) -> {
+                    dateToSet.set(year, month, dayOfMonth);
+                    textView.setText(dateFormatter.format(dateToSet.getTime()));
+
+                    // If this is start date and we need to adjust end date
+                    if (isStartDate && dependentTextView != null && dateToSet.after(minDate)) {
+                        minDate.setTime(dateToSet.getTime());
+                        minDate.add(Calendar.DAY_OF_MONTH, 1);
+                        dependentTextView.setText(dateFormatter.format(minDate.getTime()));
+                    }
+                },
+                dateToSet.get(Calendar.YEAR),
+                dateToSet.get(Calendar.MONTH),
+                dateToSet.get(Calendar.DAY_OF_MONTH));
+
+        if (!isStartDate && minDate != null) {
+            datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
+        }
+
+        datePickerDialog.show();
     }
 
     private void asignarMedicamento(AsignarMedicamentoRequest request) {
@@ -617,46 +659,9 @@ public class ListaAsignarMedicamentos extends Fragment {
         });
     }
 
-    private void setupDatePicker(LinearLayout layout, TextView tv) {
-        startDate = Calendar.getInstance();
-        endDate = Calendar.getInstance();
-        endDate.add(Calendar.DAY_OF_MONTH, 7);
-
-        String fechaInicio = dateFormatter.format(startDate.getTime());
-        String fechaFin = dateFormatter.format(endDate.getTime());
-        tv.setText(fechaInicio + " - " + fechaFin);
-
-        layout.setOnClickListener(v -> {
-            Calendar currentDate = isSelectingStartDate ? startDate : endDate;
-
-            DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
-                    (view, year, month, dayOfMonth) -> {
-                        currentDate.set(year, month, dayOfMonth);
-                        isSelectingStartDate = !isSelectingStartDate;
-
-                        if (endDate.before(startDate)) {
-                            endDate = (Calendar) startDate.clone();
-                            endDate.add(Calendar.DAY_OF_MONTH, 1);
-                        }
-
-                        String fechaInicioStr = dateFormatter.format(startDate.getTime());
-                        String fechaFinStr = dateFormatter.format(endDate.getTime());
-                        tv.setText(fechaInicioStr + " - " + fechaFinStr);
-                    },
-                    currentDate.get(Calendar.YEAR),
-                    currentDate.get(Calendar.MONTH),
-                    currentDate.get(Calendar.DAY_OF_MONTH));
-
-            if (!isSelectingStartDate) {
-                datePickerDialog.getDatePicker().setMinDate(startDate.getTimeInMillis());
-            }
-
-            datePickerDialog.show();
-        });
-    }
-
     private boolean validarCampos(Spinner spinnerPatients, Spinner spinnerMedications,
-                                  EditText etDosage, TextView tvSelectedDates) {
+                                  EditText etDosage, EditText etFrequency,
+                                  TextView tvStartDate, TextView tvEndDate) {
         if (spinnerPatients.getSelectedItem() == null) {
             Toast.makeText(getContext(), "Selecciona un paciente", Toast.LENGTH_SHORT).show();
             return false;
@@ -669,9 +674,14 @@ public class ListaAsignarMedicamentos extends Fragment {
             Toast.makeText(getContext(), "Ingresa la dosis", Toast.LENGTH_SHORT).show();
             return false;
         }
-        String fechas = tvSelectedDates.getText().toString().trim();
-        if (fechas.isEmpty() || !fechas.contains(" - ")) {
-            Toast.makeText(getContext(), "Selecciona un rango de fechas válido", Toast.LENGTH_SHORT).show();
+        if (etFrequency.getText().toString().trim().isEmpty()) {
+            Toast.makeText(getContext(), "Ingresa la frecuencia", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        String fechaInicio = tvStartDate.getText().toString().trim();
+        String fechaFin = tvEndDate.getText().toString().trim();
+        if (fechaInicio.isEmpty() || fechaFin.isEmpty()) {
+            Toast.makeText(getContext(), "Selecciona fechas válidas", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;

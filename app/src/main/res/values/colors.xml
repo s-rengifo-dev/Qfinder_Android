@@ -33,6 +33,8 @@
     <color name="gray">#80FFFFFF</color>
     <color name="text_primary">#000000</color>
     <color name="text_secondary">#6200EE</color>
+    <color name="verde">#4CAF50</color>
+
 
     <color name="boton_borde_azul">#4E9EFB</color>
         <!-- Colores existentes -->

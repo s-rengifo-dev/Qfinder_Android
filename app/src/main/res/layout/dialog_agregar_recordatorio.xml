@@ -14,6 +14,7 @@
         android:textStyle="bold"
         android:layout_marginBottom="16dp"/>
 
+    <!-- Campo título -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,6 +29,7 @@
             android:maxLength="100"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Campo descripción -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -42,6 +44,35 @@
             android:lines="3"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Campo fecha de la cita -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha Recordatorio"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etFechaCita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Campo hora de la cita -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Hora de la cita"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etHoraCita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Campo estado -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -54,6 +85,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"/>
 
+    <!-- Botones -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
