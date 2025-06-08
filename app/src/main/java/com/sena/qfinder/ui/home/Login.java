@@ -1,8 +1,6 @@
 package com.sena.qfinder.ui.home;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -28,6 +26,7 @@ import com.sena.qfinder.data.models.LoginRequest;
 import com.sena.qfinder.data.models.LoginResponse;
 import com.sena.qfinder.data.models.PerfilUsuarioResponse;
 import com.sena.qfinder.ui.auth.Fragment_password_recovery;
+import com.sena.qfinder.utils.SharedPrefManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,6 +42,7 @@ public class Login extends Fragment {
     private AlertDialog progressDialog;
     private AuthService authService;
     private Retrofit retrofit;
+    private SharedPrefManager sharedPrefManager;
 
     @Nullable
     @Override
@@ -54,6 +54,7 @@ public class Login extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initViews(view);
+        setupSharedPrefManager();
         setupRetrofit();
         setupListeners();
     }
@@ -64,6 +65,10 @@ public class Login extends Fragment {
         btnLogin = view.findViewById(R.id.loginButton);
         btnRegistro = view.findViewById(R.id.registerLink);
         btnOlvidarContrasena = view.findViewById(R.id.forgotPassword);
+    }
+
+    private void setupSharedPrefManager() {
+        sharedPrefManager = SharedPrefManager.getInstance(requireContext());
     }
 
     private void showProgressDialog() {
@@ -146,13 +151,9 @@ public class Login extends Fragment {
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().getToken();
-                    guardarDatosUsuario(email, token);
-
-
-                    // Obtener el perfil completo del usuario para guardar el ID
+                    sharedPrefManager.saveToken(token);
+                    sharedPrefManager.saveEmail(email);
                     obtenerPerfilUsuario(token);
-
-                    guardarDatosUsuario(email, response.body().getToken());
                 } else {
                     dismissProgressDialog();
                     Toast.makeText(getContext(), "Credenciales incorrectas", Toast.LENGTH_SHORT).show();
@@ -176,8 +177,7 @@ public class Login extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     PerfilUsuarioResponse perfil = response.body();
 
-                    // Guardar todos los datos del usuario
-                    guardarDatosCompletosUsuario(
+                    sharedPrefManager.saveUserProfile(
                             perfil.getId_usuario(),
                             perfil.getNombre_usuario(),
                             perfil.getApellido_usuario(),
@@ -200,29 +200,6 @@ public class Login extends Fragment {
                 Toast.makeText(getContext(), "Error al obtener perfil: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void guardarDatosUsuario(String email, String token) {
-        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
-        preferences.edit()
-                .putString("correo_usuario", email)
-                .putString("token", token)
-                .apply();
-    }
-
-    private void guardarDatosCompletosUsuario(String idUsuario, String nombre, String apellido,
-                                              String correo, String telefono, String direccion,
-                                              String identificacion, String imagenUsuario) {
-        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
-        preferences.edit()
-                .putString("id_usuario", idUsuario)
-                .putString("nombre_usuario", nombre)
-                .putString("apellido_usuario", apellido)
-                .putString("correo_usuario", correo)
-                .putString("telefono_usuario", telefono)
-                .putString("direccion_usuario", direccion)
-                .putString("identificacion_usuario", identificacion)
-                .apply();
     }
 
     private void iniciarSesionExitoso() {

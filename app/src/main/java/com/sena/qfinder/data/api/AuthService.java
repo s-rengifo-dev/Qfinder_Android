@@ -8,6 +8,9 @@ import com.sena.qfinder.data.models.ApiResponse;
 import com.sena.qfinder.data.models.AsignacionMedicamentoResponse;
 import com.sena.qfinder.data.models.AsignarMedicamentoRequest;
 import com.sena.qfinder.data.models.AsignarMedicamentoResponse;
+import com.sena.qfinder.data.models.CancelSubscriptionRequest;
+import com.sena.qfinder.data.models.CheckoutProRequest;
+import com.sena.qfinder.data.models.CheckoutProResponse;
 import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.CodeVerificationRequest;
 import com.sena.qfinder.data.models.CodeVerificationResponse;
@@ -36,6 +39,9 @@ import com.sena.qfinder.data.models.SendCodeRequest;
 import com.sena.qfinder.data.models.SendCodeResponse;
 import com.sena.qfinder.data.models.RegisterRequest;
 import com.sena.qfinder.data.models.RegisterResponse;
+import com.sena.qfinder.data.models.SubscriptionRequest;
+import com.sena.qfinder.data.models.SubscriptionResponse;
+import com.sena.qfinder.data.models.SubscriptionStatusResponse;
 import com.sena.qfinder.data.models.UsuarioRequest;
 import com.sena.qfinder.data.models.VerificarCodigoRequest;
 import com.sena.qfinder.data.models.CambiarPasswordRequest;
@@ -283,5 +289,18 @@ public interface AuthService {
             @Header("Authorization") String token,
             @Path("id") String medicamentoId
     );
+    // Crear suscripción
+    @POST("api/payments/subscriptions")
+    Call<SubscriptionResponse> createSubscription(
+            @Header("Authorization") String token,
+            @Body SubscriptionRequest request
+    );
 
+    // Obtener estado de suscripción
+
+        @POST("api/payments/checkout-pro")
+        Call<CheckoutProResponse> createCheckoutProPreference(
+                @Header("Authorization") String authToken,
+                @Body CheckoutProRequest request
+        );
 }

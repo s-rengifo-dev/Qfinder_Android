@@ -81,7 +81,46 @@
                 android:textColor="#000000" />
         </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/btnMembresia"
+        android:layout_width="392dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="35dp"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_card"
+        android:padding="12dp"
+        android:elevation="2dp"
+        android:gravity="center_vertical">
 
+        <!-- Fondo azul con icono encima -->
+        <FrameLayout
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="12dp">
+
+            <!-- Fondo azul completamente ajustado -->
+            <ImageView
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:src="@drawable/fondo_azul" />
+
+            <!-- Icono centrado -->
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/medic" />
+        </FrameLayout>
+        <!-- Texto -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gestión de Membresias"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#000000" />
+    </LinearLayout>
         <!-- Tarjeta: Recordatorios -->
         <LinearLayout
             android:id="@+id/cardRecordatorio"

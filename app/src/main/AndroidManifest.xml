@@ -33,7 +33,7 @@
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
-
+        <activity android:name=".ui.home.SubscriptionActivity" />
         <!-- Receivers para manejo de alarmas y eventos del sistema -->
         <receiver
             android:name=".utils.AlarmReceiver"
@@ -60,6 +60,8 @@
             </intent-filter>
         </receiver>
 
+        <activity android:name=".ui.home.PaymentSuccessActivity" />
+<!--        <activity android:name=".ui.home.PaymentFailureActivity" />-->
         <receiver
             android:name=".utils.SnoozeReceiver"
             android:enabled="true"

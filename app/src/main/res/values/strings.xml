@@ -3,12 +3,18 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="prompt_elige_paciente">Elige al paciente</string>
-
+    <string name="payment_success_message">¡Pago exitoso! Tu suscripción está activa.</string>
+    <string name="payment_failure_message">El pago no pudo ser procesado. Por favor intenta nuevamente.</string>
     <string-array name="sexo_array">
         <item>masculino</item>
         <item>femenino</item>
     </string-array>
-
+    <string name="payment_success_title">¡Pago Exitoso!</string>
+    <string name="payment_success_generic_message">Tu suscripción ha sido activada correctamente.</string>
+    <string name="payment_success_plus_message">Tu suscripción Plus está ahora activa. Disfruta de 5 pacientes y 3 cuidadores.</string>
+    <string name="payment_success_pro_message">Tu suscripción Pro está ahora activa. Disfruta de 15 pacientes y 10 cuidadores.</string>
+    <string name="payment_success_premium_message">Tu suscripción Premium está ahora activa. Disfruta de beneficios exclusivos.</string>
+    <string name="continue_button">Continuar</string>
     <string-array name="frecuencia_opciones">
         <item>Selecciones Frecuencia</item>
         <item>Diaria</item>

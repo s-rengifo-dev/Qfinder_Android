@@ -7,7 +7,16 @@
         <item name="android:padding">8dp</item>
         <item name="android:gravity">center</item>
     </style>
+    <style name="Theme.Qfinder" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- ... otros atributos ... -->
+    </style>
 
+    <!-- Agrega esto para Mercado Pago -->
+    <style name="Theme.MercadoPagoTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryDark">@color/azulClaro2</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
     <!-- Estilo para filas de tabla -->
     <style name="TableRowStyle">
         <item name="android:textColor">#444444</item>

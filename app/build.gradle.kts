@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services") // Elimina "version" y "apply false"
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -27,9 +27,6 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("debug")
-        }
-        debug {
-
         }
     }
 
@@ -62,56 +59,46 @@ android {
 }
 
 dependencies {
-    // Librerías base de Android
+    // AndroidX
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation(libs.firebase.storage)
-    implementation(libs.firebase.appcheck.debug)
-    implementation ("androidx.core:core:1.9.0")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("androidx.recyclerview:recyclerview:1.3.1")
-    implementation ("com.google.android.material:material:1.9.0")
-    implementation ("androidx.appcompat:appcompat:1.6.1")
-    implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
-    implementation ("androidx.work:work-runtime:2.8.1")
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
 
-    // Calendario con exclusión
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.logging.interceptor)
+
+    // Firebase (using BOM)
+    implementation(platform(libs.firebase.bom))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-appcheck-debug:18.0.0")
+
+    // Utilities
+    implementation(libs.gson)
+    implementation(libs.threetenabp)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    implementation("com.google.zxing:core:3.4.1")
+
+    // Calendar
     implementation("com.github.prolificinteractive:material-calendarview:2.0.1") {
         exclude(group = "org.threeten", module = "threetenbp")
     }
 
-    //codigo QR
+    // Mercado Pago
+    implementation ("com.mercadopago.android.px:checkout:4.+") // Versión que aparece en tu árbol de dependencias
 
-    implementation("com.google.zxing:core:3.4.1")
-
-    //glide
-
-    implementation ("com.github.bumptech.glide:glide:4.16.0")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
-
-    // Firebase
-    implementation (platform("com.google.firebase:firebase-bom:33.14.0"))
-    implementation ("androidx.core:core:1.10.1")
-    implementation ("com.google.firebase:firebase-analytics")
-
-    implementation("com.google.firebase:firebase-database-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation ("com.google.firebase:firebase-messaging:23.0.0")// Versión más reciente
-    implementation ("com.google.firebase:firebase-analytics:21.0.0")
-    // Otras dependencias
-    implementation(libs.threetenabp)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit2.converter.gson)
-    implementation(libs.gson)
-    implementation(libs.logging.interceptor)
-    implementation(libs.material.v170)
+    // Testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
 }

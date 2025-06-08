@@ -12,6 +12,7 @@
     <color name="azulBorder">#08053989</color>
     <color name="cantidadregistros">#A6A6A6</color>
 <!--    <color name="azulitoInput">#3F0066FF</color>-->
+    <color name="green_success">#4CAF50</color>
     <color name="primary">#3F51B5</color>
     <color name="primary_light">#C5CAE9</color>
     <color name="secondary">#FF4081</color>

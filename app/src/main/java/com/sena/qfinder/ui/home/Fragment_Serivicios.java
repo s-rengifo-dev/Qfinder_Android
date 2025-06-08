@@ -75,6 +75,13 @@ public class Fragment_Serivicios extends Fragment {
         });
 
 
+        LinearLayout cardMembresia = view.findViewById(R.id.btnMembresia);
+        cardMembresia.setOnClickListener(v -> {
+            // Iniciar la actividad SubscriptionActivity
+            Intent intent = new Intent(getActivity(), SubscriptionActivity.class);
+            startActivity(intent);
+        });
+
 
         return view;
 
