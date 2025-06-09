@@ -76,6 +76,5 @@
         android:text="Agregar Actividad"
         android:textColor="#FFFFFF"
         app:backgroundTint="@color/Botones"
-        app:cornerRadius="8dp"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+        app:cornerRadius="8dp"/>
 </LinearLayout>
