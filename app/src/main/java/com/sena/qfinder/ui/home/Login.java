@@ -213,7 +213,16 @@ public class Login extends Fragment {
                             perfil.getIdentificacion_usuario(),
                             perfil.getImagen_usuario()
                     );
-
+                    guardarDatosCompletosUsuario(
+                            perfil.getId_usuario(),
+                            perfil.getNombre_usuario(),
+                            perfil.getApellido_usuario(),
+                            perfil.getCorreo_usuario(),
+                            perfil.getTelefono_usuario(),
+                            perfil.getDireccion_usuario(),
+                            perfil.getIdentificacion_usuario(),
+                            perfil.getImagen_usuario()
+                    );
                     iniciarSesionExitoso();
                 } else {
                     Toast.makeText(getContext(), "Error al obtener perfil de usuario", Toast.LENGTH_SHORT).show();
@@ -226,6 +235,21 @@ public class Login extends Fragment {
                 Toast.makeText(getContext(), "Error al obtener perfil: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void guardarDatosCompletosUsuario(String idUsuario, String nombre, String apellido,
+                                              String correo, String telefono, String direccion,
+                                              String identificacion, String imagenUsuario) {
+        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        preferences.edit()
+                .putString("id_usuario", idUsuario)
+                .putString("nombre_usuario", nombre)
+                .putString("apellido_usuario", apellido)
+                .putString("correo_usuario", correo)
+                .putString("telefono_usuario", telefono)
+                .putString("direccion_usuario", direccion)
+                .putString("identificacion_usuario", identificacion)
+                .apply();
     }
 
     private void iniciarSesionExitoso() {
