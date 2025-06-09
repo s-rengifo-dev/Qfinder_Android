@@ -104,6 +104,7 @@
             android:windowSoftInputMode="adjustResize"
             android:exported="false" />
 
+
         <activity
             android:name=".ui.auth.Registro_usuario"
             android:exported="false" />
