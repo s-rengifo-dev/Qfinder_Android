@@ -1,6 +1,8 @@
 package com.sena.qfinder.ui.cita;
 
+import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -11,11 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,9 +40,6 @@ import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
 
-import org.threeten.bp.LocalDate;
-
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,6 +69,7 @@ public class CitasFragment extends Fragment {
     private Map<Integer, String> pacientesMap = new HashMap<>();
     private List<CitaMedica> todasLasCitas = new ArrayList<>();
     private LayoutInflater currentInflater;
+    private Context context;
 
     // Decoradores para diferentes estados de citas
     private EventDecorator decoratorCitasPendientes;
@@ -78,6 +80,7 @@ public class CitasFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_citas, container, false);
         currentInflater = inflater;
+        context = getContext();
 
         // Inicializar vistas
         calendarView = rootView.findViewById(R.id.calendarView);
@@ -166,14 +169,13 @@ public class CitasFragment extends Fragment {
         if (imagenUrl != null && !imagenUrl.isEmpty()) {
             Glide.with(requireContext())
                     .load(imagenUrl)
-                    .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
-                    .error(R.drawable.perfil_familiar) // Imagen si hay error
-                    .circleCrop() // Para hacerla circular
+                    .placeholder(R.drawable.perfil_familiar)
+                    .error(R.drawable.perfil_familiar)
+                    .circleCrop()
                     .into(ivProfile);
         } else {
             ivProfile.setImageResource(R.drawable.perfil_familiar);
         }
-
 
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;
@@ -253,63 +255,55 @@ public class CitasFragment extends Fragment {
         List<CalendarDay> fechasCompletadas = new ArrayList<>();
         List<CalendarDay> fechasCanceladas = new ArrayList<>();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-
         for (CitaMedica cita : todasLasCitas) {
             if (cita.getFechaCita() != null && !cita.getFechaCita().isEmpty()) {
                 try {
-                    Date date = sdf.parse(cita.getFechaCita());
-                    if (date != null) {
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.setTime(date);
+                    // Parsear la fecha ISO (yyyy-MM-dd'T'HH:mm:ss.SSS'Z')
+                    String fechaPart = cita.getFechaCita().split("T")[0];
+                    String[] partes = fechaPart.split("-");
 
-                        LocalDate localDate = LocalDate.of(
-                                calendar.get(Calendar.YEAR),
-                                calendar.get(Calendar.MONTH) + 1,
-                                calendar.get(Calendar.DAY_OF_MONTH)
-                        );
-                        CalendarDay calendarDay = CalendarDay.from(localDate);
+                    int year = Integer.parseInt(partes[0]);
+                    int month = Integer.parseInt(partes[1]); // Esto ya es 1-12
+                    int day = Integer.parseInt(partes[2]);
 
-                        String estado = cita.getEstadoCita() != null ? cita.getEstadoCita().toLowerCase() : "";
-                        switch (estado) {
-                            case "completada":
-                                fechasCompletadas.add(calendarDay);
-                                break;
-                            case "cancelada":
-                                fechasCanceladas.add(calendarDay);
-                                break;
-                            default: // pendiente u otros
-                                fechasPendientes.add(calendarDay);
-                                break;
-                        }
+                    // CalendarDay.from() espera meses 0-11, así que restamos 1
+                    CalendarDay calendarDay = CalendarDay.from(year, month - 1, day);
+
+                    String estado = cita.getEstado() != null ? cita.getEstado().toLowerCase() : "";
+                    switch (estado) {
+                        case "completada":
+                            fechasCompletadas.add(calendarDay);
+                            break;
+                        case "cancelada":
+                            fechasCanceladas.add(calendarDay);
+                            break;
+                        default:
+                            fechasPendientes.add(calendarDay);
+                            break;
                     }
-                } catch (ParseException e) {
-                    Log.e(TAG, "Error al parsear fecha: " + cita.getFechaCita(), e);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error al procesar fecha: " + cita.getFechaCita(), e);
                 }
             }
         }
 
-        // Asegúrate de usar colores contrastantes
+        // Resto del método permanece igual...
         if (!fechasPendientes.isEmpty()) {
-            decoratorCitasPendientes = new EventDecorator(Color.RED, fechasPendientes); // Cambiado a rojo para prueba
+            decoratorCitasPendientes = new EventDecorator(Color.RED, fechasPendientes);
             calendarView.addDecorator(decoratorCitasPendientes);
-            Log.d(TAG, "Decorador pendiente agregado para " + fechasPendientes.size() + " fechas");
         }
 
         if (!fechasCompletadas.isEmpty()) {
-            decoratorCitasCompletadas = new EventDecorator(Color.GREEN, fechasCompletadas); // Cambiado a verde
+            decoratorCitasCompletadas = new EventDecorator(Color.GREEN, fechasCompletadas);
             calendarView.addDecorator(decoratorCitasCompletadas);
         }
 
         if (!fechasCanceladas.isEmpty()) {
-            decoratorCitasCanceladas = new EventDecorator(Color.BLACK, fechasCanceladas); // Cambiado a negro
+            decoratorCitasCanceladas = new EventDecorator(Color.BLACK, fechasCanceladas);
             calendarView.addDecorator(decoratorCitasCanceladas);
         }
 
-        // Forzar actualización
         calendarView.invalidateDecorators();
-        Log.d(TAG, "Decoradores invalidados, forzando refresco");
     }
 
     private void limpiarMarcadoresCalendario() {
@@ -365,6 +359,8 @@ public class CitasFragment extends Fragment {
         Spinner spinnerEstado = dialog.findViewById(R.id.spinnerEstado);
         Button btnGuardar = dialog.findViewById(R.id.btnGuardar);
         Button btnCancelar = dialog.findViewById(R.id.btnCancelar);
+        EditText etFechaRecordatorio = dialog.findViewById(R.id.etFechaCita);
+        EditText etHoraCita = dialog.findViewById(R.id.etHoraCita);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.estados_cita, android.R.layout.simple_spinner_item);
@@ -373,10 +369,46 @@ public class CitasFragment extends Fragment {
 
         tvTituloDialogo.setText("Nueva cita para " + selectedPatientName);
 
+        // Set initial date and time
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        etFechaRecordatorio.setText(dateFormat.format(calendar.getTime()));
+        etHoraCita.setText(timeFormat.format(calendar.getTime()));
+
+        etFechaRecordatorio.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            DatePickerDialog datePickerDialog = new DatePickerDialog(context,
+                    (view, year, month, dayOfMonth) -> {
+                        String fechaSeleccionada = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                        etFechaRecordatorio.setText(fechaSeleccionada);
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH));
+            datePickerDialog.show();
+        });
+
+        etHoraCita.setOnClickListener(v -> {
+            Calendar cal = Calendar.getInstance();
+            TimePickerDialog timePickerDialog = new TimePickerDialog(context,
+                    (view, hourOfDay, minute) -> {
+                        String horaSeleccionada = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
+                        etHoraCita.setText(horaSeleccionada);
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    true);
+            timePickerDialog.show();
+        });
+
         btnGuardar.setOnClickListener(v -> {
             String titulo = etTitulo.getText().toString().trim();
             String descripcion = etDescripcion.getText().toString().trim();
             String estado = spinnerEstado.getSelectedItem().toString().toLowerCase();
+            String fechaStr = etFechaRecordatorio.getText().toString().trim();
+            String horaStr = etHoraCita.getText().toString().trim();
 
             if (titulo.isEmpty()) {
                 etTitulo.setError("El título es obligatorio");
@@ -388,26 +420,62 @@ public class CitasFragment extends Fragment {
                 return;
             }
 
-            String fechaCita = String.format(Locale.getDefault(), "%04d-%02d-%02dT00:00:00Z",
-                    selectedDate.getYear(), selectedDate.getMonth() + 1, selectedDate.getDay());
+            if (fechaStr.isEmpty()) {
+                etFechaRecordatorio.setError("La fecha es obligatoria");
+                return;
+            }
 
-            String fechaRecordatorio = String.format(Locale.getDefault(), "%04d-%02d-%02dT23:00:00Z",
-                    selectedDate.getYear(), selectedDate.getMonth() + 1, selectedDate.getDay() - 1);
+            if (horaStr.isEmpty()) {
+                etHoraCita.setError("La hora es obligatoria");
+                return;
+            }
 
-            CitaMedica nuevaCita = new CitaMedica();
-            nuevaCita.setTitulo(titulo);
-            nuevaCita.setDescripcion(descripcion);
-            nuevaCita.setFechaCita(fechaCita);
-            nuevaCita.setFechaRecordatorio(fechaRecordatorio);
-            nuevaCita.setEstadoCita(estado);
-            nuevaCita.setIdPaciente(selectedPatientId);
+            try {
+                // Parse date and time
+                SimpleDateFormat sdfFecha = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                Date fecha = sdfFecha.parse(fechaStr);
 
-            guardarCita(nuevaCita);
-            dialog.dismiss();
+                SimpleDateFormat sdfHora = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                Date hora = sdfHora.parse(horaStr);
+
+                // Format for API
+                SimpleDateFormat sdfFechaApi = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                SimpleDateFormat sdfHoraApi = new SimpleDateFormat("HH:mm", Locale.getDefault()); // Cambiado a HH:mm
+                SimpleDateFormat sdfRecordatorioApi = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+
+                String fechaCita = sdfFechaApi.format(fecha);
+                String horaCita = sdfHoraApi.format(hora); // Sin agregar :00
+
+                // Resto del código permanece igual...
+                Calendar reminderCal = Calendar.getInstance();
+                reminderCal.setTime(fecha);
+                reminderCal.add(Calendar.DAY_OF_YEAR, -1);
+                reminderCal.set(Calendar.HOUR_OF_DAY, 8);
+                reminderCal.set(Calendar.MINUTE, 0);
+                reminderCal.set(Calendar.SECOND, 0);
+                String fechaRecordatorio = sdfRecordatorioApi.format(reminderCal.getTime());
+
+                CitaMedica nuevaCita = new CitaMedica();
+                nuevaCita.setTituloCita(titulo);
+                nuevaCita.setDescripcion(descripcion);
+                nuevaCita.setFechaCita(fechaCita + "T00:00:00.000Z");
+                nuevaCita.setHoraCita(horaCita); // Ahora en formato HH:mm
+                nuevaCita.setFechaRecordatorio(fechaRecordatorio);
+                nuevaCita.setEstado(estado);
+                nuevaCita.setIdPaciente(selectedPatientId);
+                nuevaCita.setNotificado1h(false);
+                nuevaCita.setNotificado24h(false);
+
+                Log.d(TAG, "Enviando cita: " + nuevaCita.toString());
+                guardarCita(nuevaCita);
+                dialog.dismiss();
+            } catch (Exception e) {
+                Toast.makeText(context, "Error al procesar fecha/hora", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error al procesar fecha/hora", e);
+            }
         });
 
         btnCancelar.setOnClickListener(v -> dialog.dismiss());
-
         dialog.show();
     }
 
@@ -432,13 +500,21 @@ public class CitasFragment extends Fragment {
                     Toast.makeText(getContext(), "Cita guardada exitosamente", Toast.LENGTH_SHORT).show();
                     loadCitasDelPaciente(cita.getIdPaciente());
                 } else {
-                    Toast.makeText(getContext(), "Error al guardar la cita", Toast.LENGTH_SHORT).show();
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Sin detalles";
+                        Log.e(TAG, "Error al guardar cita. Código: " + response.code() + ", Mensaje: " + errorBody);
+                        Toast.makeText(getContext(), "Error al guardar la cita: " + errorBody, Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error al leer errorBody", e);
+                        Toast.makeText(getContext(), "Error al guardar la cita", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<CitaMedica> call, @NonNull Throwable t) {
-                Toast.makeText(getContext(), "Error de conexión al guardar", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error de conexión al guardar: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error de conexión al guardar cita", t);
             }
         });
     }
@@ -446,12 +522,10 @@ public class CitasFragment extends Fragment {
     private static class EventDecorator implements DayViewDecorator {
         private final int color;
         private final HashSet<CalendarDay> dates;
-        private final float dotRadius;
 
         public EventDecorator(int color, Collection<CalendarDay> dates) {
             this.color = color;
             this.dates = new HashSet<>(dates);
-            this.dotRadius = 12f;
         }
 
         @Override
@@ -461,8 +535,7 @@ public class CitasFragment extends Fragment {
 
         @Override
         public void decorate(DayViewFacade view) {
-            // Aumenta el tamaño del punto y usa un color más visible
-            view.addSpan(new DotSpan(10, color)); // Tamaño aumentado a 10
+            view.addSpan(new DotSpan(10, color));
         }
     }
 }

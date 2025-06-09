@@ -40,12 +40,13 @@ public class CitaAdapter extends RecyclerView.Adapter<CitaAdapter.CitaViewHolder
     public void onBindViewHolder(@NonNull CitaViewHolder holder, int position) {
         CitaMedica cita = listaCitas.get(position);
         holder.textFecha.setText(formatFecha(cita.getFechaCita()));
-        holder.textMotivo.setText(cita.getMotivoCita());
-        holder.textEstado.setText(cita.getEstadoCita());
+        holder.textMotivo.setText(cita.getDescripcion());
+        holder.textEstado.setText(cita.getEstado());
+        holder.textHoraCita.setText(cita.getHoraCita());
 
         // Puedes personalizar más según los nuevos campos
-        if (cita.getTitulo() != null && !cita.getTitulo().isEmpty()) {
-            holder.textTitulo.setText(cita.getTitulo());
+        if (cita.getTituloCita() != null && !cita.getTituloCita().isEmpty()) {
+            holder.textTitulo.setText(cita.getTituloCita());
             holder.textTitulo.setVisibility(View.VISIBLE);
         } else {
             holder.textTitulo.setVisibility(View.GONE);
@@ -68,7 +69,7 @@ public class CitaAdapter extends RecyclerView.Adapter<CitaAdapter.CitaViewHolder
     }
 
     public static class CitaViewHolder extends RecyclerView.ViewHolder {
-        TextView textFecha, textMotivo, textEstado, textTitulo;
+        TextView textFecha, textMotivo, textEstado, textTitulo,textHoraCita;
 
         public CitaViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -76,6 +77,7 @@ public class CitaAdapter extends RecyclerView.Adapter<CitaAdapter.CitaViewHolder
             textMotivo = itemView.findViewById(R.id.textMotivoCita);
             textEstado = itemView.findViewById(R.id.textEstadoCita);
             textTitulo = itemView.findViewById(R.id.textTituloCita);
+            textHoraCita = itemView.findViewById(R.id.horaCita);
         }
     }
 }

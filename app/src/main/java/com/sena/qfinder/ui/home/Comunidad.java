@@ -16,6 +16,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.AuthService;
@@ -298,6 +300,20 @@ public class Comunidad extends Fragment {
             holder.nombre.setText(red.getNombre_red());
             holder.miembros.setText(red.getDescripcion_red() != null ? red.getDescripcion_red() : "");
 
+            // Cargar imagen con Glide
+            if (red.getImagen_red() != null && !red.getImagen_red().isEmpty()) {
+                Glide.with(context)
+                        .load(red.getImagen_red())
+                        .placeholder(R.drawable.imgcomunidad) // Imagen mientras carga
+                        .error(R.drawable.imgcomunidad) // Imagen si hay error
+                        .circleCrop() // Para imágenes circulares
+                        .into(holder.imgComunidad);
+            } else {
+                // Si no hay imagen, mostrar la por defecto
+                holder.imgComunidad.setImageResource(R.drawable.imgcomunidad);
+            }
+
+
             boolean unido = obtenerEstadoUnion(red.getNombre_red());
 
             // Mostrar solo el botón Unirme si no está unido
@@ -321,8 +337,11 @@ public class Comunidad extends Fragment {
             // Configurar clic en la imagen de la comunidad
             holder.imgComunidad.setOnClickListener(view -> {
                 Log.d(TAG, "Abriendo perfil de la red: " + red.getNombre_red());
-                PerfilComunidad pf = PerfilComunidad.newInstance(red.getNombre_red(),
-                        red.getDescripcion_red() != null ? red.getDescripcion_red() : "");
+                PerfilComunidad pf = PerfilComunidad.newInstance(
+                        red.getNombre_red(),
+                        red.getDescripcion_red() != null ? red.getDescripcion_red() : "",
+                        red.getImagen_red() // Asegúrate de que RedResponse tenga este campo
+                );
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
                 transaction.replace(R.id.fragment_container, pf);
                 transaction.addToBackStack(null);
@@ -333,7 +352,8 @@ public class Comunidad extends Fragment {
         private void abrirChatComunidad(RedResponse red) {
             boolean unido = obtenerEstadoUnion(red.getNombre_red());
             if (unido) {
-                ChatComunidad chat = ChatComunidad.newInstance(red.getNombre_red());
+                // Pasar tanto el nombre como la imagen de la red
+                ChatComunidad chat = ChatComunidad.newInstance(red.getNombre_red(), red.getImagen_red());
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
                 transaction.replace(R.id.fragment_container, chat);
                 transaction.addToBackStack(null);
