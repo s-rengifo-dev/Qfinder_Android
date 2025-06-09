@@ -50,25 +50,35 @@
                     android:orientation="horizontal" />
             </HorizontalScrollView>
 
-            <!-- CALENDARIO -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rounded_gray_background"
-                android:padding="5dp"
-                android:layout_marginBottom="10dp"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp"
                 android:orientation="vertical">
 
-                <com.prolificinteractive.materialcalendarview.MaterialCalendarView
-                    android:id="@+id/calendarView"
+                <!-- Botón para seleccionar fecha -->
+                <Button
+                    android:id="@+id/btnSelectDate"
                     android:layout_width="match_parent"
-                    android:layout_height="270dp"
-                    android:layout_marginBottom="12dp"
-                    app:mcv_dateTextAppearance="@style/CalendarDateTextAppearance"
-                    app:mcv_weekDayTextAppearance="@style/CalendarWeekDayTextAppearance"
-                    app:mcv_selectionColor="#1983ff"
-                    app:mcv_showOtherDates="all"
-                    app:mcv_firstDayOfWeek="sunday" />
+                    android:layout_height="wrap_content"
+                    android:text="Seleccionar fecha"
+                    android:textSize="16sp"
+                    android:drawableLeft="@drawable/ic_calendar"
+                    android:drawablePadding="8dp"
+                    android:backgroundTint="#1983ff"
+                    android:textColor="#ffffff"/>
+
+                <!-- Mostrar fecha seleccionada -->
+                <TextView
+                    android:id="@+id/tvSelectedDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Fecha seleccionada: "
+                    android:textSize="16sp"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"/>
 
             </LinearLayout>
             <Button
