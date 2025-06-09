@@ -8,7 +8,6 @@ import com.sena.qfinder.data.models.ApiResponse;
 import com.sena.qfinder.data.models.AsignacionMedicamentoResponse;
 import com.sena.qfinder.data.models.AsignarMedicamentoRequest;
 import com.sena.qfinder.data.models.AsignarMedicamentoResponse;
-import com.sena.qfinder.data.models.CancelSubscriptionRequest;
 import com.sena.qfinder.data.models.CheckoutProRequest;
 import com.sena.qfinder.data.models.CheckoutProResponse;
 import com.sena.qfinder.data.models.CitaMedica;

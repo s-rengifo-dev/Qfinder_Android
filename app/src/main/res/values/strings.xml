@@ -5,6 +5,7 @@
     <string name="prompt_elige_paciente">Elige al paciente</string>
     <string name="payment_success_message">¡Pago exitoso! Tu suscripción está activa.</string>
     <string name="payment_failure_message">El pago no pudo ser procesado. Por favor intenta nuevamente.</string>
+    <string name="payment_failure_title">¡Pago fallido!</string>
     <string-array name="sexo_array">
         <item>masculino</item>
         <item>femenino</item>

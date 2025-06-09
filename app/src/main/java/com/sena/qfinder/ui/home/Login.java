@@ -1,8 +1,11 @@
 package com.sena.qfinder.ui.home;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -151,8 +154,25 @@ public class Login extends Fragment {
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().getToken();
+                    Log.d("LOGIN", "Token recibido: " + token); // <- Añade este log
+
+                    // Verifica que sharedPrefManager no sea null
+                    if (sharedPrefManager == null) {
+                        Log.e("LOGIN", "sharedPrefManager es null!");
+                        setupSharedPrefManager();
+                    }
+
                     sharedPrefManager.saveToken(token);
                     sharedPrefManager.saveEmail(email);
+
+                    // Obtener el perfil completo del usuario para guardar el ID
+                    obtenerPerfilUsuario(token);
+
+                    guardarDatosUsuario(email, response.body().getToken());
+                    // Verifica que se guardó
+                    String tokenGuardado = sharedPrefManager.getToken();
+                    Log.d("LOGIN", "Token guardado: " + tokenGuardado); // <- Añade este log
+
                     obtenerPerfilUsuario(token);
                 } else {
                     dismissProgressDialog();
@@ -167,7 +187,13 @@ public class Login extends Fragment {
             }
         });
     }
-
+    private void guardarDatosUsuario(String email, String token) {
+        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        preferences.edit()
+                .putString("correo_usuario", email)
+                .putString("token", token)
+                .apply();
+    }
     private void obtenerPerfilUsuario(String token) {
         authService.obtenerPerfil("Bearer " + token).enqueue(new Callback<PerfilUsuarioResponse>() {
             @Override

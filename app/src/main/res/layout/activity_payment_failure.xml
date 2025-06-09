@@ -7,36 +7,45 @@
     android:gravity="center">
 
     <ImageView
-        android:id="@+id/iv_success_icon"
+        android:id="@+id/iv_failure_icon"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:src="@drawable/ic_check_circle"
-        android:backgroundTint="@color/andes_green_600"/>
+        android:src="@drawable/add"
+        android:backgroundTint="@color/rojopasion"/>
 
     <TextView
-        android:id="@+id/tv_success_title"
+        android:id="@+id/tv_failure_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="¡Pago exitoso!"
+        android:text="¡Pago fallido!"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"
         android:layout_marginTop="16dp"/>
 
     <TextView
-        android:id="@+id/tv_success_message"
+        android:id="@+id/tv_failure_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tu suscripción ha sido activada exitosamente"
+        android:text="No pudimos procesar tu pago. Por favor intenta nuevamente."
         android:textSize="16sp"
         android:gravity="center"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="32dp"/>
 
     <Button
-        android:id="@+id/btn_continue"
+        android:id="@+id/btn_retry"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Continuar"
-        android:layout_marginTop="16dp"/>
+        android:text="Reintentar"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancelar"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@android:color/transparent"
+        android:textColor="@color/colorPrimary"/>
 </LinearLayout>

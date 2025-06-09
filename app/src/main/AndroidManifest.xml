@@ -59,7 +59,13 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <activity
+            android:name=".ui.home.MercadoPagoCheckoutActivity"
+            android:exported="true" />
 
+        <activity
+            android:name=".ui.home.PaymentFailureActivity"
+            android:exported="true" />
         <activity android:name=".ui.home.PaymentSuccessActivity" />
 <!--        <activity android:name=".ui.home.PaymentFailureActivity" />-->
         <receiver

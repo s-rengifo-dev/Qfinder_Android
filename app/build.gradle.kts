@@ -81,7 +81,7 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-appcheck-debug:18.0.0")
-
+    implementation ("androidx.browser:browser:1.7.0")
     // Utilities
     implementation(libs.gson)
     implementation(libs.threetenabp)
