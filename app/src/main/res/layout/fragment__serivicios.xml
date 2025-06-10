@@ -1,295 +1,299 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#EAEAEA"
     tools:context=".ui.home.Fragment_Serivicios">
 
-    <LinearLayout
+    <!-- Encabezado fijo -->
+    <RelativeLayout
+        android:id="@+id/encabezado"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:layout_height="99dp">
 
-        <RelativeLayout
+        <!-- Imagen de encabezado -->
+        <ImageView
             android:layout_width="match_parent"
-            android:layout_height="99dp">
+            android:layout_height="99dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_header" />
 
-            <!-- Imagen de encabezado -->
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="99dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_header" />
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="34dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/circle_azul"
+            android:contentDescription="Volver"
+            android:padding="10dp"
+            android:src="@drawable/img" />
 
-            <!-- Título sobre la imagen -->
-            <TextView
-                android:id="@+id/tituloServicios"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Servicios"
-                android:textColor="#000000"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:layout_centerInParent="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginTop="33dp"/>
-        </RelativeLayout>
-
-
-        <!-- Tarjeta: Gestión de medicamentos -->
-        <LinearLayout
-            android:id="@+id/btnMedicamentos"
-            android:layout_width="392dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="35dp"
-            android:orientation="horizontal"
-            android:background="@drawable/bg_card"
-            android:padding="12dp"
-            android:elevation="2dp"
-            android:gravity="center_vertical">
-
-            <!-- Fondo azul con icono encima -->
-            <FrameLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_marginEnd="12dp">
-
-                <!-- Fondo azul completamente ajustado -->
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/fondo_azul" />
-
-                <!-- Icono centrado -->
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/medic" />
-            </FrameLayout>
-
-            <!-- Texto -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gestión de medicamentos"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000000" />
-        </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/btnMembresia"
-        android:layout_width="392dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="35dp"
-        android:orientation="horizontal"
-        android:background="@drawable/bg_card"
-        android:padding="12dp"
-        android:elevation="2dp"
-        android:gravity="center_vertical">
-
-        <!-- Fondo azul con icono encima -->
-        <FrameLayout
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginEnd="12dp">
-
-            <!-- Fondo azul completamente ajustado -->
-            <ImageView
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:src="@drawable/fondo_azul" />
-
-            <!-- Icono centrado -->
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:src="@drawable/medic" />
-        </FrameLayout>
-        <!-- Texto -->
+        <!-- Título sobre la imagen -->
         <TextView
+            android:id="@+id/tituloServicios"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Gestión de Membresias"
+            android:text="Servicios"
+            android:textColor="#000000"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="#000000" />
-    </LinearLayout>
-        <!-- Tarjeta: Recordatorios -->
+            android:layout_centerInParent="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="33dp" />
+    </RelativeLayout>
+
+    <!-- Contenedor scrollable -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/encabezado"
+        android:paddingTop="10dp">
+
         <LinearLayout
-            android:id="@+id/cardRecordatorio"
-            android:layout_width="392dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="35dp"
-            android:orientation="horizontal"
-            android:background="@drawable/card_background"
-            android:padding="12dp"
-            android:elevation="2dp"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:paddingBottom="20dp">
 
-            <!-- Fondo azul con icono encima -->
-            <FrameLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_marginEnd="12dp">
-
-                <!-- Fondo azul completamente ajustado -->
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/fondo_azul" />
-
-                <!-- Icono centrado -->
-                <ImageView
-                    android:layout_width="71dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/recorda" />
-            </FrameLayout>
-
-            <!-- Texto -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Tarjeta: Gestión de medicamentos -->
+            <LinearLayout
+                android:id="@+id/btnMedicamentos"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Recordatorios"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000000" />
-        </LinearLayout>
+                android:layout_marginTop="35dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:elevation="2dp"
+                android:layout_marginHorizontal="16dp"
+                android:gravity="center_vertical">
 
-        <!-- Tarjeta: Registros de salud -->
-        <LinearLayout
-            android:id="@+id/registrosalud"
-            android:layout_width="392dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="35dp"
-            android:orientation="horizontal"
-            android:background="@drawable/card_background"
-            android:gravity="center_vertical">
-
-            <!-- Fondo azul con icono encima -->
-            <FrameLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_marginEnd="12dp">
-
-                <!-- Fondo azul completamente ajustado -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:src="@drawable/fondo_azul" />
+                    android:layout_marginEnd="12dp">
 
-                <!-- Icono centrado -->
-                <ImageView
-                    android:layout_width="49dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/salud" />
-            </FrameLayout>
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/fondo_azul" />
 
-            <!-- Texto -->
-            <TextView
-                android:layout_width="wrap_content"
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/medic" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gestión de medicamentos"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <!-- Tarjeta: Recordatorios -->
+            <LinearLayout
+                android:id="@+id/cardRecordatorio"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Registros de salud"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000000" />
-        </LinearLayout>
-        <!-- Tarjeta: Gestión de pacientes -->
-        <LinearLayout
-            android:id="@+id/cardGestionPacientes"
-            android:layout_width="392dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="35dp"
-            android:orientation="horizontal"
-            android:layout_gravity="center"
-            android:background="@drawable/card_background"
-            android:padding="12dp"
-            android:elevation="2dp"
-            android:gravity="center_vertical">
+                android:layout_marginTop="30dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:elevation="2dp"
+                android:layout_marginHorizontal="16dp"
+                android:gravity="center_vertical">
 
-            <!-- Fondo azul con icono encima -->
-            <FrameLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_marginEnd="12dp">
-
-                <!-- Fondo azul completamente ajustado -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:src="@drawable/fondo_azul" />
+                    android:layout_marginEnd="12dp">
 
-                <!-- Icono centrado -->
-                <ImageView
-                    android:layout_width="46dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_paciente" />
-            </FrameLayout>
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/fondo_azul" />
 
-            <!-- Texto -->
-            <TextView
-                android:layout_width="wrap_content"
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/recorda" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Recordatorios"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <!-- Tarjeta: Registros de salud -->
+            <LinearLayout
+                android:id="@+id/registrosalud"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Gestión de pacientes"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000000" />
-        </LinearLayout>
+                android:layout_marginTop="30dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:elevation="2dp"
+                android:layout_marginHorizontal="16dp"
+                android:gravity="center_vertical">
 
-        <!-- Tarjeta: Actividad -->
-        <LinearLayout
-            android:id="@+id/cardActividad"
-            android:layout_width="392dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="35dp"
-            android:background="@drawable/bg_card"
-            android:elevation="2dp"
-            android:layout_gravity="center"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="12dp">
-
-
-            <FrameLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_marginEnd="12dp">
-
-                <!-- Fondo azul completamente ajustado -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:src="@drawable/fondo_azul" />
+                    android:layout_marginEnd="12dp">
 
-                <!-- Icono centrado -->
-                <ImageView
-                    android:layout_width="60dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_actividad" />
-            </FrameLayout>
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/fondo_azul" />
 
-            <!-- Texto -->
-            <TextView
-                android:layout_width="wrap_content"
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/salud" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Registros de salud"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <!-- Tarjeta: Gestión de pacientes -->
+            <LinearLayout
+                android:id="@+id/cardGestionPacientes"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Actividad"
-                android:textColor="#000000"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="30dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:elevation="2dp"
+                android:layout_marginHorizontal="16dp"
+                android:gravity="center_vertical">
+
+                <FrameLayout
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginEnd="12dp">
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/fondo_azul" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_paciente" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gestión de pacientes"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <!-- Tarjeta: Actividad -->
+            <LinearLayout
+                android:id="@+id/cardActividad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:elevation="2dp"
+                android:layout_marginHorizontal="16dp"
+                android:gravity="center_vertical">
+
+                <FrameLayout
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginEnd="12dp">
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/fondo_azul" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="43dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_actividad" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Actividad"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnMembresia"
+                android:layout_width="392dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="35dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:elevation="2dp"
+                android:gravity="center_vertical">
+
+                <!-- Fondo azul con icono encima -->
+                <FrameLayout
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginEnd="12dp">
+
+                    <!-- Fondo azul completamente ajustado -->
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/fondo_azul" />
+
+                    <!-- Icono centrado -->
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="43dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/tarjeta" />
+                </FrameLayout>
+                <!-- Texto -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gestión de Membresia"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+
         </LinearLayout>
-
-    </LinearLayout>
-
-</ScrollView>
+    </ScrollView>
+</RelativeLayout>

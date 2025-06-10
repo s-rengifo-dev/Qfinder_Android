@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -45,6 +46,8 @@ import retrofit2.Response;
 
 public class episodios_salud_menu extends AppCompatActivity {
 
+    private ImageView btnBack;
+
     private Spinner spinnerOrganizar;
     private int pacienteIdSeleccionado = -1;
     private String token;
@@ -71,6 +74,7 @@ public class episodios_salud_menu extends AppCompatActivity {
         listViewNotas = findViewById(R.id.listViewNotas);
         cantidadRegistros = findViewById(R.id.cantidadRegistros);
         searchInput = findViewById(R.id.searchInput);
+        btnBack = findViewById(R.id.btnBack);
         recyclerPacientes = findViewById(R.id.recyclerPaciente);
 
         notaAdapter = new NotaEpisodioAdapter(this, notasFiltradas);
@@ -102,6 +106,9 @@ public class episodios_salud_menu extends AppCompatActivity {
                 Toast.makeText(this, "Selecciona un paciente primero.", Toast.LENGTH_SHORT).show();
             }
         });
+
+        // Botón de retroceso
+        btnBack.setOnClickListener(v -> finish());
     }
 
     private void setupRecyclerPacientes() {

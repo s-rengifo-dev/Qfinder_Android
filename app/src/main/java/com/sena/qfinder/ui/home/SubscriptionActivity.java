@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
@@ -42,10 +43,14 @@ public class SubscriptionActivity extends AppCompatActivity {
 
         Button btnPlus = findViewById(R.id.btn_plus_plan);
         Button btnPro = findViewById(R.id.btn_pro_plan);
+        ImageView btnBack = findViewById(R.id.btnBack); // ← Agregamos el botón "atrás"
 
         btnPlus.setOnClickListener(v -> initiateCheckoutPro("plus"));
         btnPro.setOnClickListener(v -> initiateCheckoutPro("pro"));
+
+        btnBack.setOnClickListener(v -> finish()); // ← Cierra la actividad actual
     }
+
 
     private void initiateCheckoutPro(String planType) {
         currentPlanType = planType;

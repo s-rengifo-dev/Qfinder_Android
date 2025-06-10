@@ -7,11 +7,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,6 +25,7 @@ import com.sena.qfinder.data.models.ActividadGetResponse;
 import com.sena.qfinder.data.models.ActividadListResponse;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.ui.home.Fragment_Serivicios;
 import com.sena.qfinder.ui.paciente.PatientAdapter;
 
 import java.util.ArrayList;
@@ -38,6 +42,7 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
     private RecyclerView recyclerViewActividades;
     private RecyclerView recyclerViewPacientes;
     private Button btnAgregarActividad;
+    private ImageView btnBack;
     private ActividadAdapter actividadAdapter;
     private PatientAdapter patientAdapter;
     private Map<Integer, PacienteResponse> pacientesMap = new HashMap<>();
@@ -52,6 +57,7 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
         recyclerViewPacientes = view.findViewById(R.id.recyclerViewPacientes);
         recyclerViewActividades = view.findViewById(R.id.recyclerViewActividades);
         btnAgregarActividad = view.findViewById(R.id.btnAgregarActividad);
+        btnBack = view.findViewById(R.id.btnBack);
 
         // Configurar RecyclerView para pacientes (horizontal)
         recyclerViewPacientes.setLayoutManager(new LinearLayoutManager(
@@ -82,8 +88,20 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
             dialog.show(getParentFragmentManager(), "AgregarActividadDialog");
         });
 
+        // Código del botón de retroceso
+        btnBack.setOnClickListener(v -> {
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            Fragment_Serivicios serviciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
+            fragmentTransaction.replace(R.id.fragment_container, serviciosFragment); // Usa el ID correcto de tu contenedor
+            fragmentTransaction.addToBackStack(null); // Opcional
+            fragmentTransaction.commit();
+        });
+
         return view;
     }
+
 
     @Override
     public void onPatientClick(PacienteResponse paciente) {

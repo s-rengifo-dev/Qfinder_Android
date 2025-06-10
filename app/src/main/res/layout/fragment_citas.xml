@@ -6,24 +6,42 @@
     android:layout_height="match_parent">
 
     <!-- HEADER AZUL -->
-    <LinearLayout
-        android:id="@+id/headerLayout"
+    <RelativeLayout
+        android:id="@+id/encabezado"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/header_rounded_background"
-        android:padding="15dp"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:layout_height="99dp">
 
+        <!-- Imagen de encabezado -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="99dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_header" />
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="34dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/circle_azul"
+            android:contentDescription="Volver"
+            android:padding="10dp"
+            android:src="@drawable/img" />
+
+        <!-- Título sobre la imagen -->
         <TextView
-            android:id="@+id/tvTitulo"
+            android:id="@+id/tituloServicios"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RECORDATORIOS"
+            android:text="Recordatorios"
+            android:textColor="#000000"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:textSize="38sp"
-            android:textColor="@color/black" />
-    </LinearLayout>
+            android:layout_centerInParent="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="33dp" />
+    </RelativeLayout>
 
     <!-- SCROLLABLE CONTENT -->
     <ScrollView
@@ -87,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:text="Agregar recordatorio"
                 android:layout_gravity="center"
-                android:backgroundTint="#1983ff"
+                android:backgroundTint="@color/Botones"
                 android:textColor="#ffffff" />
             <!-- TARJETA CITAS -->
             <TextView

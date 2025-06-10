@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.medicamento.ListaAsignarMedicamentos">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- Contenedor principal en columna -->
     <LinearLayout
         android:id="@+id/layoutMedicamentos"
         android:layout_width="match_parent"
@@ -13,70 +13,94 @@
         android:orientation="vertical"
         android:background="#FFFFFF">
 
-    <!-- Título -->
-        <LinearLayout
+        <!-- Encabezado fijo con imagen, flecha y título -->
+        <RelativeLayout
+            android:id="@+id/encabezado"
             android:layout_width="match_parent"
-            android:layout_height="102dp"
-            android:layout_marginBottom="25dp"
-            android:background="#4B9AF6"
-            android:paddingVertical="10dp">
+            android:layout_height="99dp">
+
+            <!-- Imagen de fondo del encabezado -->
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="99dp"
+                android:layout_marginStart="-40dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_header" />
+
+            <!-- Título centrado horizontalmente en el contenedor -->
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="34dp"
+                android:layout_marginStart="15dp"
+                android:background="@drawable/circle_azul"
+                android:contentDescription="Volver"
+                android:padding="10dp"
+                android:src="@drawable/img" />
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:gravity="center"
-                android:layout_marginTop="18sp"
+                android:id="@+id/tituloMedicamentos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Medicamentos"
-                android:textColor="@color/black"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:textColor="#000000"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="33dp" />
+        </RelativeLayout>
 
-        <Spinner
-        android:id="@+id/spinner_patients_main"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="16dp"/>
+        <!-- Contenido desplazable -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
 
-        <Button
-            android:id="@+id/btnOpenModalAsignar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Asignar Medicamento"
-            android:backgroundTint="#005BEA"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:layout_gravity="center"
-            android:layout_marginTop="24dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:visibility="gone"/>
+                <!-- Spinner para seleccionar paciente -->
+                <Spinner
+                    android:id="@+id/spinner_patients_main"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="16dp" />
 
+                <!-- Botón para abrir el modal de asignación -->
+                <Button
+                    android:id="@+id/btnOpenModalAsignar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Asignar Medicamento"
+                    android:backgroundTint="@color/Botones"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="24dp" />
 
-    <LinearLayout
-        android:id="@+id/medicamentosContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"/>
-<!--    <Button-->
-<!--        android:id="@+id/btnOpenModalAsignar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Asignar Nuevo Medicamento"-->
-<!--        android:layout_marginBottom="16dp"/>-->
-    </LinearLayout>
-    </ScrollView>
+                <!-- Barra de progreso oculta por defecto -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+                <!-- Contenedor dinámico para la lista de medicamentos -->
+                <LinearLayout
+                    android:id="@+id/medicamentosContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+        </ScrollView>
 
     </LinearLayout>
 </FrameLayout>
