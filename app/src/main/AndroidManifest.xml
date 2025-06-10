@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sena.qfinder"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.sena.qfinder">
 
     <!-- Permisos combinados -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -33,8 +33,102 @@
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
+
+        <!-- Actividades Principales -->
+        <activity
+            android:name=".controller.MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".controller.MainActivityDash"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <!-- Flujo de Pagos -->
+        <activity
+            android:name=".ui.home.PaymentSuccessActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="qfinder" android:host="payment" android:pathPrefix="/success"/>
+                <data android:host="qfinder-app.com" android:scheme="https" android:pathPrefix="/payment/success"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.home.PaymentFailureActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="qfinder" android:host="payment" android:pathPrefix="/failure"/>
+                <data android:host="qfinder-app.com" android:scheme="https" android:pathPrefix="/payment/failure"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.home.PaymentPendingActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="payment" android:scheme="qfinder" android:pathPrefix="/pending"/>
+                <data android:host="qfinder-app.com" android:scheme="https" android:pathPrefix="/payment/pending"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.home.MercadoPagoCheckoutActivity"
+            android:exported="true" />
+
         <activity android:name=".ui.home.SubscriptionActivity" />
-        <!-- Receivers para manejo de alarmas y eventos del sistema -->
+
+        <!-- Actividades de UI -->
+        <activity
+            android:name=".ui.notas.episodios_salud_nota"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.home.episodios_salud_menu"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.auth.Registro_usuario"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.paciente.Registro_paciente"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false" />
+
+        <!-- Actividades del Sistema -->
+        <activity
+            android:name=".utils.AlarmFullScreenActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:showOnLockScreen="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:turnScreenOn="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+        <!-- Receivers -->
         <receiver
             android:name=".utils.AlarmReceiver"
             android:enabled="true"
@@ -59,15 +153,7 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <activity
-            android:name=".ui.home.MercadoPagoCheckoutActivity"
-            android:exported="true" />
 
-        <activity
-            android:name=".ui.home.PaymentFailureActivity"
-            android:exported="true" />
-        <activity android:name=".ui.home.PaymentSuccessActivity" />
-<!--        <activity android:name=".ui.home.PaymentFailureActivity" />-->
         <receiver
             android:name=".utils.SnoozeReceiver"
             android:enabled="true"
@@ -88,56 +174,7 @@
             android:stopWithTask="false"
             android:exported="false" />
 
-        <!-- Actividades -->
-        <!-- Pantalla completa de alarma -->
-        <activity
-            android:name=".utils.AlarmFullScreenActivity"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:showOnLockScreen="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:turnScreenOn="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-
-        <!-- Otras actividades de la aplicación -->
-        <activity
-            android:name=".ui.notas.episodios_salud_nota"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.home.episodios_salud_menu"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
-
-
-        <activity
-            android:name=".ui.auth.Registro_usuario"
-            android:exported="false" />
-
-        <activity
-            android:name=".controller.MainActivityDash"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.paciente.Registro_paciente"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
-
-        <activity
-            android:name=".controller.MainActivity"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <!-- Configuración para notch y barra de estado -->
+        <!-- Meta Datos -->
         <meta-data
             android:name="android.notch_support"
             android:value="true" />
