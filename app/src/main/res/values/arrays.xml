@@ -10,4 +10,9 @@
         <item>Completada</item>
         <item>Cancelada</item>
     </string-array>
+    <string-array name="frequency_units">
+        <item>horas</item>
+        <item>dias</item>
+        <item>semanas</item>
+    </string-array>
 </resources>

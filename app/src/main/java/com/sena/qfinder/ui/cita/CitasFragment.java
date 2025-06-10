@@ -29,10 +29,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
-import com.prolificinteractive.materialcalendarview.DayViewDecorator;
-import com.prolificinteractive.materialcalendarview.DayViewFacade;
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
-import com.prolificinteractive.materialcalendarview.spans.DotSpan;
 import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.ApiClient;
 import com.sena.qfinder.data.api.AuthService;
@@ -43,10 +39,8 @@ import com.sena.qfinder.data.models.PacienteResponse;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,7 +54,6 @@ import retrofit2.Retrofit;
 public class CitasFragment extends Fragment {
 
     private static final String TAG = "CitasFragment";
-    private MaterialCalendarView calendarView;
     private RecyclerView recyclerCitas;
     private LinearLayout patientsContainer;
     private CitaAdapter citaAdapter;
@@ -71,10 +64,12 @@ public class CitasFragment extends Fragment {
     private LayoutInflater currentInflater;
     private Context context;
 
-    // Decoradores para diferentes estados de citas
-    private EventDecorator decoratorCitasPendientes;
-    private EventDecorator decoratorCitasCompletadas;
-    private EventDecorator decoratorCitasCanceladas;
+    // Variables para el calendario simple
+    private Button btnSelectDate;
+    private TextView tvSelectedDate;
+    private Calendar selectedCalendar = Calendar.getInstance();
+    private SimpleDateFormat dateDisplayFormat = new SimpleDateFormat("EEEE, d 'de' MMMM 'de' yyyy", new Locale("es", "ES"));
+    private SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -83,22 +78,24 @@ public class CitasFragment extends Fragment {
         context = getContext();
 
         // Inicializar vistas
-        calendarView = rootView.findViewById(R.id.calendarView);
         recyclerCitas = rootView.findViewById(R.id.recyclerCitas);
         patientsContainer = rootView.findViewById(R.id.patientsContainer);
         Button btnAgregarRecordatorio = rootView.findViewById(R.id.btnAgregarRecordatorio);
+
+        // Inicializar vistas del calendario simple
+        btnSelectDate = rootView.findViewById(R.id.btnSelectDate);
+        tvSelectedDate = rootView.findViewById(R.id.tvSelectedDate);
 
         // Configurar RecyclerView
         recyclerCitas.setLayoutManager(new LinearLayoutManager(getContext()));
         citaAdapter = new CitaAdapter(new ArrayList<>());
         recyclerCitas.setAdapter(citaAdapter);
 
-        // Configurar listeners
-        calendarView.setOnDateChangedListener((widget, date, selected) -> {
-            if (selected && selectedPatientId != -1) {
-                mostrarCitasParaFecha(date);
-            }
-        });
+        // Mostrar fecha actual por defecto
+        updateSelectedDate();
+
+        // Listener para el botón de selección de fecha
+        btnSelectDate.setOnClickListener(v -> showDatePickerDialog());
 
         // Listener para el botón de agregar recordatorio
         btnAgregarRecordatorio.setOnClickListener(v -> mostrarDialogoAgregarRecordatorio());
@@ -107,6 +104,30 @@ public class CitasFragment extends Fragment {
         loadPacientes();
 
         return rootView;
+    }
+
+
+    private void showDatePickerDialog() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                requireContext(),
+                (view, year, month, dayOfMonth) -> {
+                    selectedCalendar.set(year, month, dayOfMonth);
+                    updateSelectedDate();
+
+                    // Mostrar citas para la fecha seleccionada
+                    if (selectedPatientId != -1) {
+                        mostrarCitasParaFecha(selectedCalendar);
+                    }
+                },
+                selectedCalendar.get(Calendar.YEAR),
+                selectedCalendar.get(Calendar.MONTH),
+                selectedCalendar.get(Calendar.DAY_OF_MONTH)
+        );
+        datePickerDialog.show();
+    }
+
+    private void updateSelectedDate() {
+        tvSelectedDate.setText("Fecha seleccionada: " + dateDisplayFormat.format(selectedCalendar.getTime()));
     }
 
     private void loadPacientes() {
@@ -222,18 +243,15 @@ public class CitasFragment extends Fragment {
                     todasLasCitas = response.body();
                     Log.d(TAG, "Citas recibidas: " + todasLasCitas.size());
                     if (todasLasCitas != null && !todasLasCitas.isEmpty()) {
-                        marcarDiasConCitasEnCalendario();
-                        mostrarCitasParaFecha(calendarView.getSelectedDate());
+                        mostrarCitasParaFecha(selectedCalendar);
                     } else {
                         todasLasCitas = new ArrayList<>();
-                        limpiarMarcadoresCalendario();
                         citaAdapter.updateData(new ArrayList<>());
                         Toast.makeText(getContext(), "No hay citas programadas para este paciente", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Toast.makeText(getContext(), "Error al cargar citas", Toast.LENGTH_SHORT).show();
                     todasLasCitas = new ArrayList<>();
-                    limpiarMarcadoresCalendario();
                     citaAdapter.updateData(new ArrayList<>());
                 }
             }
@@ -242,85 +260,18 @@ public class CitasFragment extends Fragment {
             public void onFailure(@NonNull Call<List<CitaMedica>> call, @NonNull Throwable t) {
                 Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
                 todasLasCitas = new ArrayList<>();
-                limpiarMarcadoresCalendario();
                 citaAdapter.updateData(new ArrayList<>());
             }
         });
     }
 
-    private void marcarDiasConCitasEnCalendario() {
-        limpiarMarcadoresCalendario();
-
-        List<CalendarDay> fechasPendientes = new ArrayList<>();
-        List<CalendarDay> fechasCompletadas = new ArrayList<>();
-        List<CalendarDay> fechasCanceladas = new ArrayList<>();
-
-        for (CitaMedica cita : todasLasCitas) {
-            if (cita.getFechaCita() != null && !cita.getFechaCita().isEmpty()) {
-                try {
-                    // Parsear la fecha ISO (yyyy-MM-dd'T'HH:mm:ss.SSS'Z')
-                    String fechaPart = cita.getFechaCita().split("T")[0];
-                    String[] partes = fechaPart.split("-");
-
-                    int year = Integer.parseInt(partes[0]);
-                    int month = Integer.parseInt(partes[1]); // Esto ya es 1-12
-                    int day = Integer.parseInt(partes[2]);
-
-                    // CalendarDay.from() espera meses 0-11, así que restamos 1
-                    CalendarDay calendarDay = CalendarDay.from(year, month - 1, day);
-
-                    String estado = cita.getEstado() != null ? cita.getEstado().toLowerCase() : "";
-                    switch (estado) {
-                        case "completada":
-                            fechasCompletadas.add(calendarDay);
-                            break;
-                        case "cancelada":
-                            fechasCanceladas.add(calendarDay);
-                            break;
-                        default:
-                            fechasPendientes.add(calendarDay);
-                            break;
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Error al procesar fecha: " + cita.getFechaCita(), e);
-                }
-            }
-        }
-
-        // Resto del método permanece igual...
-        if (!fechasPendientes.isEmpty()) {
-            decoratorCitasPendientes = new EventDecorator(Color.RED, fechasPendientes);
-            calendarView.addDecorator(decoratorCitasPendientes);
-        }
-
-        if (!fechasCompletadas.isEmpty()) {
-            decoratorCitasCompletadas = new EventDecorator(Color.GREEN, fechasCompletadas);
-            calendarView.addDecorator(decoratorCitasCompletadas);
-        }
-
-        if (!fechasCanceladas.isEmpty()) {
-            decoratorCitasCanceladas = new EventDecorator(Color.BLACK, fechasCanceladas);
-            calendarView.addDecorator(decoratorCitasCanceladas);
-        }
-
-        calendarView.invalidateDecorators();
-    }
-
-    private void limpiarMarcadoresCalendario() {
-        calendarView.removeDecorators();
-        decoratorCitasPendientes = null;
-        decoratorCitasCompletadas = null;
-        decoratorCitasCanceladas = null;
-    }
-
-    private void mostrarCitasParaFecha(CalendarDay date) {
-        if (date == null || todasLasCitas.isEmpty()) {
+    private void mostrarCitasParaFecha(Calendar calendar) {
+        if (calendar == null || todasLasCitas.isEmpty()) {
             citaAdapter.updateData(new ArrayList<>());
             return;
         }
 
-        String fechaSeleccionada = String.format(Locale.getDefault(), "%04d-%02d-%02d",
-                date.getYear(), date.getMonth() + 1, date.getDay());
+        String fechaSeleccionada = apiDateFormat.format(calendar.getTime());
 
         List<CitaMedica> citasParaFecha = new ArrayList<>();
         for (CitaMedica cita : todasLasCitas) {
@@ -339,12 +290,6 @@ public class CitasFragment extends Fragment {
     private void mostrarDialogoAgregarRecordatorio() {
         if (selectedPatientId == -1) {
             Toast.makeText(getContext(), "Por favor selecciona un paciente primero", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        CalendarDay selectedDate = calendarView.getSelectedDate();
-        if (selectedDate == null) {
-            Toast.makeText(getContext(), "Por favor selecciona una fecha en el calendario", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -438,28 +383,44 @@ public class CitasFragment extends Fragment {
                 SimpleDateFormat sdfHora = new SimpleDateFormat("HH:mm", Locale.getDefault());
                 Date hora = sdfHora.parse(horaStr);
 
-                // Format for API
-                SimpleDateFormat sdfFechaApi = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                SimpleDateFormat sdfHoraApi = new SimpleDateFormat("HH:mm", Locale.getDefault()); // Cambiado a HH:mm
-                SimpleDateFormat sdfRecordatorioApi = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                // Combine fecha + hora para crear el campo fecha_cita completo en formato ISO 8601
+                Calendar fechaCitaCal = Calendar.getInstance();
+                fechaCitaCal.setTime(fecha);
+                Calendar horaCitaCal = Calendar.getInstance();
+                horaCitaCal.setTime(hora);
 
-                String fechaCita = sdfFechaApi.format(fecha);
-                String horaCita = sdfHoraApi.format(hora); // Sin agregar :00
+                fechaCitaCal.set(Calendar.HOUR_OF_DAY, horaCitaCal.get(Calendar.HOUR_OF_DAY));
+                fechaCitaCal.set(Calendar.MINUTE, horaCitaCal.get(Calendar.MINUTE));
+                fechaCitaCal.set(Calendar.SECOND, 0);
+                fechaCitaCal.set(Calendar.MILLISECOND, 0);
 
-                // Resto del código permanece igual...
+                // Formato requerido por el backend: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+                SimpleDateFormat sdfFechaCitaApi = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+                sdfFechaCitaApi.setTimeZone(TimeZone.getTimeZone("UTC"));
+                String fechaCita = sdfFechaCitaApi.format(fechaCitaCal.getTime());
+
+                // Solo la hora para el campo hora_cita
+                SimpleDateFormat sdfHoraApi = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                String horaCita = sdfHoraApi.format(hora);
+
+                // Recordatorio: un día antes a las 08:00
                 Calendar reminderCal = Calendar.getInstance();
                 reminderCal.setTime(fecha);
                 reminderCal.add(Calendar.DAY_OF_YEAR, -1);
                 reminderCal.set(Calendar.HOUR_OF_DAY, 8);
                 reminderCal.set(Calendar.MINUTE, 0);
                 reminderCal.set(Calendar.SECOND, 0);
+                reminderCal.set(Calendar.MILLISECOND, 0);
+
+                SimpleDateFormat sdfRecordatorioApi = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
                 String fechaRecordatorio = sdfRecordatorioApi.format(reminderCal.getTime());
 
+                // Crear objeto CitaMedica
                 CitaMedica nuevaCita = new CitaMedica();
                 nuevaCita.setTituloCita(titulo);
                 nuevaCita.setDescripcion(descripcion);
-                nuevaCita.setFechaCita(fechaCita + "T00:00:00.000Z");
-                nuevaCita.setHoraCita(horaCita); // Ahora en formato HH:mm
+                nuevaCita.setFechaCita(fechaCita);
+                nuevaCita.setHoraCita(horaCita);
                 nuevaCita.setFechaRecordatorio(fechaRecordatorio);
                 nuevaCita.setEstado(estado);
                 nuevaCita.setIdPaciente(selectedPatientId);
@@ -469,10 +430,12 @@ public class CitasFragment extends Fragment {
                 Log.d(TAG, "Enviando cita: " + nuevaCita.toString());
                 guardarCita(nuevaCita);
                 dialog.dismiss();
+
             } catch (Exception e) {
                 Toast.makeText(context, "Error al procesar fecha/hora", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Error al procesar fecha/hora", e);
             }
+
         });
 
         btnCancelar.setOnClickListener(v -> dialog.dismiss());
@@ -517,25 +480,5 @@ public class CitasFragment extends Fragment {
                 Log.e(TAG, "Error de conexión al guardar cita", t);
             }
         });
-    }
-
-    private static class EventDecorator implements DayViewDecorator {
-        private final int color;
-        private final HashSet<CalendarDay> dates;
-
-        public EventDecorator(int color, Collection<CalendarDay> dates) {
-            this.color = color;
-            this.dates = new HashSet<>(dates);
-        }
-
-        @Override
-        public boolean shouldDecorate(CalendarDay day) {
-            return dates.contains(day);
-        }
-
-        @Override
-        public void decorate(DayViewFacade view) {
-            view.addSpan(new DotSpan(10, color));
-        }
     }
 }

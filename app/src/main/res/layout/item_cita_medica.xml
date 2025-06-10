@@ -22,12 +22,12 @@
             android:id="@+id/textTituloCita"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Motivo: " />
+            android:text="Titulo: " />
         <TextView
             android:id="@+id/textMotivoCita"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Motivo: " />
+            android:text="Descripcion: " />
 
         <TextView
             android:id="@+id/textEstadoCita"
@@ -39,7 +39,7 @@
         android:id="@+id/horaCita"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="hora cita: "
+        android:text="Hora cita: "
         />
     </LinearLayout>
 </androidx.cardview.widget.CardView>
