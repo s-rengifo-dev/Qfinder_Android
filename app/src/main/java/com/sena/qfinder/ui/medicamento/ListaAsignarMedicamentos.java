@@ -23,6 +23,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
@@ -35,6 +37,7 @@ import com.sena.qfinder.data.models.MedicamentoResponse;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
 import com.sena.qfinder.data.models.AsignacionMedicamentoResponse;
+import com.sena.qfinder.ui.home.Fragment_Serivicios;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -56,6 +59,8 @@ public class ListaAsignarMedicamentos extends Fragment {
     private SimpleDateFormat dateFormatter;
     private LinearLayout patientsContainer, medicamentosContainer;
     private Spinner spinnerPatientsMain;
+
+    private ImageView btnBack;
     private SharedPreferences sharedPreferences;
     private Map<Integer, String> pacientesMap = new HashMap<>();
     private Map<Integer, String> medicamentosMap = new HashMap<>();
@@ -92,6 +97,7 @@ public class ListaAsignarMedicamentos extends Fragment {
         View view = inflater.inflate(R.layout.fragment_lista_asignar_medicamentos, container, false);
 
         btnOpenModalAsignar = view.findViewById(R.id.btnOpenModalAsignar);
+        btnBack = view.findViewById(R.id.btnBack);
         spinnerPatientsMain = view.findViewById(R.id.spinner_patients_main);
         medicamentosContainer = view.findViewById(R.id.medicamentosContainer);
         progressBar = view.findViewById(R.id.progressBar);
@@ -101,8 +107,22 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         btnOpenModalAsignar.setOnClickListener(view1 -> mostrarDialogoAgregarMedicamento());
 
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                Fragment_Serivicios serviciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
+                fragmentTransaction.replace(R.id.fragment_container, serviciosFragment); // Usa el ID del contenedor de tus fragments
+                fragmentTransaction.addToBackStack(null); // Opcional: para que puedas volver hacia adelante también
+                fragmentTransaction.commit();
+            }
+        });
+
         return view;
     }
+
 
     @Override
     public void onDestroyView() {

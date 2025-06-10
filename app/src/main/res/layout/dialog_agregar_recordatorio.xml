@@ -92,12 +92,16 @@
         android:orientation="horizontal"
         android:gravity="end">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnCancelar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="41dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_cancelar"
             android:text="Cancelar"
-            android:layout_marginEnd="8dp"/>
+            android:textAllCaps="false"
+            android:textColor="#4E9EFB" />
+
 
         <Button
             android:id="@+id/btnGuardar"

@@ -7,22 +7,36 @@
     android:background="#F5F5F5">
 
     <RelativeLayout
+        android:id="@+id/encabezado"
         android:layout_width="match_parent"
         android:layout_height="99dp">
 
+        <!-- Imagen de encabezado -->
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="99dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_header" />
 
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="34dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/circle_azul"
+            android:contentDescription="Volver"
+            android:padding="10dp"
+            android:src="@drawable/img" />
+
+        <!-- Título sobre la imagen -->
         <TextView
-            android:id="@+id/tituloGestion"
+            android:id="@+id/tituloServicios"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Gestion Pacientes"
+            android:text="Gestión Pacientes"
             android:textColor="#000000"
-            android:textSize="26sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             android:layout_centerInParent="true"
             android:layout_alignParentTop="true"

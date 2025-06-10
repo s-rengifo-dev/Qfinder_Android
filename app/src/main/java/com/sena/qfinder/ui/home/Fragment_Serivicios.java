@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.fragment.app.Fragment;
@@ -27,7 +28,16 @@ public class Fragment_Serivicios extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment__serivicios, container, false);
 
+        ImageView btnBack = view.findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> {
+            // Opción 1: Ir directamente al DashboardFragment
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, new DashboardFragment()); // Usa tu contenedor real
+            transaction.commit();
 
+            // Opción 2: Volver al fragmento anterior si usaste addToBackStack()
+            // getParentFragmentManager().popBackStack();
+        });
         LinearLayout cardGestionPacientes = view.findViewById(R.id.cardGestionPacientes);
         cardGestionPacientes.setOnClickListener(v -> {
             // Reemplazar fragmento actual por GestionPacienteFragment

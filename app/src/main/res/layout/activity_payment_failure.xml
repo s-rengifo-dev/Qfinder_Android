@@ -38,14 +38,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Reintentar"
+        android:backgroundTint="@color/Botones"
         android:layout_marginTop="8dp"/>
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_cancel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="376dp"
+        android:layout_height="41dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/button_cancelar"
         android:text="Cancelar"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@android:color/transparent"
-        android:textColor="@color/colorPrimary"/>
+        android:textAllCaps="false"
+        android:textColor="#4E9EFB" />
 </LinearLayout>

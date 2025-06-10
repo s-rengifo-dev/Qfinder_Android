@@ -6,24 +6,31 @@
     android:layout_height="match_parent">
 
     <!-- HEADER AZUL -->
-    <LinearLayout
-        android:id="@+id/headerLayout"
+    <RelativeLayout
+        android:id="@+id/encabezado"
         android:layout_width="match_parent"
-        android:layout_height="77dp"
-        android:background="@drawable/ic_header"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="15dp">
+        android:layout_height="99dp">
 
+        <!-- Imagen de encabezado -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="99dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_header" />
+
+        <!-- Título sobre la imagen -->
         <TextView
-            android:id="@+id/tvTitulo"
+            android:id="@+id/titiloRecordatorios"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RECORDATORIOS"
-            android:textColor="@color/black"
-            android:textSize="26sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:text="Recordatorios"
+            android:textColor="#000000"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_centerInParent="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="33dp" />
+    </RelativeLayout>
 
     <!-- HEADER + SCROLLABLE CONTENT -->
     <ScrollView
@@ -140,7 +147,7 @@
                 android:layout_height="wrap_content"
                 android:text="Agregar recordatorio"
                 android:layout_gravity="center"
-                android:backgroundTint="#1983ff"
+                android:backgroundTint="@color/Botones"
                 android:textColor="#ffffff" />
         </LinearLayout>
     </ScrollView>
