@@ -13,13 +13,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -67,6 +72,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     private TextView tvNombreApellido, tvFechaNacimiento, tvSexo, tvDiagnostico, tvIdentificacion;
     private ImageView btnBack, ivCodigoQR, imagenPerfilP;
     private ProgressBar progressBar;
+    private Button btnAgregarColaborador;
 
     public static PerfilPaciente newInstance(int pacienteId) {
         PerfilPaciente fragment = new PerfilPaciente();
@@ -109,6 +115,14 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         initViews(view);
         setupClickListeners(view);
 
+        btnAgregarColaborador = view.findViewById(R.id.btnAgregarColaborador);
+        btnAgregarColaborador.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mostrarDialogoAgregarColaborador();
+            }
+        });
+
         if (pacienteActual != null) {
             displayPacienteData(pacienteActual);
             mostrarQRDelPaciente(pacienteActual);
@@ -139,7 +153,56 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         ivCodigoQR = view.findViewById(R.id.imgQrPaciente);
         imagenPerfilP = view.findViewById(R.id.ivFotoPerfil);
         progressBar = view.findViewById(R.id.progressBar);
+
     }
+
+    private void mostrarDialogoAgregarColaborador() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.fragment_agregar_colaborador, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        EditText etCorreo = dialogView.findViewById(R.id.etCorreoColaborador);
+        ImageView btnBuscar = dialogView.findViewById(R.id.btnBuscarColaborador);
+        LinearLayout contenedor = dialogView.findViewById(R.id.contenedorColaborador);
+        CheckBox checkbox = dialogView.findViewById(R.id.checkboxSeleccionarColaborador);
+        TextView tvNombre = dialogView.findViewById(R.id.tvNombreColaborador);
+        TextView tvApellido = dialogView.findViewById(R.id.tvApellidoColaborador);
+        TextView tvCorreo = dialogView.findViewById(R.id.tvCorreoColaborador);
+        Button btnAgregar = dialogView.findViewById(R.id.btnConfirmarAgregarColaborador);
+
+        // Buscar colaborador (aquí luego conectaremos el backend)
+        btnBuscar.setOnClickListener(v -> {
+            // Simulación de respuesta del backend:
+            // Reemplazar con tu llamada real (por ejemplo con Retrofit)
+            String correo = etCorreo.getText().toString().trim();
+            if (!correo.isEmpty()) {
+                // Suponiendo que la respuesta es:
+                String nombre = "Juan";
+                String apellido = "Pérez";
+                String correoRespuesta = correo;
+
+                contenedor.setVisibility(View.VISIBLE);
+                tvNombre.setText("Nombre: " + nombre);
+                tvApellido.setText("Apellido: " + apellido);
+                tvCorreo.setText("Correo: " + correoRespuesta);
+            }
+        });
+
+        // Mostrar botón al marcar el checkbox
+        checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            btnAgregar.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
+
+        // Acción de agregar colaborador
+        btnAgregar.setOnClickListener(v -> {
+            // Aquí llamas al backend para agregar el colaborador
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
 
     private void setupClickListeners(View view) {
         btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
