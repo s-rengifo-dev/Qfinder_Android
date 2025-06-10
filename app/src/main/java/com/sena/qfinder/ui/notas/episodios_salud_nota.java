@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -40,7 +41,8 @@ public class episodios_salud_nota extends AppCompatActivity {
 
     private EditText editTextTitulo, editTextDescripcion, editTextIntervenciones;
     private EditText editTextFechaInicio, editTextFechaFin;
-    private Button btnGuardar, btnTipoEpisodio;
+    private Button btnGuardar;
+    private ImageView btnBack;
 
     private final Calendar calendarInicio = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     private final Calendar calendarFin = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -50,6 +52,18 @@ public class episodios_salud_nota extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_episodios_salud_nota);
+
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> {
+            // Cierra la actividad actual para volver al fragment anterior
+            finish();
+
+            // O si necesitas redirigir específicamente:
+            // Intent intent = new Intent(this, TuActivityContenedora.class);
+            // intent.putExtra("fragment_to_load", "servicios");
+            // startActivity(intent);
+        });
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -66,12 +80,10 @@ public class episodios_salud_nota extends AppCompatActivity {
 
         inicializarVistas();
         configurarFechaInicioPredeterminada();
-        configurarBotonTipoEpisodio();
         configurarListeners();
     }
 
     private void inicializarVistas() {
-        btnTipoEpisodio = findViewById(R.id.btnTipoEpisodio);
         btnGuardar = findViewById(R.id.btnGuardar);
         editTextTitulo = findViewById(R.id.editTextTitulo);
         editTextDescripcion = findViewById(R.id.editTextDescripcion);
@@ -91,16 +103,6 @@ public class episodios_salud_nota extends AppCompatActivity {
         editTextFechaInicio.setText(sdf.format(calendarInicio.getTime()));
     }
 
-    private void configurarBotonTipoEpisodio() {
-        final int[] estadoTipo = {0};
-        actualizarBotonTipoEpisodio(estadoTipo[0]);
-
-        btnTipoEpisodio.setOnClickListener(v -> {
-            estadoTipo[0]++;
-            if (estadoTipo[0] > 2) estadoTipo[0] = 0;
-            actualizarBotonTipoEpisodio(estadoTipo[0]);
-        });
-    }
 
     private void configurarListeners() {
         editTextFechaInicio.setOnClickListener(v -> mostrarSelectorFechaHora(editTextFechaInicio, calendarInicio));
@@ -108,25 +110,7 @@ public class episodios_salud_nota extends AppCompatActivity {
         btnGuardar.setOnClickListener(v -> guardarNota());
     }
 
-    private void actualizarBotonTipoEpisodio(int estado) {
-        switch (estado) {
-            case 0:
-                tipoEpisodioActual = "general";
-                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.baja));
-                btnTipoEpisodio.setText("General");
-                break;
-            case 1:
-                tipoEpisodioActual = "agudo";
-                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.media));
-                btnTipoEpisodio.setText("Agudo");
-                break;
-            case 2:
-                tipoEpisodioActual = "crónico";
-                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.alta));
-                btnTipoEpisodio.setText("Crónico");
-                break;
-        }
-    }
+
 
     private void mostrarSelectorFechaHora(EditText campo, Calendar calendar) {
         DatePickerDialog datePicker = new DatePickerDialog(this,

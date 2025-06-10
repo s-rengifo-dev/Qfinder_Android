@@ -254,14 +254,14 @@
 
             <LinearLayout
                 android:id="@+id/btnMembresia"
-                android:layout_width="392dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="35dp"
+                android:layout_marginTop="30dp"
                 android:orientation="horizontal"
                 android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:elevation="2dp"
+                android:layout_marginHorizontal="16dp"
                 android:gravity="center_vertical">
 
                 <!-- Fondo azul con icono encima -->
