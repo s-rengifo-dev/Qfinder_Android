@@ -3,13 +3,13 @@ package com.sena.qfinder.data.models;
 import com.google.gson.annotations.SerializedName;
 
 public class AsignacionMedicamentoResponse {
-    @SerializedName("idAsignacion")
+    @SerializedName("id_pac_medicamento")
     private int idAsignacion;
 
-    @SerializedName("fechaInicio")
+    @SerializedName("fecha_inicio")
     private String fechaInicio;
 
-    @SerializedName("fechaFin")
+    @SerializedName("fecha_fin")
     private String fechaFin;
 
     @SerializedName("dosis")
@@ -18,11 +18,11 @@ public class AsignacionMedicamentoResponse {
     @SerializedName("frecuencia")
     private String frecuencia;
 
-    @SerializedName("medicamento")
-    private MedicamentoResponse medicamento;
-
-    @SerializedName("paciente")
+    @SerializedName("Paciente")
     private PacienteResponse paciente;
+
+    @SerializedName("Medicamento")
+    private MedicamentoResponse medicamento;
 
     // Getters y Setters
     public int getIdAsignacion() {
@@ -45,18 +45,11 @@ public class AsignacionMedicamentoResponse {
         return frecuencia;
     }
 
-    public MedicamentoResponse getMedicamento() {
-        return medicamento;
-    }
-
     public PacienteResponse getPaciente() {
         return paciente;
     }
 
-    // Setters (opcionales)
-    public void setIdAsignacion(int idAsignacion) {
-        this.idAsignacion = idAsignacion;
+    public MedicamentoResponse getMedicamento() {
+        return medicamento;
     }
-
-    // ... otros setters si los necesitas
 }
