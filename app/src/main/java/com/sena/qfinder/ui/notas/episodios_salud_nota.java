@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -34,13 +35,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class episodios_salud_nota extends AppCompatActivity {
-
-    private String tipoEpisodioActual = "general";
     private int idPacienteSeleccionado = -1;
 
     private EditText editTextTitulo, editTextDescripcion, editTextIntervenciones;
     private EditText editTextFechaInicio, editTextFechaFin;
-    private Button btnGuardar, btnTipoEpisodio;
+    private Button btnGuardar;
 
     private final Calendar calendarInicio = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     private final Calendar calendarFin = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -66,8 +65,13 @@ public class episodios_salud_nota extends AppCompatActivity {
 
         inicializarVistas();
         configurarFechaInicioPredeterminada();
-        configurarBotonTipoEpisodio();
         configurarListeners();
+
+        // Botón de retroceso personalizado
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> {
+            finish();
+        });
     }
 
     private void inicializarVistas() {
@@ -91,16 +95,7 @@ public class episodios_salud_nota extends AppCompatActivity {
         editTextFechaInicio.setText(sdf.format(calendarInicio.getTime()));
     }
 
-    private void configurarBotonTipoEpisodio() {
-        final int[] estadoTipo = {0};
-        actualizarBotonTipoEpisodio(estadoTipo[0]);
 
-        btnTipoEpisodio.setOnClickListener(v -> {
-            estadoTipo[0]++;
-            if (estadoTipo[0] > 2) estadoTipo[0] = 0;
-            actualizarBotonTipoEpisodio(estadoTipo[0]);
-        });
-    }
 
     private void configurarListeners() {
         editTextFechaInicio.setOnClickListener(v -> mostrarSelectorFechaHora(editTextFechaInicio, calendarInicio));
@@ -108,25 +103,6 @@ public class episodios_salud_nota extends AppCompatActivity {
         btnGuardar.setOnClickListener(v -> guardarNota());
     }
 
-    private void actualizarBotonTipoEpisodio(int estado) {
-        switch (estado) {
-            case 0:
-                tipoEpisodioActual = "general";
-                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.baja));
-                btnTipoEpisodio.setText("General");
-                break;
-            case 1:
-                tipoEpisodioActual = "agudo";
-                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.media));
-                btnTipoEpisodio.setText("Agudo");
-                break;
-            case 2:
-                tipoEpisodioActual = "crónico";
-                btnTipoEpisodio.setBackgroundColor(ContextCompat.getColor(this, R.color.alta));
-                btnTipoEpisodio.setText("Crónico");
-                break;
-        }
-    }
 
     private void mostrarSelectorFechaHora(EditText campo, Calendar calendar) {
         DatePickerDialog datePicker = new DatePickerDialog(this,
@@ -174,6 +150,10 @@ public class episodios_salud_nota extends AppCompatActivity {
             Toast.makeText(this, "No se pudo identificar al usuario", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        Log.d("DEPURACION", "userId obtenido: " + userId);
+        SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
+        Log.d("DEPURACION", "Contenido completo de SharedPreferences: " + prefs.getAll());
 
         crearYEnviarNota(token, userId);
     }
@@ -246,7 +226,6 @@ public class episodios_salud_nota extends AppCompatActivity {
                 idPacienteSeleccionado,
                 fechaInicio,
                 fechaFin.isEmpty() ? null : fechaFin,
-                tipoEpisodioActual,
                 titulo,
                 descripcion,
                 intervenciones.isEmpty() ? null : intervenciones,
@@ -318,24 +297,30 @@ public class episodios_salud_nota extends AppCompatActivity {
     private int obtenerIdUsuarioRegistrado() {
         SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
 
-        // Primero intentamos obtener como String (formato más común)
-        String idString = prefs.getString("id_usuario", null);
-        if (idString != null) {
-            try {
-                return Integer.parseInt(idString);
-            } catch (NumberFormatException e) {
-                Log.e("USER_ID", "Error al convertir ID de usuario a int: " + idString, e);
+        try {
+            int idInt = prefs.getInt("id_usuario", -1);
+            if (idInt != -1) {
+                return idInt;
             }
+        } catch (ClassCastException e) {
+            Log.e("USER_ID", "id_usuario no es un int", e);
         }
 
-        // Si no está como String o falla la conversión, intentamos como int
         try {
-            return prefs.getInt("id_usuario", -1);
-        } catch (ClassCastException e) {
-            Log.e("USER_ID", "Error al obtener ID como int", e);
-            return -1;
+            String idString = prefs.getString("id_usuario", null);
+            if (idString != null && !idString.isEmpty()) {
+                return Integer.parseInt(idString);
+            }
+        } catch (Exception e) {
+            Log.e("USER_ID", "Error al leer id_usuario como String", e);
         }
+
+        // 👉 SOLUCIÓN TEMPORAL
+        Log.w("USER_ID", "ID de usuario no encontrado. Usando valor temporal.");
+        return 1; // Reemplaza "1" con un ID válido para pruebas
     }
+
+
 
     private String obtenerRolUsuarioRegistrado() {
         SharedPreferences prefs = getSharedPreferences("usuario", MODE_PRIVATE);
