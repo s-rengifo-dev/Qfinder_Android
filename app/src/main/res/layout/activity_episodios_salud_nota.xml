@@ -80,13 +80,13 @@
                 <Button
                     android:id="@+id/btnGuardar"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="38dp"
                     android:layout_marginLeft="16dp"
                     android:backgroundTint="@color/Botones"
                     android:text="Guardar"
                     android:textStyle="bold"
                     android:textAlignment="center"
-                    android:textColor="@color/black"
+                    android:textColor="@color/white"
                     android:textSize="14sp"/>
             </LinearLayout>
 
@@ -94,7 +94,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
-                android:background="@color/colorPrimary"/>
+                android:background="@drawable/shadow_divider"/>
 
             <!-- Sección de fechas - diseño mejorado -->
             <LinearLayout
@@ -191,7 +191,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
-                android:background="@color/colorPrimary"/>
+                android:background="@drawable/shadow_divider"/>
 
             <!-- Descripción - diseño mejorado -->
             <LinearLayout
@@ -235,7 +235,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
-                android:background="@color/colorPrimary"/>
+                android:background="@drawable/shadow_divider"/>
 
             <!-- Intervenciones - diseño mejorado -->
             <LinearLayout

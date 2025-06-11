@@ -88,7 +88,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="$20,000 COP/mes"
+                        android:text="$10,000 COP/mes"
                         android:textStyle="bold"
                         android:textColor="#00796B"
                         android:layout_marginTop="8dp"/>
@@ -136,7 +136,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="$50,000 COP/mes"
+                        android:text="$30,000 COP/mes"
                         android:textStyle="bold"
                         android:textColor="#00796B"
                         android:layout_marginTop="8dp"/>
