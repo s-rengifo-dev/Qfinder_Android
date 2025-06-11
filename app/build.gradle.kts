@@ -72,7 +72,6 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.logging.interceptor)
-
     // Firebase (using BOM)
     implementation(platform(libs.firebase.bom))
     implementation("com.google.firebase:firebase-analytics-ktx")

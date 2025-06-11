@@ -24,6 +24,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,6 +37,7 @@ import com.sena.qfinder.data.api.AuthService;
 import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.ui.home.Fragment_Serivicios;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,6 +60,7 @@ public class CitasFragment extends Fragment {
     private RecyclerView recyclerCitas;
     private LinearLayout patientsContainer;
     private CitaAdapter citaAdapter;
+    private ImageView btnBack;
     private int selectedPatientId = -1;
     private String selectedPatientName = "";
     private Map<Integer, String> pacientesMap = new HashMap<>();
@@ -81,6 +85,7 @@ public class CitasFragment extends Fragment {
         recyclerCitas = rootView.findViewById(R.id.recyclerCitas);
         patientsContainer = rootView.findViewById(R.id.patientsContainer);
         Button btnAgregarRecordatorio = rootView.findViewById(R.id.btnAgregarRecordatorio);
+        ImageView btnBack = rootView.findViewById(R.id.btnBack);
 
         // Inicializar vistas del calendario simple
         btnSelectDate = rootView.findViewById(R.id.btnSelectDate);
@@ -99,6 +104,20 @@ public class CitasFragment extends Fragment {
 
         // Listener para el botón de agregar recordatorio
         btnAgregarRecordatorio.setOnClickListener(v -> mostrarDialogoAgregarRecordatorio());
+
+        // Listener para el botón de retroceso
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                Fragment_Serivicios serviciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
+                fragmentTransaction.replace(R.id.fragment_container, serviciosFragment); // Usa el ID del contenedor de tus fragments
+                fragmentTransaction.addToBackStack(null); // Opcional: para que puedas volver hacia adelante también
+                fragmentTransaction.commit();
+            }
+        });
 
         // Cargar pacientes
         loadPacientes();
@@ -129,6 +148,7 @@ public class CitasFragment extends Fragment {
     private void updateSelectedDate() {
         tvSelectedDate.setText("Fecha seleccionada: " + dateDisplayFormat.format(selectedCalendar.getTime()));
     }
+
 
     private void loadPacientes() {
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);

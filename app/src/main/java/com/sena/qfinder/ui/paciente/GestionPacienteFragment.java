@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
@@ -20,6 +21,7 @@ import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.AuthService;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.ui.home.Fragment_Serivicios;
 import com.sena.qfinder.ui.home.PerfilPaciente;
 
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ public class GestionPacienteFragment extends Fragment {
 
     private LinearLayout patientsContainer;
     private ImageView addButton;
+    private ImageView btnBack;
     private final String BASE_URL = "https://qfinder-production.up.railway.app/";
 
     public GestionPacienteFragment() {
@@ -58,13 +61,30 @@ public class GestionPacienteFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_gestion_paciente, container, false);
+
         setupPatientsSection(inflater, root);
         setupAddButton(root);
+
+        // Botón de retroceso
+        ImageView btnBack = root.findViewById(R.id.btnBack); // O Button si usas otro tipo de vista
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                Fragment_Serivicios serviciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
+                fragmentTransaction.replace(R.id.fragment_container, serviciosFragment); // Usa el ID correcto del contenedor de fragments
+                fragmentTransaction.addToBackStack(null); // Opcional para volver hacia adelante luego
+                fragmentTransaction.commit();
+            }
+        });
+
         return root;
     }
+
 
     private void setupPatientsSection(LayoutInflater inflater, View root) {
         patientsContainer = root.findViewById(R.id.containerPacientes);

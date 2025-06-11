@@ -58,11 +58,23 @@
                 android:id="@+id/boton_imagen"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
+                android:layout_alignParentEnd="true"
                 android:layout_marginTop="68dp"
                 android:layout_marginRight="30dp"
-                android:layout_alignParentEnd="true"
                 android:src="@drawable/img_1"
                 app:tint="@color/black" />
+            <Button
+                android:id="@+id/btnAgregarColaborador"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:text="AGREGAR COLABORADOR"
+                android:backgroundTint="@color/azulitoPrincipio"
+                android:textColor="@android:color/black"
+                android:layout_marginTop="100dp"
+                android:drawableStart="@android:drawable/ic_input_add"
+                android:padding="12dp"
+                android:layout_marginLeft="200dp"/>
+
         </RelativeLayout>
 
 
