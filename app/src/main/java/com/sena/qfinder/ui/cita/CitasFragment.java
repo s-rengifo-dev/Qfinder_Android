@@ -38,6 +38,7 @@ import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
 import com.sena.qfinder.ui.home.Fragment_Serivicios;
+import com.sena.qfinder.utils.CitaAlarmManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -480,7 +481,12 @@ public class CitasFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<CitaMedica> call, @NonNull Response<CitaMedica> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    CitaMedica citaCreada = response.body();
                     Toast.makeText(getContext(), "Cita guardada exitosamente", Toast.LENGTH_SHORT).show();
+
+                    // Programar alarmas para la nueva cita
+                    CitaAlarmManager.programarAlarmasParaCita(getContext(), citaCreada);
+
                     loadCitasDelPaciente(cita.getIdPaciente());
                 } else {
                     try {
