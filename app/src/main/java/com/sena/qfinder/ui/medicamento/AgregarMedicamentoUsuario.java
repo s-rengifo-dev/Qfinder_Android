@@ -26,10 +26,10 @@ import java.util.Locale;
 
 public class AgregarMedicamentoUsuario extends Fragment {
 
-    private Spinner spinnerPatients, spinnerMedications;
+    private Spinner spinnerPatients, spinnerMedications,spinnerFrequencyUnit;
     private LinearLayout layoutStartDate, layoutEndDate;
     private TextView tvStartDate, tvEndDate;
-    private EditText etDosage, etDescription;
+    private EditText etDosage, etFrequencyNumber;
     private Button btnSave;
 
     private Calendar startDate, endDate;
@@ -67,7 +67,8 @@ public class AgregarMedicamentoUsuario extends Fragment {
         tvStartDate = view.findViewById(R.id.tv_start_date);
         tvEndDate = view.findViewById(R.id.tv_end_date);
         etDosage = view.findViewById(R.id.et_dosage);
-        etDescription = view.findViewById(R.id.et_description);
+        etFrequencyNumber = view.findViewById(R.id.et_frequency_number);
+        spinnerFrequencyUnit = view.findViewById(R.id.spinner_frequency_unit);
         btnSave = view.findViewById(R.id.btn_save);
 
         setupSpinners();
@@ -149,7 +150,7 @@ public class AgregarMedicamentoUsuario extends Fragment {
             showToast("Ingresa la dosis");
             return;
         }
-        if (etDescription.getText().toString().trim().isEmpty()) {
+        if (etFrequencyNumber.getText().toString().trim().isEmpty()) {
             showToast("Ingresa la Frecuencia");
             return;
         }
@@ -157,11 +158,14 @@ public class AgregarMedicamentoUsuario extends Fragment {
         String patient = spinnerPatients.getSelectedItem().toString();
         String medication = spinnerMedications.getSelectedItem().toString();
         String dosage = etDosage.getText().toString().trim();
-        String description = etDescription.getText().toString().trim();
+        String frequencyNumber = etFrequencyNumber.getText().toString().trim();
+        String frequencyUnit = spinnerFrequencyUnit.getSelectedItem().toString();
+        String frequency = frequencyNumber + " " + frequencyUnit; // Formato correcto: "3 horas"
         String startDateStr = dateFormatter.format(startDate.getTime());
         String endDateStr = dateFormatter.format(endDate.getTime());
 
         // Aquí iría la lógica para guardar en base de datos/API
+        showToast("Frecuencia: " + frequency); // Solo para prueba
         showToast("Prescripción guardada para " + patient);
 
         clearForm();
@@ -179,6 +183,7 @@ public class AgregarMedicamentoUsuario extends Fragment {
         tvStartDate.setText("Seleccionar fecha de inicio");
         tvEndDate.setText("Seleccionar fecha de fin");
         etDosage.setText("");
-        etDescription.setText("");
+        etFrequencyNumber.setText("");
+        spinnerFrequencyUnit.setSelection(0);
     }
 }

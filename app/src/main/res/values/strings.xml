@@ -23,6 +23,10 @@
         <item>Mensual</item>
         <item>Una sola vez</item>
     </string-array>
+    <string name="payment_pending_title">Payment Pending</string>
+    <string name="payment_pending_message">Your payment is being processed. Please wait or check back later.</string>
+    <string name="check_status">Check Status</string>
+    <string name="go_to_home">Go to Home</string>
     <!-- Opciones de recordatorio -->
     <string-array name="recordatorio_opciones">
         <item>Selecciones Recordatorio</item>
@@ -43,7 +47,20 @@
         <item>Citas</item>
     </string-array>
     <!--hasta aqui-->
-
+    <string name="preparing_payment">Preparando pago\u2026</string>
+    <string name="connection_error">Error de conexión</string>
+    <string name="invalid_payment_url">URL de pago no válida</string>
+    <string name="checkout_launch_error">No se pudo iniciar el proceso de pago</string>
+    <string name="payment_success_message_short">¡Pago exitoso!</string>
+    <string name="payment_cancelled_or_failed">Pago cancelado o fallido</string>
+    <string name="unknown_error">Error desconocido (Código: %1$d)</string>
+    <string name="error_processing_response">Error al procesar la respuesta</string>
+    <string name="payment_error_processing">Error al procesar el pago</string>
+<!--    <string name="payment_success_title">¡Pago Exitoso!</string>-->
+<!--    <string name="payment_success_plus_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PLUS.</string>-->
+<!--    <string name="payment_success_pro_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PRO.</string>-->
+<!--    <string name="payment_success_generic_message">¡Felicidades! Tu suscripción se ha activado correctamente.</string>-->
+    <string name="payment_success_toast">¡Pago exitoso! Plan: %1$s</string>
     <string name="text1RegUsuario">Registra tus datos</string>
     <string name="text2RegUsuario">Crear cuenta</string>
     <string name="txtNombre">Nombres:</string>

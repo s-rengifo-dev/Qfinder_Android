@@ -120,7 +120,6 @@
             android:inputType="text"
             android:layout_marginBottom="16dp"/>
 
-        <!-- Campo para descripción/observaciones -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -128,15 +127,26 @@
             android:textSize="16sp"
             android:layout_marginBottom="4dp"/>
 
-        <!-- Botón Guardar -->
-        <EditText
-            android:id="@+id/et_description"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:layout_marginBottom="24dp"
-            android:gravity="top"
-            android:hint="Frecuencia (Numero)"
-            android:inputType="number" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_frequency_number"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Número"
+                android:inputType="number"
+                android:layout_marginEnd="8dp"/>
+
+            <Spinner
+                android:id="@+id/spinner_frequency_unit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+        </LinearLayout>
 
         <Button
             android:id="@+id/btn_save"

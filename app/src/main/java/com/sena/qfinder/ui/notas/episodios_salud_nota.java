@@ -75,6 +75,7 @@ public class episodios_salud_nota extends AppCompatActivity {
     }
 
     private void inicializarVistas() {
+
         btnGuardar = findViewById(R.id.btnGuardar);
         editTextTitulo = findViewById(R.id.editTextTitulo);
         editTextDescripcion = findViewById(R.id.editTextDescripcion);

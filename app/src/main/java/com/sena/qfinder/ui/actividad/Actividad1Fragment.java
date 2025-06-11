@@ -70,7 +70,16 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
 
         // Configurar RecyclerView para actividades (vertical)
         recyclerViewActividades.setLayoutManager(new LinearLayoutManager(getContext()));
-        actividadAdapter = new ActividadAdapter(new ArrayList<>());
+        actividadAdapter = new ActividadAdapter(new ArrayList<>(), actividad -> {
+            // Mostrar diálogo para editar/eliminar la actividad
+            AgregarActividadDialogFragment dialog = AgregarActividadDialogFragment.newInstance(actividad);
+            dialog.setOnActividadGuardadaListener(() -> {
+                cargarActividades(selectedPatientId); // Refresca la lista al guardar
+            });
+            dialog.show(getParentFragmentManager(), "EditarActividadDialog");
+        });
+
+
         recyclerViewActividades.setAdapter(actividadAdapter);
 
         cargarPacientes();
