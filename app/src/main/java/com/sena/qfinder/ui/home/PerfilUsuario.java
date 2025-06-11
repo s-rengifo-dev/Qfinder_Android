@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,13 +35,14 @@ import com.bumptech.glide.request.RequestOptions;
 
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragment.OnUsuarioActualizadoListener {
 
     private TextView tvNombre, tvApellido, tvTelefono, tvCorreo, tvDireccion, tvIdentificacion;
-    private LinearLayout cerrarSesion,logoEditar;
+    private LinearLayout cerrarSesion, logoEditar;
     private ImageView btnBack, imagenPerfilP;
 
     private AuthService authService;
@@ -56,7 +59,6 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_perfil_usuario, container, false);
 
-        // Inicializa los elementos UI correctamente según su tipo en XML
         tvNombre = view.findViewById(R.id.tvNombre);
         tvApellido = view.findViewById(R.id.tvApellido);
         tvTelefono = view.findViewById(R.id.tvTelefono);
@@ -91,6 +93,7 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
     }
 
     private void mostrarDialogoCerrarSesion() {
+        if (!isAdded()) return;
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("Cerrar sesión")
                 .setMessage("¿Estás seguro de que deseas cerrar sesión?")
@@ -100,51 +103,64 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
     }
 
     private void logout() {
+        if (!isAdded()) return;
+
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
         if (token == null) {
-            Toast.makeText(requireContext(), "Token no encontrado. Inicia sesión nuevamente.", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "Token no encontrado. Inicia sesión nuevamente.", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
         logoutCall = authService.logout();
         logoutCall.enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (!isAdded()) return;
+
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.clear();
                 editor.apply();
 
                 Toast.makeText(requireContext(), "Sesión cerrada correctamente", Toast.LENGTH_SHORT).show();
 
-                // Después de cerrar sesión, redirige al login (MainActivity)
                 Intent intent = new Intent(requireActivity(), MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
-                requireActivity().finish();
+                if (isAdded()) {
+                    requireActivity().finish();
+                }
             }
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
                 Toast.makeText(requireContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void cargarPerfil() {
+        if (!isAdded()) return;
+
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
         if (token == null) {
-            Toast.makeText(requireContext(), "No se encontró token. Inicia sesión.", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "No se encontró token. Inicia sesión.", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
         perfilCall = authService.obtenerPerfil("Bearer " + token);
         perfilCall.enqueue(new Callback<PerfilUsuarioResponse>() {
             @Override
-            public void onResponse(@NonNull Call<PerfilUsuarioResponse> call, @NonNull retrofit2.Response<PerfilUsuarioResponse> response) {
+            public void onResponse(@NonNull Call<PerfilUsuarioResponse> call, @NonNull Response<PerfilUsuarioResponse> response) {
                 if (!isAdded()) return;
+
                 if (response.isSuccessful() && response.body() != null) {
                     usuarioActual = response.body();
                     tvNombre.setText(usuarioActual.getNombre_usuario());
@@ -155,12 +171,15 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
                     tvIdentificacion.setText(usuarioActual.getIdentificacion_usuario());
                     loadProfileImage(usuarioActual.getImagen_usuario());
                 } else {
-                    Toast.makeText(requireContext(), "No se pudo obtener el perfil.", Toast.LENGTH_SHORT).show();
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "No se pudo obtener el perfil.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<PerfilUsuarioResponse> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
                 Toast.makeText(requireContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
@@ -173,7 +192,10 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
             if (imageData.startsWith("http")) {
                 Glide.with(requireContext())
                         .load(imageData + "?t=" + System.currentTimeMillis())
-                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).circleCrop())
+                        .apply(new RequestOptions()
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .skipMemoryCache(true)
+                                .circleCrop())
                         .into(imagenPerfilP);
             } else {
                 String base64 = imageData.contains(",") ? imageData.split(",")[1] : imageData;
@@ -187,23 +209,25 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
     }
 
     private void abrirDialogoEditar() {
-        if (usuarioActual != null) {
-            UsuarioRequest userRequest = new UsuarioRequest(
-                    usuarioActual.getNombre_usuario(),
-                    usuarioActual.getApellido_usuario(),
-                    usuarioActual.getDireccion_usuario(),
-                    usuarioActual.getTelefono_usuario(),
-                    usuarioActual.getCorreo_usuario(),
-                    usuarioActual.getImagen_usuario()
-            );
+        if (!isAdded() || usuarioActual == null) return;
 
-            EditarUsuarioDialogFragment dialog = EditarUsuarioDialogFragment.newInstance(userRequest, this);
-            dialog.show(getChildFragmentManager(), "EditarUsuarioDialog");
-        }
+        UsuarioRequest userRequest = new UsuarioRequest(
+                usuarioActual.getNombre_usuario(),
+                usuarioActual.getApellido_usuario(),
+                usuarioActual.getDireccion_usuario(),
+                usuarioActual.getTelefono_usuario(),
+                usuarioActual.getCorreo_usuario(),
+                usuarioActual.getImagen_usuario()
+        );
+
+        EditarUsuarioDialogFragment dialog = EditarUsuarioDialogFragment.newInstance(userRequest, this);
+        dialog.show(getChildFragmentManager(), "EditarUsuarioDialog");
     }
 
     @Override
     public void onUsuarioActualizado(UsuarioRequest nuevoUsuario) {
+        if (!isAdded()) return;
+
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
         if (token == null) return;
@@ -211,7 +235,9 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
         actualizarCall = authService.actualizarUsuario("Bearer " + token, nuevoUsuario);
         actualizarCall.enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(@NonNull Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (!isAdded()) return;
+
                 if (response.isSuccessful()) {
                     Toast.makeText(requireContext(), "Perfil actualizado", Toast.LENGTH_SHORT).show();
                     cargarPerfil();
@@ -222,12 +248,15 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
                 Toast.makeText(requireContext(), "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void navigateBack() {
+        if (!isAdded()) return;
+
         FragmentManager fragmentManager = getParentFragmentManager();
         if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
