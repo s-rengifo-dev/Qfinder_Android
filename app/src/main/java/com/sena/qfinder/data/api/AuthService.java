@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.sena.qfinder.data.models.ActividadListResponse;
 import com.sena.qfinder.data.models.ActividadRequest;
 import com.sena.qfinder.data.models.ActividadResponse;
+import com.sena.qfinder.data.models.AgregarColaboradorRequest;
 import com.sena.qfinder.data.models.ApiResponse;
 import com.sena.qfinder.data.models.AsignacionMedicamentoResponse;
 import com.sena.qfinder.data.models.AsignarMedicamentoRequest;
@@ -42,6 +43,7 @@ import com.sena.qfinder.data.models.SubscriptionRequest;
 import com.sena.qfinder.data.models.SubscriptionResponse;
 import com.sena.qfinder.data.models.SubscriptionStatusResponse;
 import com.sena.qfinder.data.models.UsuarioRequest;
+import com.sena.qfinder.data.models.UsuarioResponse;
 import com.sena.qfinder.data.models.VerificarCodigoRequest;
 import com.sena.qfinder.data.models.CambiarPasswordRequest;
 
@@ -296,4 +298,17 @@ public interface AuthService {
                 @Header("Authorization") String authToken,
                 @Body CheckoutProRequest request
         );
+
+    //Colaborador
+    @GET("/api/colaboradores/buscar/{correo}")
+    Call<UsuarioResponse> buscarColaboradorPorCorreo(
+            @Header("Authorization") String token,
+            @Path(value = "correo", encoded = true) String correo
+    );
+
+    @POST("/api/colaboradores/agregar")
+    Call<ResponseBody> agregarColaborador(
+            @Header("Authorization") String token,
+            @Body AgregarColaboradorRequest request
+    );
 }

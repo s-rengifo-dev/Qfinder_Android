@@ -35,16 +35,23 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.sena.qfinder.R;
+import com.sena.qfinder.data.api.ApiClient;
 import com.sena.qfinder.data.api.AuthService;
+import com.sena.qfinder.data.models.AgregarColaboradorRequest;
+import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.data.models.UsuarioResponse;
 import com.sena.qfinder.ui.paciente.EditarPacienteDialogFragment;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -119,7 +126,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         btnAgregarColaborador.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mostrarDialogoAgregarColaborador();
+                mostrarDialogoAgregarColaborador(pacienteId);
             }
         });
 
@@ -156,7 +163,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
 
     }
 
-    private void mostrarDialogoAgregarColaborador() {
+    private void mostrarDialogoAgregarColaborador(int idPaciente) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         View dialogView = getLayoutInflater().inflate(R.layout.fragment_agregar_colaborador, null);
         builder.setView(dialogView);
@@ -171,33 +178,85 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         TextView tvCorreo = dialogView.findViewById(R.id.tvCorreoColaborador);
         Button btnAgregar = dialogView.findViewById(R.id.btnConfirmarAgregarColaborador);
 
-        // Buscar colaborador (aquí luego conectaremos el backend)
-        btnBuscar.setOnClickListener(v -> {
-            // Simulación de respuesta del backend:
-            // Reemplazar con tu llamada real (por ejemplo con Retrofit)
-            String correo = etCorreo.getText().toString().trim();
-            if (!correo.isEmpty()) {
-                // Suponiendo que la respuesta es:
-                String nombre = "Juan";
-                String apellido = "Pérez";
-                String correoRespuesta = correo;
+        contenedor.setVisibility(View.GONE);
+        btnAgregar.setVisibility(View.GONE);
 
-                contenedor.setVisibility(View.VISIBLE);
-                tvNombre.setText("Nombre: " + nombre);
-                tvApellido.setText("Apellido: " + apellido);
-                tvCorreo.setText("Correo: " + correoRespuesta);
+        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        String token = preferences.getString("token", null);
+
+        if (token == null) {
+            Toast.makeText(getContext(), "Token no encontrado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Retrofit retrofit = ApiClient.getClient();
+        AuthService authService = retrofit.create(AuthService.class);
+
+        final int[] idUsuarioColaborador = { -1 };
+
+        btnBuscar.setOnClickListener(v -> {
+            String correo = etCorreo.getText().toString().trim();
+            if (correo.isEmpty()) {
+                Toast.makeText(getContext(), "Ingresa un correo válido", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            Call<UsuarioResponse> call = authService.buscarColaboradorPorCorreo("Bearer " + token, correo);
+            call.enqueue(new Callback<UsuarioResponse>() {
+                @Override
+                public void onResponse(Call<UsuarioResponse> call, Response<UsuarioResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        UsuarioResponse usuario = response.body();
+                        contenedor.setVisibility(View.VISIBLE);
+                        tvNombre.setText("Nombre: " + usuario.getNombre());
+                        tvApellido.setText("Apellido: " + usuario.getApellido());
+                        tvCorreo.setText("Correo: " + usuario.getCorreo());
+
+                        // Guarda ID para luego usar en el POST
+                        idUsuarioColaborador[0] = usuario.getId();
+                    } else {
+                        contenedor.setVisibility(View.GONE);
+                        btnAgregar.setVisibility(View.GONE);
+                        Toast.makeText(getContext(), "Colaborador no encontrado", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<UsuarioResponse> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
-        // Mostrar botón al marcar el checkbox
         checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             btnAgregar.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         });
 
-        // Acción de agregar colaborador
         btnAgregar.setOnClickListener(v -> {
-            // Aquí llamas al backend para agregar el colaborador
-            dialog.dismiss();
+            if (idUsuarioColaborador[0] == -1) {
+                Toast.makeText(getContext(), "No se ha seleccionado un colaborador válido", Toast.LENGTH_SHORT).show();
+                return;
+            };
+            Log.d("DEBUG", "ID colaborador encontrado: " + idUsuarioColaborador[0]);
+
+            AgregarColaboradorRequest request = new AgregarColaboradorRequest(idUsuarioColaborador[0], idPaciente);
+            Call<ResponseBody> call = authService.agregarColaborador("Bearer " + token, request);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Colaborador agregado correctamente", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Ya es colaborador o error al agregar", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error al conectar con el servidor", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         dialog.show();
