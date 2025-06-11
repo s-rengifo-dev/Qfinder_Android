@@ -73,6 +73,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     private ImageView btnBack, ivCodigoQR, imagenPerfilP;
     private ProgressBar progressBar;
     private Button btnAgregarColaborador;
+    private LinearLayout btnEliminarPaciente;
 
     public static PerfilPaciente newInstance(int pacienteId) {
         PerfilPaciente fragment = new PerfilPaciente();
@@ -116,12 +117,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         setupClickListeners(view);
 
         btnAgregarColaborador = view.findViewById(R.id.btnAgregarColaborador);
-        btnAgregarColaborador.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mostrarDialogoAgregarColaborador();
-            }
-        });
+        btnAgregarColaborador.setOnClickListener(v -> mostrarDialogoAgregarColaborador());
 
         if (pacienteActual != null) {
             displayPacienteData(pacienteActual);
@@ -153,7 +149,56 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         ivCodigoQR = view.findViewById(R.id.imgQrPaciente);
         imagenPerfilP = view.findViewById(R.id.ivFotoPerfil);
         progressBar = view.findViewById(R.id.progressBar);
+        btnEliminarPaciente = view.findViewById(R.id.btnEliminarPaciente);
+    }
 
+    private void setupClickListeners(View view) {
+        btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+        view.findViewById(R.id.boton_imagen).setOnClickListener(v -> abrirDialogoEditar());
+        btnEliminarPaciente.setOnClickListener(v -> mostrarDialogoConfirmacionEliminacion());
+    }
+
+    private void mostrarDialogoConfirmacionEliminacion() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Confirmar eliminación")
+                .setMessage("¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.")
+                .setPositiveButton("Eliminar", (dialog, which) -> eliminarPaciente())
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void eliminarPaciente() {
+        String token = sharedPreferences.getString("token", null);
+        if (token == null) {
+            showError("Sesión no válida");
+            return;
+        }
+
+        showLoading(true);
+        authService.eliminarPaciente("Bearer " + token, pacienteId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                showLoading(false);
+                if (response.isSuccessful()) {
+                    showToast("Paciente eliminado exitosamente");
+                    requireActivity().onBackPressed(); // Go back after deletion
+                } else {
+                    showError("Error al eliminar el paciente");
+                    try {
+                        Log.e("API_ERROR", "Error: " + response.errorBody().string());
+                    } catch (Exception e) {
+                        Log.e("API_ERROR", "Error al leer errorBody", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                showLoading(false);
+                showError("Error de conexión: " + t.getMessage());
+                Log.e("API_FAILURE", "Error en la llamada API", t);
+            }
+        });
     }
 
     private void mostrarDialogoAgregarColaborador() {
@@ -201,12 +246,6 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         });
 
         dialog.show();
-    }
-
-
-    private void setupClickListeners(View view) {
-        btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
-        view.findViewById(R.id.boton_imagen).setOnClickListener(v -> abrirDialogoEditar());
     }
 
     private void initializeRetrofit() {
@@ -324,8 +363,6 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         }
     }
 
-
-
     private void mostrarQRDelPaciente(PacienteResponse paciente) {
         if (paciente.getQrCode() != null && !paciente.getQrCode().isEmpty()) {
             mostrarCodigoQR(paciente.getQrCode());
@@ -386,6 +423,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         dialog.setOnPacienteActualizadoListener(this);
         dialog.show(getParentFragmentManager(), "editarPaciente");
     }
+
     @Override
     public void onPacienteActualizado(PacienteResponse pacienteActualizado) {
         Log.d("PerfilPaciente", "Paciente actualizado recibido - ID: " + pacienteActualizado.getId());
