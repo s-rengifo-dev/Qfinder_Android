@@ -76,7 +76,10 @@ public class DashboardFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
         currentInflater = inflater;
 
-        // Usamos getContext() en lugar de requireContext() para evitar excepciones
+        // Inicialización del RecyclerView
+        rvMedications = rootView.findViewById(R.id.rvMedications);
+        rvMedications.setLayoutManager(new LinearLayoutManager(getContext()));
+
         Context context = getContext();
         if (context == null) {
             return rootView;
@@ -87,6 +90,8 @@ public class DashboardFragment extends Fragment {
         tvUserName = rootView.findViewById(R.id.tvUserName);
         boton1 = rootView.findViewById(R.id.botonActividad);
         boton2 = rootView.findViewById(R.id.botonMedicamento);
+        patientsContainer = rootView.findViewById(R.id.patientsContainer);
+        activitiesContainer = rootView.findViewById(R.id.activitiesContainer);
 
         setupUserInfo();
         setupButtonListeners();
@@ -117,6 +122,13 @@ public class DashboardFragment extends Fragment {
     private void navigateToFragment2() {
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos());
+        transaction.addToBackStack("dashboard");
+        transaction.commit();
+    }
+
+    private void navigateToAddPatient() {
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, new RegistrarPaciente());
         transaction.addToBackStack("dashboard");
         transaction.commit();
     }
@@ -207,7 +219,6 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupPatientsSection() {
-        patientsContainer = rootView.findViewById(R.id.patientsContainer);
         patientsContainer.removeAllViews();
 
         Context context = getContext();
@@ -281,8 +292,6 @@ public class DashboardFragment extends Fragment {
     }
 
     private void mostrarPacientes(List<PacienteResponse> pacientes) {
-        if (patientsContainer == null) return;
-
         patientsContainer.removeAllViews();
 
         if (pacientes != null && !pacientes.isEmpty()) {
@@ -373,9 +382,6 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupActivitiesSection() {
-        activitiesContainer = rootView.findViewById(R.id.activitiesContainer);
-        if (activitiesContainer == null) return;
-
         activitiesContainer.removeAllViews();
 
         View headerView = currentInflater.inflate(R.layout.section_header, activitiesContainer, false);
@@ -404,16 +410,12 @@ public class DashboardFragment extends Fragment {
         Context context = getContext();
         if (context == null) return;
 
+        setupActivitiesSection();
+
         SharedPreferences preferences = context.getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
-        if (token == null) {
-            setupActivitiesSection();
-            return;
-        }
-
-        if (selectedPatientId == -1) {
-            setupActivitiesSection();
+        if (token == null || selectedPatientId == -1) {
             return;
         }
 
@@ -461,11 +463,6 @@ public class DashboardFragment extends Fragment {
     }
 
     private void mostrarActividades(List<ActividadGetResponse> actividades) {
-        if (activitiesContainer == null) {
-            Log.e("DashboardFragment", "activitiesContainer es null");
-            return;
-        }
-
         activitiesContainer.removeAllViews();
 
         if (actividades == null || actividades.isEmpty()) {
@@ -588,9 +585,11 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupMedicationsSection() {
-        if (rvMedications == null) return;
-
-        rvMedications.setLayoutManager(new LinearLayoutManager(getContext()));
+        if (rvMedications == null) {
+            rvMedications = rootView.findViewById(R.id.rvMedications);
+            if (rvMedications == null) return;
+            rvMedications.setLayoutManager(new LinearLayoutManager(getContext()));
+        }
 
         ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
@@ -672,13 +671,6 @@ public class DashboardFragment extends Fragment {
                 Log.e("API Error", "Error al obtener medicamentos", t);
             }
         });
-    }
-
-    private void navigateToAddPatient() {
-        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, new RegistrarPaciente());
-        transaction.addToBackStack("dashboard");
-        transaction.commit();
     }
 
     static class Medication {
