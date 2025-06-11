@@ -35,16 +35,23 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.sena.qfinder.R;
+import com.sena.qfinder.data.api.ApiClient;
 import com.sena.qfinder.data.api.AuthService;
+import com.sena.qfinder.data.models.AgregarColaboradorRequest;
+import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.data.models.UsuarioResponse;
 import com.sena.qfinder.ui.paciente.EditarPacienteDialogFragment;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -72,7 +79,8 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     private TextView tvNombreApellido, tvFechaNacimiento, tvSexo, tvDiagnostico, tvIdentificacion;
     private ImageView btnBack, ivCodigoQR, imagenPerfilP;
     private ProgressBar progressBar;
-    private Button btnAgregarColaborador;
+    private LinearLayout btnAgregarColaborador;
+    private LinearLayout btnEliminarPaciente;
 
     public static PerfilPaciente newInstance(int pacienteId) {
         PerfilPaciente fragment = new PerfilPaciente();
@@ -119,7 +127,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         btnAgregarColaborador.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mostrarDialogoAgregarColaborador();
+                mostrarDialogoAgregarColaborador(pacienteId);
             }
         });
 
@@ -153,10 +161,59 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         ivCodigoQR = view.findViewById(R.id.imgQrPaciente);
         imagenPerfilP = view.findViewById(R.id.ivFotoPerfil);
         progressBar = view.findViewById(R.id.progressBar);
-
+        btnEliminarPaciente = view.findViewById(R.id.btnEliminarPaciente);
     }
 
-    private void mostrarDialogoAgregarColaborador() {
+    private void setupClickListeners(View view) {
+        btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+        view.findViewById(R.id.boton_imagen).setOnClickListener(v -> abrirDialogoEditar());
+        btnEliminarPaciente.setOnClickListener(v -> mostrarDialogoConfirmacionEliminacion());
+    }
+
+    private void mostrarDialogoConfirmacionEliminacion() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Confirmar eliminación")
+                .setMessage("¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.")
+                .setPositiveButton("Eliminar", (dialog, which) -> eliminarPaciente())
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void eliminarPaciente() {
+        String token = sharedPreferences.getString("token", null);
+        if (token == null) {
+            showError("Sesión no válida");
+            return;
+        }
+
+        showLoading(true);
+        authService.eliminarPaciente("Bearer " + token, pacienteId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                showLoading(false);
+                if (response.isSuccessful()) {
+                    showToast("Paciente eliminado exitosamente");
+                    requireActivity().onBackPressed(); // Go back after deletion
+                } else {
+                    showError("Error al eliminar el paciente");
+                    try {
+                        Log.e("API_ERROR", "Error: " + response.errorBody().string());
+                    } catch (Exception e) {
+                        Log.e("API_ERROR", "Error al leer errorBody", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                showLoading(false);
+                showError("Error de conexión: " + t.getMessage());
+                Log.e("API_FAILURE", "Error en la llamada API", t);
+            }
+        });
+    }
+
+    private void mostrarDialogoAgregarColaborador(int idPaciente) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         View dialogView = getLayoutInflater().inflate(R.layout.fragment_agregar_colaborador, null);
         builder.setView(dialogView);
@@ -171,42 +228,88 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         TextView tvCorreo = dialogView.findViewById(R.id.tvCorreoColaborador);
         Button btnAgregar = dialogView.findViewById(R.id.btnConfirmarAgregarColaborador);
 
-        // Buscar colaborador (aquí luego conectaremos el backend)
-        btnBuscar.setOnClickListener(v -> {
-            // Simulación de respuesta del backend:
-            // Reemplazar con tu llamada real (por ejemplo con Retrofit)
-            String correo = etCorreo.getText().toString().trim();
-            if (!correo.isEmpty()) {
-                // Suponiendo que la respuesta es:
-                String nombre = "Juan";
-                String apellido = "Pérez";
-                String correoRespuesta = correo;
+        contenedor.setVisibility(View.GONE);
+        btnAgregar.setVisibility(View.GONE);
 
-                contenedor.setVisibility(View.VISIBLE);
-                tvNombre.setText("Nombre: " + nombre);
-                tvApellido.setText("Apellido: " + apellido);
-                tvCorreo.setText("Correo: " + correoRespuesta);
+        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        String token = preferences.getString("token", null);
+
+        if (token == null) {
+            Toast.makeText(getContext(), "Token no encontrado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Retrofit retrofit = ApiClient.getClient();
+        AuthService authService = retrofit.create(AuthService.class);
+
+        final int[] idUsuarioColaborador = { -1 };
+
+        btnBuscar.setOnClickListener(v -> {
+            String correo = etCorreo.getText().toString().trim();
+            if (correo.isEmpty()) {
+                Toast.makeText(getContext(), "Ingresa un correo válido", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            Call<UsuarioResponse> call = authService.buscarColaboradorPorCorreo("Bearer " + token, correo);
+            call.enqueue(new Callback<UsuarioResponse>() {
+                @Override
+                public void onResponse(Call<UsuarioResponse> call, Response<UsuarioResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        UsuarioResponse usuario = response.body();
+                        contenedor.setVisibility(View.VISIBLE);
+                        tvNombre.setText("Nombre: " + usuario.getNombre());
+                        tvApellido.setText("Apellido: " + usuario.getApellido());
+                        tvCorreo.setText("Correo: " + usuario.getCorreo());
+
+                        // Guarda ID para luego usar en el POST
+                        idUsuarioColaborador[0] = usuario.getId();
+                    } else {
+                        contenedor.setVisibility(View.GONE);
+                        btnAgregar.setVisibility(View.GONE);
+                        Toast.makeText(getContext(), "Colaborador no encontrado", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<UsuarioResponse> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
-        // Mostrar botón al marcar el checkbox
         checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             btnAgregar.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         });
 
-        // Acción de agregar colaborador
         btnAgregar.setOnClickListener(v -> {
-            // Aquí llamas al backend para agregar el colaborador
-            dialog.dismiss();
+            if (idUsuarioColaborador[0] == -1) {
+                Toast.makeText(getContext(), "No se ha seleccionado un colaborador válido", Toast.LENGTH_SHORT).show();
+                return;
+            };
+            Log.d("DEBUG", "ID colaborador encontrado: " + idUsuarioColaborador[0]);
+
+            AgregarColaboradorRequest request = new AgregarColaboradorRequest(idUsuarioColaborador[0], idPaciente);
+            Call<ResponseBody> call = authService.agregarColaborador("Bearer " + token, request);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Colaborador agregado correctamente", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Ya es colaborador o error al agregar", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error al conectar con el servidor", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         dialog.show();
-    }
-
-
-    private void setupClickListeners(View view) {
-        btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
-        view.findViewById(R.id.boton_imagen).setOnClickListener(v -> abrirDialogoEditar());
     }
 
     private void initializeRetrofit() {
@@ -324,8 +427,6 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         }
     }
 
-
-
     private void mostrarQRDelPaciente(PacienteResponse paciente) {
         if (paciente.getQrCode() != null && !paciente.getQrCode().isEmpty()) {
             mostrarCodigoQR(paciente.getQrCode());
@@ -386,6 +487,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         dialog.setOnPacienteActualizadoListener(this);
         dialog.show(getParentFragmentManager(), "editarPaciente");
     }
+
     @Override
     public void onPacienteActualizado(PacienteResponse pacienteActualizado) {
         Log.d("PerfilPaciente", "Paciente actualizado recibido - ID: " + pacienteActualizado.getId());

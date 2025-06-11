@@ -14,7 +14,7 @@ import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "alarmas.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // Incrementamos la versión
     private static DatabaseHelper instance;
 
     public static synchronized DatabaseHelper getInstance(Context context) {
@@ -51,7 +51,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(AlarmaContract.COLUMN_TIMESTAMP, alarma.getTimestamp());
         values.put(AlarmaContract.COLUMN_ACTIVE, alarma.isActive() ? 1 : 0);
 
-        // Insertar o actualizar
         db.insertWithOnConflict(
                 AlarmaContract.TABLE_NAME,
                 null,
@@ -91,5 +90,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return alarmas;
+    }
+
+    public void eliminarAlarma(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(AlarmaContract.TABLE_NAME,
+                AlarmaContract.COLUMN_ID + " = ?",
+                new String[]{String.valueOf(id)});
+    }
+
+    public boolean tieneAlarma(int id) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(
+                AlarmaContract.TABLE_NAME,
+                new String[]{AlarmaContract.COLUMN_ID},
+                AlarmaContract.COLUMN_ID + " = ?",
+                new String[]{String.valueOf(id)},
+                null, null, null
+        );
+
+        boolean existe = cursor != null && cursor.getCount() > 0;
+        if (cursor != null) {
+            cursor.close();
+        }
+        return existe;
     }
 }
