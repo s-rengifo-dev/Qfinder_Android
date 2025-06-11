@@ -79,7 +79,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     private TextView tvNombreApellido, tvFechaNacimiento, tvSexo, tvDiagnostico, tvIdentificacion;
     private ImageView btnBack, ivCodigoQR, imagenPerfilP;
     private ProgressBar progressBar;
-    private Button btnAgregarColaborador;
+    private LinearLayout btnAgregarColaborador;
 
     public static PerfilPaciente newInstance(int pacienteId) {
         PerfilPaciente fragment = new PerfilPaciente();

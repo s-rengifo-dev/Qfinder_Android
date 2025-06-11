@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp"
+    android:padding="24dp"
     android:background="@android:color/white">
 
     <!-- Campo de búsqueda -->
@@ -17,21 +17,23 @@
         <EditText
             android:id="@+id/etCorreoColaborador"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_edittext"
             android:hint="Correo del colaborador"
             android:inputType="textEmailAddress"
-            android:padding="10dp"
-            android:background="@android:drawable/edit_text" />
+            android:paddingHorizontal="12dp" />
 
         <ImageView
             android:id="@+id/btnBuscarColaborador"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_icon_button"
             android:src="@android:drawable/ic_menu_search"
-            android:padding="8dp"
-            android:contentDescription="Buscar"
-            android:layout_marginStart="8dp" />
+            android:tint="@color/azulitoPrincipio"
+            android:padding="10dp"
+            android:contentDescription="Buscar" />
     </LinearLayout>
 
     <!-- Contenedor de resultado -->
@@ -40,15 +42,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="16dp"
-        android:visibility="gone">
+        android:layout_marginTop="24dp"
+        android:visibility="gone"
+        android:padding="12dp"
+        android:background="@color/white">
 
         <CheckBox
             android:id="@+id/checkboxSeleccionarColaborador"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Seleccionar colaborador"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:buttonTint="@color/azulitoPrincipio"/>
 
         <TextView
             android:id="@+id/tvNombreColaborador"
@@ -76,7 +81,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Agregar colaborador"
+        android:textColor="@android:color/white"
         android:visibility="gone"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:backgroundTint="@color/azulitoPrincipio" />
 </LinearLayout>
