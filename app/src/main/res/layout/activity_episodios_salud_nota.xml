@@ -80,13 +80,13 @@
                 <Button
                     android:id="@+id/btnGuardar"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="38dp"
                     android:layout_marginLeft="16dp"
                     android:backgroundTint="@color/Botones"
                     android:text="Guardar"
                     android:textStyle="bold"
                     android:textAlignment="center"
-                    android:textColor="@color/black"
+                    android:textColor="@color/white"
                     android:textSize="14sp"/>
             </LinearLayout>
 
