@@ -21,8 +21,16 @@ public class ActividadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_ITEM = 1;
 
-    public ActividadAdapter(List<ActividadGetResponse> listaActividades) {
+    public interface OnActividadClickListener {
+        void onActividadClick(ActividadGetResponse actividad);
+    }
+
+    private OnActividadClickListener listener;
+
+    // ✅ Constructor único con listener
+    public ActividadAdapter(List<ActividadGetResponse> listaActividades, OnActividadClickListener listener) {
         this.listaActividades = listaActividades;
+        this.listener = listener;
     }
 
     public void setActividades(List<ActividadGetResponse> actividades) {
@@ -55,9 +63,9 @@ public class ActividadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            int realPosition = position - 1; // restamos 1 por el encabezado
+            int realPosition = position - 1; // Restamos 1 por el encabezado
             ActividadGetResponse actividad = listaActividades.get(realPosition);
-            ((ItemViewHolder) holder).bind(actividad);
+            ((ItemViewHolder) holder).bind(actividad, listener);
         }
     }
 
@@ -78,11 +86,19 @@ public class ActividadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             txtActividad = itemView.findViewById(R.id.txtActividad);
         }
 
-        public void bind(ActividadGetResponse actividad) {
-         txtNombre.setText(actividad.getTitulo()); // Asegúrate de que este campo existe
+        // ✅ Incluye el listener como parámetro
+        public void bind(ActividadGetResponse actividad, OnActividadClickListener listener) {
+            txtNombre.setText(actividad.getTitulo());
             txtFecha.setText(formatDate(actividad.getFecha()));
             txtHora.setText(formatTime(actividad.getHora()));
             txtActividad.setText(actividad.getDescripcion());
+
+            // Detectar clic sobre el item completo
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onActividadClick(actividad);
+                }
+            });
         }
 
         private String formatDate(String fecha) {

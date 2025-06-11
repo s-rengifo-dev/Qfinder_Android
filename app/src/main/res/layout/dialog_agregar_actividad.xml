@@ -38,6 +38,7 @@
                 android:id="@+id/etTipoActividad"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:minLines="1"
                 android:maxLines="1"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -167,7 +168,22 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:weightSum="3"
+            android:gravity="center_horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEliminar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="Eliminar"
+                android:visibility="gone"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/rojopasion"
+                app:strokeColor="@color/rojopasion"
+                app:strokeWidth="1dp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancelar"
@@ -175,12 +191,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="Cancelar"
+                android:textColor="#4E9EFB"
                 app:strokeColor="@color/boton_borde_azul"
-                app:strokeWidth="1dp"
-                android:textColor="#4E9EFB" />
-
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGuardar"
@@ -188,10 +204,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:text="Guardar"
-                app:backgroundTint="#4E9EFB"
-                android:textColor="@android:color/white"/>
+                android:textColor="@android:color/white"
+                app:backgroundTint="#4E9EFB"/>
         </LinearLayout>
 
     </LinearLayout>

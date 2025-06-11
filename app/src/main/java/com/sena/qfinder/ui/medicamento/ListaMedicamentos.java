@@ -319,7 +319,7 @@ public class ListaMedicamentos extends Fragment {
             Toast.makeText(getContext(), "ID: "+medicamento.getId_medicamento(), Toast.LENGTH_SHORT).show();
 
             AuthService apiService = ApiClient.getClient().create(AuthService.class);
-            Call<MedicamentoSimpleResponse> call = apiService.eliminarMedicamento("Bearer " + token, medicamento.getId_medicamento());
+            Call<MedicamentoSimpleResponse> call = apiService.eliminarMedicamentos("Bearer " + token, medicamento.getId_medicamento());
 
 
 

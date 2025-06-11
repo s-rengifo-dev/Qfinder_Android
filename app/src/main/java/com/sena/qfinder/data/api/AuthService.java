@@ -144,12 +144,11 @@ public interface AuthService {
     );
     @GET("api/medicamentos/listar")
     Call<List<MedicamentoResponse>> listarMedicamentos(@Header("Authorization") String token);
-
-    @DELETE("api/medicamentos/eliminar/{id}")
-    Call<MedicamentoSimpleResponse> eliminarMedicamento(
-            @Header("Authorization") String token,
-            @Path("id") int id
-    );
+   @DELETE("api/medicamentos/eliminar/{id}")
+    Call<MedicamentoSimpleResponse> eliminarMedicamentos(
+           @Header("Authorization") String token,
+           @Path("id") int id
+   );
 
     @POST("api/actividades/crearActivdad/{id_paciente}")
     Call<ActividadResponse> crearActividad(
@@ -157,7 +156,6 @@ public interface AuthService {
             @Path("id_paciente") int idPaciente,
             @Body ActividadRequest request
     );
-
     @PUT("api/auth/actualizarUser")
     Call<ResponseBody> actualizarUsuario(@Body UsuarioRequest usuario, @Header("Authorization") String token);
 
@@ -166,10 +164,38 @@ public interface AuthService {
             @Header("Authorization") String token,
             @Path("id_paciente") int pacienteId
     );
+
+    @PUT("api/actividades/actualizarAct/{id_paciente}/{id_actividad}")
+    Call<ActividadResponse> actualizarActividad(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente,
+            @Path("id_actividad") int idActividad,
+            @Body ActividadRequest request
+    );
+
+    @DELETE("api/actividades/eliminarAct/{id_paciente}/{id_actividad}")
+    Call<ActividadResponse> eliminarActividad(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int idPaciente,
+            @Path("id_actividad") int idActividad
+    );
     @POST("api/paciente-medicamento/crear")
     Call<AsignarMedicamentoResponse> asignarMedicamento(
             @Header("Authorization") String token,
             @Body AsignarMedicamentoRequest request
+    );
+
+    @PUT("api/paciente-medicamento/{id}")
+    Call<AsignarMedicamentoResponse> actualizarMedicamento(
+            @Header("Authorization") String token,
+            @Path("id") int idAsignacion,
+            @Body AsignarMedicamentoRequest request
+    );
+
+    @DELETE("api/paciente-medicamento/{id}")
+    Call<AsignarMedicamentoResponse> eliminarMedicamento(
+            @Header("Authorization") String token,
+            @Path("id") int idAsignacion
     );
     @GET("api/paciente-medicamento/asignaciones/{id_paciente}")
     Call<List<AsignacionMedicamentoResponse>> listarAsignacionesMedicamentos(
