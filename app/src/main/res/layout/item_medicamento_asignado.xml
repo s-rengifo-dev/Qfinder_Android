@@ -7,13 +7,45 @@
     android:background="@drawable/card_background"
     android:layout_margin="8dp">
 
-    <TextView
-        android:id="@+id/tvNombreMedicamento"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"/>
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tvNombreMedicamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_toLeftOf="@+id/icon_container"
+            android:layout_alignParentStart="true"/>
+
+        <LinearLayout
+            android:id="@+id/icon_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true">
+
+            <ImageView
+                android:id="@+id/ivEdit"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/img_1"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"/>
+
+            <ImageView
+                android:id="@+id/ivDelete"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/borrar"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"/>
+        </LinearLayout>
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/tvDosis"
