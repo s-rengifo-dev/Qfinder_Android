@@ -94,6 +94,12 @@ public interface AuthService {
     Call<PacienteListResponse> listarPacientes(@Header("Authorization") String token);
     @GET("api/paciente/listarPacientes")
     Call<PacienteListResponse> obtenerPacientes(@Header("Authorization") String token);
+
+    @DELETE("api/paciente/eliminarPaciente/{id_paciente}")
+    Call<Void> eliminarPaciente(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int pacienteId
+    );
     @POST("api/auth/logout")
     Call<Void> logout();
 

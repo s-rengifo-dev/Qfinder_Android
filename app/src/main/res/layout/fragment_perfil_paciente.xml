@@ -292,9 +292,9 @@
 
                     <ImageView
                         android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/img_1"
+                        android:layout_height="16dp"
                         android:layout_marginLeft="10dp"
+                        android:src="@drawable/img_1"
                         android:tint="@color/black" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -318,7 +318,7 @@
                 android:focusable="true">
 
                 <LinearLayout
-                    android:id="@+id/btnActualizarHC"
+                    android:id="@+id/btnEliminarPaciente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -338,7 +338,7 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@drawable/img_1"
+                        android:src="@drawable/borrar"
                         android:layout_marginLeft="10dp"
                         android:tint="@color/black" />
                 </LinearLayout>
