@@ -12,9 +12,6 @@ public class NotaEpisodioRequest {
     @SerializedName("fecha_hora_fin")
     private String fechaHoraFin;
 
-    @SerializedName("tipo")
-    private String tipo; // Cambiado de severidad a tipo
-
     @SerializedName("titulo")
     private String titulo; // Nuevo campo
 
@@ -38,13 +35,12 @@ public class NotaEpisodioRequest {
 
     // Eliminado el campo 'severidad'
     public NotaEpisodioRequest(int idPaciente, String fechaHoraInicio, String fechaHoraFin,
-                               String tipo, String titulo, String descripcion, String intervenciones,
+                                String titulo, String descripcion, String intervenciones,
                                int registradoPor, String registradoPorRole, String origen,
                                String fuenteDatos) {
         this.idPaciente = idPaciente;
         this.fechaHoraInicio = fechaHoraInicio;
         this.fechaHoraFin = fechaHoraFin;
-        this.tipo = tipo;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.intervenciones = intervenciones;
@@ -63,11 +59,4 @@ public class NotaEpisodioRequest {
         this.titulo = titulo;
     }
 
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
 }

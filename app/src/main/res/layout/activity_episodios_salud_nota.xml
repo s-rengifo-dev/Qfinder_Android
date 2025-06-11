@@ -24,9 +24,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/white">
 
-            <!-- Encabezado (se mantiene igual como solicitaste) -->
+            <!-- Encabezado (se mantiene igual) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
@@ -79,22 +80,23 @@
                 <Button
                     android:id="@+id/btnGuardar"
                     android:layout_width="wrap_content"
-                    android:layout_height="38dp"
+                    android:layout_height="36dp"
                     android:layout_marginLeft="16dp"
                     android:backgroundTint="@color/Botones"
                     android:text="Guardar"
+                    android:textStyle="bold"
                     android:textAlignment="center"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:textSize="14sp"/>
             </LinearLayout>
 
-            <!-- Divider con sombra -->
+            <!-- Divisor con sombra -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
                 android:background="@drawable/shadow_divider"/>
 
-            <!-- Sección de fechas - Diseño mejorado -->
+            <!-- Sección de fechas - diseño mejorado -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,6 +119,7 @@
                     android:orientation="horizontal"
                     android:weightSum="2">
 
+                    <!-- Fecha inicio - diseño mejorado -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -127,15 +130,15 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Fecha inicio"
+                            android:text="Fecha inicio*"
                             android:textColor="@color/black"
-                            android:textSize="14sp"/>
+                            android:textSize="16sp"/>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_marginTop="4dp">
 
                             <EditText
                                 android:id="@+id/editTextFechaInicio"
@@ -145,10 +148,11 @@
                                 android:focusable="false"
                                 android:clickable="true"
                                 android:textColor="@android:color/black"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
 
+                    <!-- Fecha fin - diseño mejorado -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -161,13 +165,13 @@
                             android:layout_height="wrap_content"
                             android:text="Fecha fin (opcional)"
                             android:textColor="@color/black"
-                            android:textSize="14sp"/>
+                            android:textSize="16sp"/>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_marginTop="4dp">
 
                             <EditText
                                 android:id="@+id/editTextFechaFin"
@@ -177,19 +181,19 @@
                                 android:focusable="false"
                                 android:clickable="true"
                                 android:textColor="@android:color/black"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Divider con sombra -->
+            <!-- Divisor con sombra -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
                 android:background="@drawable/shadow_divider"/>
 
-            <!-- Descripción - Diseño mejorado -->
+            <!-- Descripción - diseño mejorado -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -200,7 +204,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Descripción del episodio"
+                    android:text="Descripción del episodio*"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold"
@@ -209,29 +213,31 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_marginTop="4dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <EditText
                         android:id="@+id/editTextDescripcion"
                         android:layout_width="match_parent"
                         android:layout_height="180dp"
                         android:gravity="top|start"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:hint="Describa el episodio de salud..."
                         android:textColor="@android:color/black"
-                        android:textSize="14sp"
+                        android:textSize="16sp"
                         android:inputType="textMultiLine"
-                        android:maxLines="10"/>
+                        android:maxLines="10"
+                        android:scrollbars="vertical"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
-            <!-- Divider con sombra -->
+            <!-- Divisor con sombra -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
                 android:background="@drawable/shadow_divider"/>
 
-            <!-- Intervenciones - Diseño mejorado -->
+            <!-- Intervenciones - diseño mejorado -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -251,26 +257,23 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_marginTop="4dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <EditText
                         android:id="@+id/editTextIntervenciones"
                         android:layout_width="match_parent"
                         android:layout_height="150dp"
                         android:gravity="top|start"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:hint="Describa las intervenciones realizadas..."
                         android:textColor="@android:color/black"
-                        android:textSize="14sp"
+                        android:textSize="16sp"
                         android:inputType="textMultiLine"
-                        android:maxLines="8"/>
+                        android:maxLines="8"
+                        android:scrollbars="vertical"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
-
-            <!-- Espacio al final para mejor scroll -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="24dp"/>
 
             <!-- Estado (oculto, se mantiene igual) -->
             <TextView
