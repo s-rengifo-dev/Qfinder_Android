@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     android:padding="16dp">
 
     <LinearLayout
@@ -10,175 +12,218 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <!-- Spinner para pacientes -->
-        <TextView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Elige al paciente"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@android:color/white">
 
-        <Spinner
-            android:id="@+id/spinner_patients"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
-
-        <!-- Spinner para medicamentos -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Elige el medicamento"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
-
-        <Spinner
-            android:id="@+id/spinner_medications"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
-
-        <!-- Fecha de inicio -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fecha de inicio"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
-
-        <LinearLayout
-            android:id="@+id/layout_start_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:id="@+id/tv_start_date"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Seleccionar fecha de inicio"
-                android:textSize="16sp"/>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="8dp"
-                android:src="@android:drawable/ic_menu_my_calendar"/>
-        </LinearLayout>
+                <!-- Spinner para pacientes -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Elige al paciente"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="4dp" />
 
-        <!-- Fecha de fin -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fecha de fin"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
+                <Spinner
+                    android:id="@+id/spinner_patients"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp" />
 
-        <LinearLayout
-            android:id="@+id/layout_end_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp">
+                <!-- Spinner para medicamentos -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Elige el medicamento"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="4dp" />
 
-            <TextView
-                android:id="@+id/tv_end_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Seleccionar fecha de fin"
-                android:textSize="16sp"/>
+                <Spinner
+                    android:id="@+id/spinner_medications"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp" />
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="8dp"
-                android:src="@android:drawable/ic_menu_my_calendar"/>
-        </LinearLayout>
-        <!-- Agrega esto después del campo de fecha fin -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Hora de inicio"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
+                <!-- Fecha de inicio -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Fecha de inicio"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="4dp" />
 
-        <LinearLayout
-            android:id="@+id/layout_start_time"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp">
+                <LinearLayout
+                    android:id="@+id/layout_start_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/bg_date_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="12dp"
+                    android:layout_marginBottom="16dp">
 
-            <TextView
-                android:id="@+id/tv_start_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Seleccionar hora"
-                android:textSize="16sp"/>
+                    <TextView
+                        android:id="@+id/tv_start_date"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Seleccionar fecha de inicio"
+                        android:textSize="16sp"
+                        android:textColor="#555555" />
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="8dp"
-                android:src="@android:drawable/ic_menu_my_calendar"/>
-        </LinearLayout>
-        <!-- Campo para dosis -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Dosis"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@android:drawable/ic_menu_my_calendar"
+                        android:backgroundTint="#4E9EFB" />
+                </LinearLayout>
 
-        <EditText
-            android:id="@+id/et_dosage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Especificar dosis"
-            android:inputType="text"
-            android:layout_marginBottom="16dp"/>
+                <!-- Fecha de fin -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Fecha de fin"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="4dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Frecuencia"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
+                <LinearLayout
+                    android:id="@+id/layout_end_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/bg_date_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="12dp"
+                    android:layout_marginBottom="16dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_end_date"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Seleccionar fecha de fin"
+                        android:textSize="16sp"
+                        android:textColor="#555555" />
 
-            <EditText
-                android:id="@+id/et_frequency_number"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Número"
-                android:inputType="number"
-                android:layout_marginEnd="8dp"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@android:drawable/ic_menu_my_calendar"
+                        android:backgroundTint="#4E9EFB" />
+                </LinearLayout>
 
-            <Spinner
-                android:id="@+id/spinner_frequency_unit"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-        </LinearLayout>
+                <!-- Hora de inicio -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Hora de inicio"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="4dp"/>
 
+                <LinearLayout
+                    android:id="@+id/layout_start_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="12dp"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_start_time"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Seleccionar hora"
+                        android:textSize="16sp"/>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@android:drawable/ic_menu_my_calendar"/>
+                </LinearLayout>
+
+                <!-- Campo para dosis -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Dosis"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="4dp" />
+
+                <EditText
+                    android:id="@+id/et_dosage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Especificar dosis"
+                    android:inputType="text"
+                    android:backgroundTint="#CCCCCC"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Campo frecuencia -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Frecuencia"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_marginBottom="4dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/et_frequency_number"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Número"
+                        android:inputType="number"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="#CCCCCC" />
+
+                    <Spinner
+                        android:id="@+id/spinner_frequency_unit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Botón guardar -->
         <Button
             android:id="@+id/btn_save"
             android:layout_width="match_parent"
@@ -187,7 +232,8 @@
             android:textAllCaps="false"
             android:textSize="18sp"
             android:backgroundTint="@color/Botones"
-            android:textColor="@android:color/white"/>
-
+            android:textColor="@android:color/white"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
     </LinearLayout>
 </ScrollView>

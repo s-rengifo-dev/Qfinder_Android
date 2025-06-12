@@ -15,6 +15,7 @@ converterGson = "2.9.0"
 threetenabp = "1.4.5"
 googleServices = "4.4.2"
 firebaseBom = "33.14.0"
+firebaseInappmessaging = "21.0.2"
 
 [libraries]
 # AndroidX
@@ -39,6 +40,7 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-inappmessaging = { group = "com.google.firebase", name = "firebase-inappmessaging", version.ref = "firebaseInappmessaging" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

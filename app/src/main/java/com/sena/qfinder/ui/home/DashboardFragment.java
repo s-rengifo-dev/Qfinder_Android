@@ -366,17 +366,18 @@ public class DashboardFragment extends Fragment {
     }
 
     private void updatePatientCardsHighlight() {
-        if (patientsContainer == null) return;
+        if (patientsContainer == null || getContext() == null) return;
 
         for (int i = 0; i < patientsContainer.getChildCount(); i++) {
             View child = patientsContainer.getChildAt(i);
             if (child.getTag() instanceof Integer) {
                 int patientId = (int) child.getTag();
-                if (patientId == selectedPatientId) {
-                    child.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.card_stroke));
-                } else {
-                    child.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.transparent));
-                }
+
+                // Solo cambiamos el estado seleccionado sin tocar el fondo
+                child.setSelected(patientId == selectedPatientId);
+
+                // Opcional: Cambiar la elevación para feedback visual
+                child.setElevation(patientId == selectedPatientId ? 8f : 2f);
             }
         }
     }

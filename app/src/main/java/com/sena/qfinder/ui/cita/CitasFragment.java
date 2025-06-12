@@ -230,16 +230,19 @@ public class CitasFragment extends Fragment {
         patientsContainer.addView(patientCard);
     }
 
-    private void updatePatientCardsHighlight(int selectedId) {
+    private void updatePatientCardsHighlight(int selectedPatientId) {
+        if (patientsContainer == null || getContext() == null) return;
+
         for (int i = 0; i < patientsContainer.getChildCount(); i++) {
             View child = patientsContainer.getChildAt(i);
             if (child.getTag() instanceof Integer) {
                 int patientId = (int) child.getTag();
-                if (patientId == selectedId) {
-                    child.setBackgroundColor(Color.parseColor("#E3F2FD"));
-                } else {
-                    child.setBackgroundColor(Color.TRANSPARENT);
-                }
+
+                // Solo cambiamos el estado seleccionado sin tocar el fondo
+                child.setSelected(patientId == selectedPatientId);
+
+                // Opcional: Cambiar la elevación para feedback visual
+                child.setElevation(patientId == selectedPatientId ? 8f : 2f);
             }
         }
     }

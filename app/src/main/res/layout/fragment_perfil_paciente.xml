@@ -117,36 +117,49 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="42dp"
-            android:paddingTop="42dp"
-            android:paddingBottom="8dp">
+            android:paddingHorizontal="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="16dp"
+            android:background="@android:color/white"
+            android:elevation="4dp"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:backgroundTint="@android:color/white">
 
+            <!-- Tarjeta individual para cada ítem -->
             <!-- Fecha de nacimiento -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_item_info"
+                android:padding="12dp"
+                android:layout_marginTop="4dp">
 
                 <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@drawable/img_2" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:text=""
+                    android:textColor="#333"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvFechaNacimiento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:text=""
-                    android:textStyle="bold" />
+                    android:textColor="#555"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <!-- Sexo -->
@@ -155,26 +168,32 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_item_info"
+                android:padding="12dp">
 
                 <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@drawable/img_3" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:text=""
+                    android:textColor="#333"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvSexo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:text=""
-                    android:textStyle="bold" />
+                    android:textColor="#555"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <!-- Diagnóstico -->
@@ -183,26 +202,32 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_item_info"
+                android:padding="12dp">
 
                 <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@drawable/img_4" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:text=""
+                    android:textColor="#333"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvDiagnostico"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:text=""
-                    android:textStyle="bold" />
+                    android:textColor="#555"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <!-- Identificación -->
@@ -211,26 +236,31 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_item_info"
+                android:padding="12dp">
 
                 <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@drawable/img_5" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:text=""
+                    android:textColor="#333"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvIdentificacion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text=""
-                    android:textStyle="bold" />
+                    android:layout_marginStart="6dp"
+                    android:textColor="#555"
+                    android:textSize="16sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -273,8 +303,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Agregar colaborador"
-                        android:textColor="@android:color/black"
-                        android:textStyle="bold"
+                        android:textColor="@color/white"
                         android:textSize="18dp"
                         android:layout_marginStart="8dp" />
 
@@ -298,7 +327,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="30dp"
-                app:cardBackgroundColor="@color/rojopasion"
+                app:cardBackgroundColor="@color/alta"
                 app:cardElevation="8dp"
                 android:layout_margin="16dp"
                 android:clickable="true"

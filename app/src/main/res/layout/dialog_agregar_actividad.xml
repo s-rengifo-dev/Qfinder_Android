@@ -3,61 +3,76 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F2F2F2">
+    android:background="#F8F9FA">
 
     <LinearLayout
-        android:padding="16dp"
+        android:padding="20dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
 
         <!-- Spinner de Pacientes -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_marginTop="8dp">
+            android:layout_marginBottom="12dp"
+            android:hint="Seleccione un paciente"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <AutoCompleteTextView
                 android:id="@+id/spinnerPaciente"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none"
-                android:hint="Seleccione un paciente"
-                android:background="@drawable/rounded_edittext"/>
+                android:padding="12dp"
+                android:textColor="@android:color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Tipo de Actividad -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Tipo de actividad">
+            android:layout_marginBottom="12dp"
+            android:hint="Tipo de actividad"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etTipoActividad"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:minLines="1"
-                android:maxLines="1"/>
+                android:padding="12dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Fecha y Hora -->
         <LinearLayout
             android:orientation="horizontal"
-            android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:weightSum="2">
+            android:weightSum="2"
+            android:layout_marginBottom="12dp">
 
-            <!-- Fecha -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginEnd="6dp"
                 android:hint="Fecha"
-                android:layout_marginEnd="4dp">
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etFecha"
@@ -65,16 +80,21 @@
                     android:layout_height="wrap_content"
                     android:focusable="false"
                     android:clickable="true"
-                    android:inputType="none"/>
+                    android:padding="12dp"
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Hora -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginStart="6dp"
                 android:hint="Hora"
-                android:layout_marginStart="4dp">
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etHora"
@@ -82,7 +102,8 @@
                     android:layout_height="wrap_content"
                     android:focusable="false"
                     android:clickable="true"
-                    android:inputType="none"/>
+                    android:padding="12dp"
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
@@ -90,124 +111,149 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Duración (minutos)">
+            android:layout_marginBottom="12dp"
+            android:hint="Duración (minutos)"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etDuracion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:minLines="1"
-                android:maxLines="1"/>
+                android:padding="12dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Intensidad -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_marginTop="8dp"
-            android:hint="Intensidad">
+            android:layout_marginBottom="12dp"
+            android:hint="Intensidad"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <AutoCompleteTextView
                 android:id="@+id/spinnerIntensidad"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"/>
+                android:padding="12dp"
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Estado -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_marginTop="8dp"
-            android:hint="Estado">
+            android:layout_marginBottom="12dp"
+            android:hint="Estado"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <AutoCompleteTextView
                 android:id="@+id/spinnerEstado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"/>
+                android:padding="12dp"
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Descripción -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Descripción">
+            android:layout_marginBottom="12dp"
+            android:hint="Descripción"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etDescripcion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minLines="3"
-                android:gravity="top"/>
+                android:padding="12dp"
+                android:gravity="top" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Observaciones -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Observaciones (opcional)">
+            android:layout_marginBottom="20dp"
+            android:hint="Observaciones (opcional)"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etObservaciones"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minLines="2"
-                android:gravity="top"/>
+                android:padding="12dp"
+                android:gravity="top" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Botones -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:gravity="center"
             android:orientation="horizontal"
-            android:weightSum="3"
-            android:gravity="center_horizontal">
+            android:weightSum="2">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEliminar"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="6dp"
                 android:text="Eliminar"
                 android:visibility="gone"
-                android:textColor="@android:color/white"
-                app:backgroundTint="@color/rojopasion"
-                app:strokeColor="@color/rojopasion"
-                app:strokeWidth="1dp"/>
+                android:textColor="@color/alta"
+                app:strokeColor="@color/alta"
+                app:strokeWidth="1dp"
+                app:cornerRadius="16dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancelar"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="6dp"
                 android:text="Cancelar"
                 android:textColor="#4E9EFB"
                 app:strokeColor="@color/boton_borde_azul"
-                app:strokeWidth="1dp" />
+                app:strokeWidth="1dp"
+                app:cornerRadius="16dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGuardar"
-                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="4dp"
                 android:text="Guardar"
                 android:textColor="@android:color/white"
-                app:backgroundTint="#4E9EFB"/>
+                app:backgroundTint="#4E9EFB"
+                app:cornerRadius="16dp"
+                style="@style/Widget.MaterialComponents.Button" />
         </LinearLayout>
 
     </LinearLayout>
