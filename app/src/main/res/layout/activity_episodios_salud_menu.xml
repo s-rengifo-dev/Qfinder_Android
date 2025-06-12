@@ -23,7 +23,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="99dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_header" />
+                android:src="@drawable/top_nav_background" />
 
             <ImageView
                 android:id="@+id/btnBack"
