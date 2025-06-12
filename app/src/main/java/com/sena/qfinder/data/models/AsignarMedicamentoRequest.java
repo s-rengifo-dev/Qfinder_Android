@@ -5,16 +5,18 @@ public class AsignarMedicamentoRequest {
     private int id_medicamento;
     private String fecha_inicio;
     private String fecha_fin;
+    private String hora_inicio; // Nuevo campo
     private String dosis;
     private String frecuencia;
 
     // Constructor
     public AsignarMedicamentoRequest(int id_paciente, int id_medicamento, String fecha_inicio,
-                                     String fecha_fin, String dosis, String frecuencia) {
+                                     String fecha_fin,String hora_inicio, String dosis, String frecuencia) {
         this.id_paciente = id_paciente;
         this.id_medicamento = id_medicamento;
         this.fecha_inicio = fecha_inicio;
         this.fecha_fin = fecha_fin;
+        this.hora_inicio = hora_inicio;
         this.dosis = dosis;
         this.frecuencia = frecuencia;
     }
@@ -44,6 +46,12 @@ public class AsignarMedicamentoRequest {
         this.fecha_inicio = fecha_inicio;
     }
 
+    public String getHora_inicio() {
+        return hora_inicio;
+    }
+    public void setHora_inicio(String hora_inicio) {
+        this.hora_inicio = hora_inicio;
+    }
     public String getFecha_fin() {
         return fecha_fin;
     }

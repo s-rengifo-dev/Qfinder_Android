@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/white"
     tools:context=".ui.home.Login">
 
@@ -93,7 +94,9 @@
                         android:textColorHint="#000000" />
                 </LinearLayout>
 
-                <!-- Label contraseña -->
+
+
+                <!-- Campo contraseña -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -104,35 +107,50 @@
                     android:textColor="#000000"
                     android:textSize="22sp" />
 
-                <!-- Campo contraseña -->
-                <LinearLayout
+                <RelativeLayout
                     android:id="@+id/passwordField"
                     android:layout_width="340dp"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/emailField"
                     android:layout_marginTop="36dp"
-                    android:layout_centerHorizontal="true"
-                    android:orientation="horizontal"
-                    android:background="@drawable/edittext_background"
-                    android:padding="10dp"
-                    android:gravity="center_vertical">
+                    android:layout_centerHorizontal="true">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/textInputLayoutPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:endIconMode="password_toggle"
+                        app:boxStrokeColor="#000000"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:hintEnabled="false">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/passwordEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:hint=""
+                            android:paddingStart="48dp"
+                            android:padding="12dp"
+                            android:inputType="textPassword"
+                            android:textColor="#000000"
+                            android:textColorHint="#999999"
+                            android:background="@drawable/edittext_background" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
+                        android:layout_alignStart="@id/textInputLayoutPassword"
+                        android:layout_alignTop="@id/textInputLayoutPassword"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginStart="12dp"
                         android:src="@drawable/img_8"
                         android:contentDescription="Icono contraseña" />
+                </RelativeLayout>
 
-                    <EditText
-                        android:id="@+id/passwordEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:inputType="textPassword"
-                        android:background="@android:color/transparent"
-                        android:textColorHint="#000000"
-                        android:textColor="#000000" />
-                </LinearLayout>
+
+
 
                 <!-- Olvidaste tu contraseña -->
                 <TextView

@@ -6,12 +6,20 @@ public class PacienteMedicamento {
     private int id_medicamento;
     private String fecha_inicio;
     private String fecha_fin;
+    private String hora_inicio; // Nuevo campo
     private String dosis;
     private String frecuencia;
 
     // Getters y Setters
     public int getId_pac_medicamento() {
         return id_pac_medicamento;
+    }
+    public String getHora_inicio() {
+        return hora_inicio;
+    }
+
+    public void setHora_inicio(String hora_inicio) {
+        this.hora_inicio = hora_inicio;
     }
 
     public void setId_pac_medicamento(int id_pac_medicamento) {

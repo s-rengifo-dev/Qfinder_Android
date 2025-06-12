@@ -11,7 +11,8 @@ public class AsignacionMedicamentoResponse {
 
     @SerializedName("fecha_fin")
     private String fechaFin;
-
+    @SerializedName("hora_inicio")
+    private String horaInicio; // Nuevo campo
     @SerializedName("dosis")
     private String dosis;
 
@@ -36,7 +37,9 @@ public class AsignacionMedicamentoResponse {
     public String getFechaFin() {
         return fechaFin;
     }
-
+    public String getHoraInicio() {
+        return horaInicio;
+    }
     public String getDosis() {
         return dosis;
     }

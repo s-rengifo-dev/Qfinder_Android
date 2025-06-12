@@ -25,7 +25,7 @@
                 android:layout_height="99dp"
                 android:layout_marginStart="-40dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_header" />
+                android:src="@drawable/top_nav_background" />
 
             <!-- Título centrado horizontalmente en el contenedor -->
             <ImageView

@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.threetenabp)
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.firebase.inappmessaging)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.google.zxing:core:3.4.1")
 

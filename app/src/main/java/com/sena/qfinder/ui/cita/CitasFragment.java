@@ -38,6 +38,7 @@ import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
 import com.sena.qfinder.ui.home.Fragment_Serivicios;
+import com.sena.qfinder.utils.CitaAlarmManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -229,16 +230,19 @@ public class CitasFragment extends Fragment {
         patientsContainer.addView(patientCard);
     }
 
-    private void updatePatientCardsHighlight(int selectedId) {
+    private void updatePatientCardsHighlight(int selectedPatientId) {
+        if (patientsContainer == null || getContext() == null) return;
+
         for (int i = 0; i < patientsContainer.getChildCount(); i++) {
             View child = patientsContainer.getChildAt(i);
             if (child.getTag() instanceof Integer) {
                 int patientId = (int) child.getTag();
-                if (patientId == selectedId) {
-                    child.setBackgroundColor(Color.parseColor("#E3F2FD"));
-                } else {
-                    child.setBackgroundColor(Color.TRANSPARENT);
-                }
+
+                // Solo cambiamos el estado seleccionado sin tocar el fondo
+                child.setSelected(patientId == selectedPatientId);
+
+                // Opcional: Cambiar la elevación para feedback visual
+                child.setElevation(patientId == selectedPatientId ? 8f : 2f);
             }
         }
     }
@@ -480,7 +484,12 @@ public class CitasFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<CitaMedica> call, @NonNull Response<CitaMedica> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    CitaMedica citaCreada = response.body();
                     Toast.makeText(getContext(), "Cita guardada exitosamente", Toast.LENGTH_SHORT).show();
+
+                    // Programar alarmas para la nueva cita
+                    CitaAlarmManager.programarAlarmasParaCita(getContext(), citaCreada);
+
                     loadCitasDelPaciente(cita.getIdPaciente());
                 } else {
                     try {

@@ -58,8 +58,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class DashboardFragment extends Fragment {
 
     private LinearLayout patientsContainer, activitiesContainer;
-
-    private ImageButton boton1,boton2;
+    private ImageButton boton1, boton2;
     private RecyclerView rvMedications;
     private SharedPreferences sharedPreferences;
     private TextView tvUserName;
@@ -69,55 +68,81 @@ public class DashboardFragment extends Fragment {
     private View rootView;
     private Map<Integer, String> pacientesMap = new HashMap<>();
 
+    // Lista para almacenar las llamadas activas y poder cancelarlas
+    private List<Call<?>> activeCalls = new ArrayList<>();
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
         currentInflater = inflater;
 
-        sharedPreferences = requireContext().getSharedPreferences("prefs_qfinder", Context.MODE_PRIVATE);
+        // Inicialización del RecyclerView
+        rvMedications = rootView.findViewById(R.id.rvMedications);
+        rvMedications.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        Context context = getContext();
+        if (context == null) {
+            return rootView;
+        }
+
+        sharedPreferences = context.getSharedPreferences("prefs_qfinder", Context.MODE_PRIVATE);
 
         tvUserName = rootView.findViewById(R.id.tvUserName);
-
-        boton1=rootView.findViewById(R.id.botonActividad);
-        boton2=rootView.findViewById(R.id.botonMedicamento);
+        boton1 = rootView.findViewById(R.id.botonActividad);
+        boton2 = rootView.findViewById(R.id.botonMedicamento);
+        patientsContainer = rootView.findViewById(R.id.patientsContainer);
+        activitiesContainer = rootView.findViewById(R.id.activitiesContainer);
 
         setupUserInfo();
         setupButtonListeners();
-
-        // Primero cargamos los pacientes, las otras secciones se cargarán automáticamente
         setupPatientsSection();
 
         return rootView;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Cancelar todas las llamadas activas cuando el fragmento se destruye
+        for (Call<?> call : activeCalls) {
+            if (call != null && !call.isCanceled()) {
+                call.cancel();
+            }
+        }
+        activeCalls.clear();
+    }
 
     private void navigateToFragment1() {
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, new Actividad1Fragment()); // Reemplaza con tu Fragment
-        transaction.addToBackStack("dashboard"); // Opcional: para poder volver atrás
+        transaction.replace(R.id.fragment_container, new Actividad1Fragment());
+        transaction.addToBackStack("dashboard");
         transaction.commit();
     }
 
     private void navigateToFragment2() {
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos()); // Reemplaza con tu Fragment
-        transaction.addToBackStack("dashboard"); // Opcional: para poder volver atrás
+        transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos());
+        transaction.addToBackStack("dashboard");
+        transaction.commit();
+    }
+
+    private void navigateToAddPatient() {
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, new RegistrarPaciente());
+        transaction.addToBackStack("dashboard");
         transaction.commit();
     }
 
     private void setupButtonListeners() {
-        boton1.setOnClickListener(v -> {
-            // Navegar a Fragment/Activity 1
-            navigateToFragment1();
-        });
-
-        boton2.setOnClickListener(v -> {
-            // Navegar a Fragment/Activity 2
-            navigateToFragment2();
-        });
+        boton1.setOnClickListener(v -> navigateToFragment1());
+        boton2.setOnClickListener(v -> navigateToFragment2());
     }
+
     private void setupUserInfo() {
-        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        Context context = getContext();
+        if (context == null) return;
+
+        SharedPreferences preferences = context.getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
         if (token == null) {
@@ -125,49 +150,30 @@ public class DashboardFragment extends Fragment {
             return;
         }
 
-        ImageView ivUserProfile = rootView.findViewById(R.id.ivUserProfile); // Asegúrate de tener este ImageView en tu layout
+        ImageView ivUserProfile = rootView.findViewById(R.id.ivUserProfile);
 
         Retrofit retrofit = ApiClient.getClient();
         AuthService authService = retrofit.create(AuthService.class);
         Call<PerfilUsuarioResponse> call = authService.obtenerPerfil("Bearer " + token);
+        activeCalls.add(call);
 
         call.enqueue(new Callback<PerfilUsuarioResponse>() {
             @Override
             public void onResponse(@NonNull Call<PerfilUsuarioResponse> call, @NonNull Response<PerfilUsuarioResponse> response) {
+                if (!isAdded() || getContext() == null) return;
+
                 if (response.isSuccessful() && response.body() != null) {
                     PerfilUsuarioResponse usuario = response.body();
                     String nombreCompleto = usuario.getNombre_usuario() + " " + usuario.getApellido_usuario();
                     tvUserName.setText(nombreCompleto);
 
-                    // Guardar nombre en SharedPreferences
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString("nombre_completo", nombreCompleto);
 
-                    // Guardar URL de la imagen si existe
                     if (usuario.getImagen_usuario() != null && !usuario.getImagen_usuario().isEmpty()) {
                         editor.putString("imagen_usuario", usuario.getImagen_usuario());
-
-                        // Cargar imagen con Glide
-                        Glide.with(requireContext())
+                        Glide.with(context)
                                 .load(usuario.getImagen_usuario())
-                                .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
-                                .error(R.drawable.perfil_familiar) // Imagen si hay error
-                                .circleCrop() // Para hacerla circular
-                                .into(ivUserProfile);
-                    } else {
-                        ivUserProfile.setImageResource(R.drawable.perfil_familiar);
-                    }
-
-                    editor.apply();
-                } else {
-                    String nombreGuardado = preferences.getString("nombre_completo", "Usuario");
-                    tvUserName.setText(nombreGuardado);
-
-                    // Cargar imagen guardada si existe
-                    String imagenGuardada = preferences.getString("imagen_usuario", null);
-                    if (imagenGuardada != null && !imagenGuardada.isEmpty()) {
-                        Glide.with(requireContext())
-                                .load(imagenGuardada)
                                 .placeholder(R.drawable.perfil_familiar)
                                 .error(R.drawable.perfil_familiar)
                                 .circleCrop()
@@ -175,36 +181,53 @@ public class DashboardFragment extends Fragment {
                     } else {
                         ivUserProfile.setImageResource(R.drawable.perfil_familiar);
                     }
+                    editor.apply();
+                } else {
+                    handleUserInfoFallback(preferences, ivUserProfile);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<PerfilUsuarioResponse> call, @NonNull Throwable t) {
-                Log.e("DashboardFragment", "Error al obtener perfil", t);
-                String nombreGuardado = preferences.getString("nombre_completo", "Usuario");
-                tvUserName.setText(nombreGuardado);
-
-                // Cargar imagen guardada si existe
-                String imagenGuardada = preferences.getString("imagen_usuario", null);
-                if (imagenGuardada != null && !imagenGuardada.isEmpty()) {
-                    Glide.with(requireContext())
-                            .load(imagenGuardada)
-                            .placeholder(R.drawable.perfil_familiar)
-                            .error(R.drawable.perfil_familiar)
-                            .circleCrop()
-                            .into(ivUserProfile);
-                } else {
-                    ivUserProfile.setImageResource(R.drawable.perfil_familiar);
+                if (!isAdded() || getContext() == null) return;
+                if (!call.isCanceled()) {
+                    Log.e("DashboardFragment", "Error al obtener perfil", t);
+                    handleUserInfoFallback(preferences, ivUserProfile);
                 }
             }
         });
     }
 
+    private void handleUserInfoFallback(SharedPreferences preferences, ImageView ivUserProfile) {
+        Context context = getContext();
+        if (context == null) return;
+
+        String nombreGuardado = preferences.getString("nombre_completo", "Usuario");
+        tvUserName.setText(nombreGuardado);
+
+        String imagenGuardada = preferences.getString("imagen_usuario", null);
+        if (imagenGuardada != null && !imagenGuardada.isEmpty()) {
+            Glide.with(context)
+                    .load(imagenGuardada)
+                    .placeholder(R.drawable.perfil_familiar)
+                    .error(R.drawable.perfil_familiar)
+                    .circleCrop()
+                    .into(ivUserProfile);
+        } else {
+            ivUserProfile.setImageResource(R.drawable.perfil_familiar);
+        }
+    }
+
     private void setupPatientsSection() {
-        patientsContainer = rootView.findViewById(R.id.patientsContainer);
         patientsContainer.removeAllViews();
 
-        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        Context context = getContext();
+        if (context == null) {
+            mostrarPacientes(new ArrayList<>());
+            return;
+        }
+
+        SharedPreferences preferences = context.getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
         if (token == null) {
@@ -227,11 +250,12 @@ public class DashboardFragment extends Fragment {
 
         AuthService authService = retrofit.create(AuthService.class);
         Call<PacienteListResponse> call = authService.listarPacientes("Bearer " + token);
+        activeCalls.add(call);
 
         call.enqueue(new Callback<PacienteListResponse>() {
             @Override
             public void onResponse(@NonNull Call<PacienteListResponse> call, @NonNull Response<PacienteListResponse> response) {
-                if (!isAdded()) return;
+                if (!isAdded() || getContext() == null) return;
 
                 try {
                     if (response.isSuccessful()) {
@@ -258,9 +282,11 @@ public class DashboardFragment extends Fragment {
 
             @Override
             public void onFailure(@NonNull Call<PacienteListResponse> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Log.e("API", "Fallo en la conexión", t);
-                mostrarPacientes(new ArrayList<>());
+                if (!isAdded() || getContext() == null) return;
+                if (!call.isCanceled()) {
+                    Log.e("API", "Fallo en la conexión", t);
+                    mostrarPacientes(new ArrayList<>());
+                }
             }
         });
     }
@@ -268,28 +294,24 @@ public class DashboardFragment extends Fragment {
     private void mostrarPacientes(List<PacienteResponse> pacientes) {
         patientsContainer.removeAllViews();
 
-        // ÚNICO CAMBIO REALIZADO: Selección automática del primer paciente
         if (pacientes != null && !pacientes.isEmpty()) {
             PacienteResponse primerPaciente = pacientes.get(0);
             selectedPatientId = primerPaciente.getId();
             selectedPatientName = primerPaciente.getNombre() + " " + primerPaciente.getApellido();
 
-            // Cargar sus datos automáticamente
             loadPatientActivities();
             setupMedicationsSection();
         }
 
-        // Resto del método permanece exactamente igual
         for (PacienteResponse paciente : pacientes) {
             String nombreCompleto = paciente.getNombre() + " " + paciente.getApellido();
             String diagnostico = paciente.getDiagnostico_principal() != null ?
                     paciente.getDiagnostico_principal() : "Sin diagnóstico";
 
             String fecha_nacimiento = paciente.getFecha_nacimiento();
-            String imagenPaciente=paciente.getImagen_paciente();
+            String imagenPaciente = paciente.getImagen_paciente();
 
-            addPatientCard(nombreCompleto, fecha_nacimiento, diagnostico,
-                    imagenPaciente, paciente.getId());
+            addPatientCard(nombreCompleto, fecha_nacimiento, diagnostico, imagenPaciente, paciente.getId());
         }
 
         View addCard = currentInflater.inflate(R.layout.item_add_patient_card, patientsContainer, false);
@@ -298,6 +320,9 @@ public class DashboardFragment extends Fragment {
     }
 
     private void addPatientCard(String name, String relation, String conditions, String imageUrl, int patientId) {
+        Context context = getContext();
+        if (context == null) return;
+
         View patientCard = currentInflater.inflate(R.layout.item_patient_card, patientsContainer, false);
         patientCard.setTag(patientId);
 
@@ -318,13 +343,12 @@ public class DashboardFragment extends Fragment {
             tvConditions.setText("• Sin diagnóstico");
         }
 
-        // Cargar imagen con Glide
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(requireContext())
+            Glide.with(context)
                     .load(imageUrl)
-                    .placeholder(R.drawable.perfil_familiar) // Imagen por defecto
-                    .error(R.drawable.perfil_familiar) // Imagen si hay error
-                    .circleCrop() // Para hacerla circular
+                    .placeholder(R.drawable.perfil_familiar)
+                    .error(R.drawable.perfil_familiar)
+                    .circleCrop()
                     .into(ivProfile);
         } else {
             ivProfile.setImageResource(R.drawable.perfil_familiar);
@@ -336,23 +360,29 @@ public class DashboardFragment extends Fragment {
             updatePatientCardsHighlight();
             loadPatientActivities();
             setupMedicationsSection();
-            Toast.makeText(getContext(), "Mostrando actividades y medicamentos de " + name, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Mostrando actividades y medicamentos de " + name, Toast.LENGTH_SHORT).show();
         });
         patientsContainer.addView(patientCard);
     }
 
     private void updatePatientCardsHighlight() {
-        // Método permanece exactamente igual sin cambios
+        if (patientsContainer == null || getContext() == null) return;
+
         for (int i = 0; i < patientsContainer.getChildCount(); i++) {
             View child = patientsContainer.getChildAt(i);
             if (child.getTag() instanceof Integer) {
-                // Lógica existente sin modificaciones
+                int patientId = (int) child.getTag();
+
+                // Solo cambiamos el estado seleccionado sin tocar el fondo
+                child.setSelected(patientId == selectedPatientId);
+
+                // Opcional: Cambiar la elevación para feedback visual
+                child.setElevation(patientId == selectedPatientId ? 8f : 2f);
             }
         }
     }
 
     private void setupActivitiesSection() {
-        activitiesContainer = rootView.findViewById(R.id.activitiesContainer);
         activitiesContainer.removeAllViews();
 
         View headerView = currentInflater.inflate(R.layout.section_header, activitiesContainer, false);
@@ -378,26 +408,27 @@ public class DashboardFragment extends Fragment {
     }
 
     private void loadPatientActivities() {
-        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        Context context = getContext();
+        if (context == null) return;
+
+        setupActivitiesSection();
+
+        SharedPreferences preferences = context.getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
-        if (token == null) {
-            return;
-        }
-
-        if (selectedPatientId == -1) {
-            setupActivitiesSection();
+        if (token == null || selectedPatientId == -1) {
             return;
         }
 
         Retrofit retrofit = ApiClient.getClient();
         AuthService authService = retrofit.create(AuthService.class);
         Call<ActividadListResponse> call = authService.listarActividades("Bearer " + token, selectedPatientId);
+        activeCalls.add(call);
 
         call.enqueue(new Callback<ActividadListResponse>() {
             @Override
             public void onResponse(@NonNull Call<ActividadListResponse> call, @NonNull Response<ActividadListResponse> response) {
-                if (!isAdded()) return;
+                if (!isAdded() || getContext() == null) return;
 
                 Log.d("API_ACTIVIDADES", "Código de respuesta: " + response.code());
 
@@ -423,22 +454,17 @@ public class DashboardFragment extends Fragment {
 
             @Override
             public void onFailure(@NonNull Call<ActividadListResponse> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Log.e("API_ACTIVIDADES", "Fallo en la conexión", t);
-                mostrarActividades(new ArrayList<>());
+                if (!isAdded() || getContext() == null) return;
+                if (!call.isCanceled()) {
+                    Log.e("API_ACTIVIDADES", "Fallo en la conexión", t);
+                    mostrarActividades(new ArrayList<>());
+                }
             }
         });
     }
 
     private void mostrarActividades(List<ActividadGetResponse> actividades) {
-        LinearLayout activitiesContainer = rootView.findViewById(R.id.activitiesContainer);
-
-        if (activitiesContainer != null) {
-            activitiesContainer.removeAllViews();
-        } else {
-            Log.e("DashboardFragment", "activitiesContainer es null");
-            return; // Salir si es null para evitar NullPointerException
-        }
+        activitiesContainer.removeAllViews();
 
         if (actividades == null || actividades.isEmpty()) {
             View noActivitiesView = currentInflater.inflate(R.layout.item_no_selection, activitiesContainer, false);
@@ -447,11 +473,14 @@ public class DashboardFragment extends Fragment {
             return;
         }
 
+        Context context = getContext();
+        if (context == null) return;
+
         View tableView = currentInflater.inflate(R.layout.item_activity_table, activitiesContainer, false);
         TableLayout tableLayout = tableView.findViewById(R.id.activitiesTable);
 
         for (ActividadGetResponse actividad : actividades) {
-            TableRow row = new TableRow(getContext());
+            TableRow row = new TableRow(context);
             row.setLayoutParams(new TableRow.LayoutParams(
                     TableRow.LayoutParams.MATCH_PARENT,
                     TableRow.LayoutParams.WRAP_CONTENT));
@@ -476,7 +505,7 @@ public class DashboardFragment extends Fragment {
             addDataCell(row, fecha, 1f, 12);
             addDataCell(row, hora, 1f, 14);
 
-            TextView statusCell = new TextView(getContext());
+            TextView statusCell = new TextView(context);
             statusCell.setText(estado);
             statusCell.setTextSize(12);
             statusCell.setPadding(4, 4, 4, 4);
@@ -487,35 +516,37 @@ public class DashboardFragment extends Fragment {
 
             switch(estado.toLowerCase()) {
                 case "cancelada":
-                    statusCell.setTextColor(ContextCompat.getColor(getContext(), R.color.rojopasion));
+                    statusCell.setTextColor(ContextCompat.getColor(context, R.color.rojopasion));
                     break;
                 case "completada":
-                    statusCell.setTextColor(ContextCompat.getColor(getContext(), R.color.green));
+                    statusCell.setTextColor(ContextCompat.getColor(context, R.color.green));
                     break;
                 case "en_progreso":
-                    statusCell.setTextColor(ContextCompat.getColor(getContext(), R.color.azulito));
+                    statusCell.setTextColor(ContextCompat.getColor(context, R.color.azulito));
                     break;
                 default:
-                    statusCell.setTextColor(ContextCompat.getColor(getContext(), R.color.black));
+                    statusCell.setTextColor(ContextCompat.getColor(context, R.color.black));
             }
 
             row.addView(statusCell);
             tableLayout.addView(row);
 
-            View divider = new View(getContext());
+            View divider = new View(context);
             divider.setLayoutParams(new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.MATCH_PARENT,
                     1));
-            divider.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.azulitoPrincipio));
+            divider.setBackgroundColor(ContextCompat.getColor(context, R.color.azulitoPrincipio));
             tableLayout.addView(divider);
         }
 
         activitiesContainer.addView(tableView);
     }
 
-
     private void addDataCell(TableRow row, String text, float weight, int textSizeSp) {
-        TextView textView = new TextView(getContext());
+        Context context = getContext();
+        if (context == null) return;
+
+        TextView textView = new TextView(context);
         textView.setText(text);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp);
         textView.setPadding(4, 4, 4, 4);
@@ -555,13 +586,22 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupMedicationsSection() {
-        rvMedications = rootView.findViewById(R.id.rvMedications);
-        rvMedications.setLayoutManager(new LinearLayoutManager(getContext()));
+        if (rvMedications == null) {
+            rvMedications = rootView.findViewById(R.id.rvMedications);
+            if (rvMedications == null) return;
+            rvMedications.setLayoutManager(new LinearLayoutManager(getContext()));
+        }
 
         ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-        SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+        Context context = getContext();
+        if (context == null) {
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
+
+        SharedPreferences preferences = context.getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
         if (token == null) {
@@ -575,6 +615,7 @@ public class DashboardFragment extends Fragment {
         int pacienteId = selectedPatientId != -1 ? selectedPatientId : -1;
 
         Call<List<AsignacionMedicamentoResponse>> call = authService.listarAsignacionesMedicamentos("Bearer " + token, pacienteId);
+        activeCalls.add(call);
 
         call.enqueue(new Callback<List<AsignacionMedicamentoResponse>>() {
             @Override
@@ -582,7 +623,7 @@ public class DashboardFragment extends Fragment {
                                    @NonNull Response<List<AsignacionMedicamentoResponse>> response) {
                 progressBar.setVisibility(View.GONE);
 
-                if (!isAdded()) return;
+                if (!isAdded() || getContext() == null) return;
 
                 if (response.isSuccessful()) {
                     List<AsignacionMedicamentoResponse> asignaciones = response.body();
@@ -616,7 +657,9 @@ public class DashboardFragment extends Fragment {
                         String errorBody = response.errorBody() != null ?
                                 "Error: " + response.errorBody().string() :
                                 "Error: Código " + response.code();
+                        Log.e("API_MEDICAMENTOS", errorBody);
                     } catch (Exception e) {
+                        Log.e("API_MEDICAMENTOS", "Error al procesar respuesta", e);
                     }
                 }
             }
@@ -625,17 +668,10 @@ public class DashboardFragment extends Fragment {
             public void onFailure(@NonNull Call<List<AsignacionMedicamentoResponse>> call,
                                   @NonNull Throwable t) {
                 progressBar.setVisibility(View.GONE);
-                if (!isAdded() || call.isCanceled()) return;
+                if (!isAdded() || getContext() == null || call.isCanceled()) return;
                 Log.e("API Error", "Error al obtener medicamentos", t);
             }
         });
-    }
-
-    private void navigateToAddPatient() {
-        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, new RegistrarPaciente());
-        transaction.addToBackStack("dashboard");
-        transaction.commit();
     }
 
     static class Medication {
@@ -700,7 +736,7 @@ public class DashboardFragment extends Fragment {
             return medications.size();
         }
 
-        private String formatDate(String dateStr) {
+        private static String formatDate(String dateStr) {
             try {
                 SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());

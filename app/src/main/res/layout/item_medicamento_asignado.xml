@@ -44,6 +44,13 @@
                 android:src="@drawable/borrar"
                 android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"/>
+            <ImageView
+                android:id="@+id/ivAlarm"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/borrar"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"/>
         </LinearLayout>
     </RelativeLayout>
 
@@ -67,7 +74,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textSize="16sp"/>
-
+    <TextView
+        android:id="@+id/tvHoraInicio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/black"
+        android:textSize="14sp"/>
     <TextView
         android:id="@+id/tvEstado"
         android:layout_width="match_parent"

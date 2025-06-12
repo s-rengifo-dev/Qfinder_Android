@@ -124,7 +124,7 @@ public class episodios_salud_menu extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                new String[]{"Fecha", "Tipo"}  // Cambiado de "Severidad" a "Tipo"
+                new String[]{"Fecha"}  // Cambiado de "Severidad" a "Tipo"
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerOrganizar.setAdapter(adapter);
