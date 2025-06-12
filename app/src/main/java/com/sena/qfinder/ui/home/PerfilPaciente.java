@@ -41,6 +41,7 @@ import com.sena.qfinder.data.models.AgregarColaboradorRequest;
 import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.data.models.RolResponse;
 import com.sena.qfinder.data.models.UsuarioResponse;
 import com.sena.qfinder.ui.paciente.EditarPacienteDialogFragment;
 
@@ -137,6 +138,8 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         } else {
             loadPacienteData();
         }
+        verificarPermisoEliminar(pacienteId);
+
 
         return view;
     }
@@ -177,6 +180,40 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
                 .setPositiveButton("Eliminar", (dialog, which) -> eliminarPaciente())
                 .setNegativeButton("Cancelar", null)
                 .show();
+    }
+
+    private void verificarPermisoEliminar(int pacienteId) {
+        String token = sharedPreferences.getString("token", null);
+        if (token == null) {
+            showError("Sesión no válida");
+            return;
+        }
+
+        authService.obtenerRolPaciente("Bearer " + token, pacienteId)
+                .enqueue(new Callback<RolResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<RolResponse> call, @NonNull Response<RolResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            String rol = response.body().getRol();
+
+                            Log.d("ROL_DEBUG", "Rol recibido: " + rol);
+                            if ("responsable".equals(rol)) {
+                                btnEliminarPaciente.setVisibility(View.VISIBLE);
+                            } else {
+                                btnEliminarPaciente.setVisibility(View.GONE);
+                            }
+                        } else {
+                            btnEliminarPaciente.setVisibility(View.GONE);
+                            Log.e("ROL_ERROR", "Respuesta inesperada: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<RolResponse> call, @NonNull Throwable t) {
+                        btnEliminarPaciente.setVisibility(View.GONE);
+                        Log.e("ROL_FAILURE", "Error al verificar rol", t);
+                    }
+                });
     }
 
     private void eliminarPaciente() {

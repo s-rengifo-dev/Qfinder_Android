@@ -35,6 +35,7 @@ import com.sena.qfinder.data.models.RegisterPacienteResponse;
 import com.sena.qfinder.data.models.LoginRequest;
 import com.sena.qfinder.data.models.LoginResponse;
 import com.sena.qfinder.data.models.PerfilUsuarioResponse;
+import com.sena.qfinder.data.models.RolResponse;
 import com.sena.qfinder.data.models.SendCodeRequest;
 import com.sena.qfinder.data.models.SendCodeResponse;
 import com.sena.qfinder.data.models.RegisterRequest;
@@ -102,6 +103,13 @@ public interface AuthService {
             @Header("Authorization") String token,
             @Path("id_paciente") int pacienteId
     );
+
+    @GET("api/paciente/pacientes/{id_paciente}/rol")
+    Call<RolResponse> obtenerRolPaciente(
+            @Header("Authorization") String token,
+            @Path("id_paciente") int pacienteId
+    );
+
     @POST("api/auth/logout")
     Call<Void> logout();
 
