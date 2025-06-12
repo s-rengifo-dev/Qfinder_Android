@@ -103,7 +103,38 @@
                 android:layout_marginStart="8dp"
                 android:src="@android:drawable/ic_menu_my_calendar"/>
         </LinearLayout>
+        <!-- Agrega esto después del campo de fecha fin -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hora de inicio"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
 
+        <LinearLayout
+            android:id="@+id/layout_start_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tv_start_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Seleccionar hora"
+                android:textSize="16sp"/>
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="8dp"
+                android:src="@android:drawable/ic_menu_my_calendar"/>
+        </LinearLayout>
         <!-- Campo para dosis -->
         <TextView
             android:layout_width="match_parent"

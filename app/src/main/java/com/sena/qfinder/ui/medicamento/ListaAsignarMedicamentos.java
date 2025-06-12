@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -22,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -63,10 +66,9 @@ public class ListaAsignarMedicamentos extends Fragment {
 
     private Button btnOpenModalAsignar;
     private Calendar startDate, endDate;
-    private SimpleDateFormat dateFormatter;
+    private SimpleDateFormat dateFormatter, timeFormatter;
     private LinearLayout patientsContainer, medicamentosContainer;
     private Spinner spinnerPatientsMain;
-
     private ImageView btnBack;
     private SharedPreferences sharedPreferences;
     private Map<Integer, String> pacientesMap = new HashMap<>();
@@ -74,6 +76,8 @@ public class ListaAsignarMedicamentos extends Fragment {
     private int selectedPatientId = -1;
     private String selectedPatientName = "";
     private ProgressBar progressBar;
+    private TimePickerDialog timePickerDialog;
+    private TextView tvStartTime;
 
     private Call<PacienteListResponse> pacientesCall;
     private Call<List<AsignacionMedicamentoResponse>> medicamentosCall;
@@ -91,6 +95,7 @@ public class ListaAsignarMedicamentos extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        timeFormatter = new SimpleDateFormat("HH:mm", Locale.getDefault());
         startDate = Calendar.getInstance();
         endDate = Calendar.getInstance();
         endDate.add(Calendar.DAY_OF_MONTH, 7);
@@ -139,13 +144,11 @@ public class ListaAsignarMedicamentos extends Fragment {
         }
 
         try {
-            // Validar campos requeridos
-            if (asignacion.getFecha_inicio() == null || asignacion.getFrecuencia() == null) {
+            if (asignacion.getFecha_inicio() == null || asignacion.getFrecuencia() == null || asignacion.getHora_inicio() == null) {
                 Log.e("AlarmaMedicamento", "Faltan campos requeridos en la asignación");
                 return;
             }
 
-            // Parsear frecuencia (ejemplo: "8 horas" -> ["8", "horas"])
             String[] partesFrecuencia = asignacion.getFrecuencia().split(" ");
             if (partesFrecuencia.length < 2) {
                 Log.e("AlarmaMedicamento", "Formato de frecuencia inválido: " + asignacion.getFrecuencia());
@@ -155,51 +158,49 @@ public class ListaAsignarMedicamentos extends Fragment {
             int cantidad = Integer.parseInt(partesFrecuencia[0]);
             String unidad = partesFrecuencia[1];
 
-            // Calcular intervalo en milisegundos
             long intervaloMillis = calcularIntervaloMillis(cantidad, unidad);
             if (intervaloMillis <= 0) {
                 Log.e("AlarmaMedicamento", "Intervalo inválido calculado");
                 return;
             }
 
-            // Configurar fecha y hora de la alarma
+            // Parsear hora de inicio
+            String[] partesHora = asignacion.getHora_inicio().split(":");
+            int hora = Integer.parseInt(partesHora[0]);
+            int minutos = Integer.parseInt(partesHora[1]);
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(sdf.parse(asignacion.getFecha_inicio()));
 
-            // Hora fija a las 8:00 AM
-            calendar.set(Calendar.HOUR_OF_DAY, 8);
-            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.HOUR_OF_DAY, hora);
+            calendar.set(Calendar.MINUTE, minutos);
             calendar.set(Calendar.SECOND, 0);
 
-            // Crear texto para la notificación
-            String nombreMedicamento = "Medicamento"; // Podrías obtenerlo de la BD si es necesario
+            String nombreMedicamento = "Medicamento";
             String titulo = "Tomar medicamento: " + nombreMedicamento;
             String descripcion = "Dosis: " + (asignacion.getDosis() != null ? asignacion.getDosis() : "No especificada") + "\n" +
                     "Frecuencia: " + asignacion.getFrecuencia();
 
-            // ID único para la alarma (usamos el ID de la asignación)
             int alarmaId = asignacion.getId_pac_medicamento();
 
-            // Programar la alarma
             ActivityAlarmReceiver.programarAlarma(
                     requireContext(),
                     alarmaId,
                     titulo,
                     descripcion,
                     sdf.format(calendar.getTime()),
-                    "08:00",
+                    asignacion.getHora_inicio(),
                     calendar.getTimeInMillis()
             );
 
-            // Guardar en base de datos local
             DatabaseHelper dbHelper = DatabaseHelper.getInstance(requireContext());
             AlarmaEntity alarma = new AlarmaEntity(
                     alarmaId,
                     titulo,
                     descripcion,
                     sdf.format(calendar.getTime()),
-                    "08:00",
+                    asignacion.getHora_inicio(),
                     calendar.getTimeInMillis(),
                     true
             );
@@ -214,7 +215,8 @@ public class ListaAsignarMedicamentos extends Fragment {
     private void programarAlarmaMedicamento(AsignacionMedicamentoResponse asignacion) {
         try {
             if (asignacion == null || asignacion.getFechaInicio() == null ||
-                    asignacion.getFrecuencia() == null || asignacion.getMedicamento() == null) {
+                    asignacion.getFrecuencia() == null || asignacion.getMedicamento() == null ||
+                    asignacion.getHoraInicio() == null) {
                 return;
             }
 
@@ -227,12 +229,17 @@ public class ListaAsignarMedicamentos extends Fragment {
             long intervaloMillis = calcularIntervaloMillis(cantidad, unidad);
             if (intervaloMillis <= 0) return;
 
+            // Parsear hora de inicio
+            String[] partesHora = asignacion.getHoraInicio().split(":");
+            int hora = Integer.parseInt(partesHora[0]);
+            int minutos = Integer.parseInt(partesHora[1]);
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(sdf.parse(asignacion.getFechaInicio()));
 
-            calendar.set(Calendar.HOUR_OF_DAY, 8);
-            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.HOUR_OF_DAY, hora);
+            calendar.set(Calendar.MINUTE, minutos);
             calendar.set(Calendar.SECOND, 0);
 
             String titulo = "Tomar medicamento: " + asignacion.getMedicamento().getNombre();
@@ -247,7 +254,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                     titulo,
                     descripcion,
                     sdf.format(calendar.getTime()),
-                    "08:00",
+                    asignacion.getHoraInicio(),
                     calendar.getTimeInMillis()
             );
 
@@ -257,7 +264,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                     titulo,
                     descripcion,
                     sdf.format(calendar.getTime()),
-                    "08:00",
+                    asignacion.getHoraInicio(),
                     calendar.getTimeInMillis(),
                     true
             );
@@ -474,12 +481,12 @@ public class ListaAsignarMedicamentos extends Fragment {
         TextView tvDosis = itemView.findViewById(R.id.tvDosis);
         TextView tvFrecuencia = itemView.findViewById(R.id.tvFrecuencia);
         TextView tvFechas = itemView.findViewById(R.id.tvFechas);
+        TextView tvHoraInicio = itemView.findViewById(R.id.tvHoraInicio);
         TextView tvEstado = itemView.findViewById(R.id.tvEstado);
         ImageView ivEdit = itemView.findViewById(R.id.ivEdit);
         ImageView ivDelete = itemView.findViewById(R.id.ivDelete);
         ImageView ivAlarm = itemView.findViewById(R.id.ivAlarm);
 
-        // Medicamento
         if (asignacion.getMedicamento() != null) {
             tvNombre.setText(asignacion.getMedicamento().getNombre());
             Log.d("MEDICAMENTO_DEBUG", "Medicamento: " + asignacion.getMedicamento().getNombre());
@@ -488,11 +495,15 @@ public class ListaAsignarMedicamentos extends Fragment {
             Log.e("MEDICAMENTO_ERROR", "Medicamento es null para asignación ID: " + asignacion.getIdAsignacion());
         }
 
-        // Dosis y frecuencia
         tvDosis.setText("Dosis: " + (asignacion.getDosis() != null ? asignacion.getDosis() : "No especificada"));
         tvFrecuencia.setText("Frecuencia: " + (asignacion.getFrecuencia() != null ? asignacion.getFrecuencia() : "No especificada"));
 
-        // Fechas
+        if (asignacion.getHoraInicio() != null) {
+            tvHoraInicio.setText("Hora: " + asignacion.getHoraInicio());
+        } else {
+            tvHoraInicio.setText("Hora no especificada");
+        }
+
         String textoFechas = "Período: ";
         if (asignacion.getFechaInicio() != null && asignacion.getFechaFin() != null) {
             textoFechas += asignacion.getFechaInicio() + " - " + asignacion.getFechaFin();
@@ -504,7 +515,6 @@ public class ListaAsignarMedicamentos extends Fragment {
         }
         tvFechas.setText(textoFechas);
 
-        // Estado
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             Calendar hoy = Calendar.getInstance();
@@ -535,12 +545,10 @@ public class ListaAsignarMedicamentos extends Fragment {
             tvEstado.setTextColor(getResources().getColor(R.color.gray));
         }
 
-        // Alarmas
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(getContext());
         boolean tieneAlarma = dbHelper.tieneAlarma(asignacion.getIdAsignacion());
         ivAlarm.setVisibility(tieneAlarma ? View.VISIBLE : View.GONE);
 
-        // Listeners
         ivEdit.setOnClickListener(v -> mostrarDialogoEditarMedicamento(asignacion));
         ivDelete.setOnClickListener(v -> mostrarDialogoConfirmarEliminacion(asignacion));
         ivAlarm.setOnClickListener(v -> mostrarDialogoGestionAlarmas(asignacion));
@@ -813,9 +821,11 @@ public class ListaAsignarMedicamentos extends Fragment {
         Spinner spinnerFrequencyUnit = viewInflated.findViewById(R.id.spinner_frequency_unit);
         TextView tvStartDate = viewInflated.findViewById(R.id.tv_start_date);
         TextView tvEndDate = viewInflated.findViewById(R.id.tv_end_date);
+        tvStartTime = viewInflated.findViewById(R.id.tv_start_time);
         EditText etDosage = viewInflated.findViewById(R.id.et_dosage);
         EditText etFrequencyNumber = viewInflated.findViewById(R.id.et_frequency_number);
         Button btnSave = viewInflated.findViewById(R.id.btn_save);
+        LinearLayout layoutStartTime = viewInflated.findViewById(R.id.layout_start_time);
 
         btnSave.setText("Actualizar");
 
@@ -830,6 +840,12 @@ public class ListaAsignarMedicamentos extends Fragment {
         tvStartDate.setText(asignacion.getFechaInicio());
         tvEndDate.setText(asignacion.getFechaFin());
         etDosage.setText(asignacion.getDosis());
+
+        if (asignacion.getHoraInicio() != null) {
+            tvStartTime.setText(asignacion.getHoraInicio());
+        }
+
+        layoutStartTime.setOnClickListener(v -> showTimePickerDialog());
 
         if (asignacion.getFrecuencia() != null && !asignacion.getFrecuencia().isEmpty()) {
             String[] frecuenciaParts = asignacion.getFrecuencia().split(" ");
@@ -890,16 +906,18 @@ public class ListaAsignarMedicamentos extends Fragment {
         dialog.show();
 
         btnSave.setOnClickListener(v -> {
-            if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequencyNumber, tvStartDate, tvEndDate)) {
+            if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequencyNumber, tvStartDate, tvEndDate, tvStartTime)) {
                 String frecuenciaNumero = etFrequencyNumber.getText().toString();
                 String frecuenciaUnidad = spinnerFrequencyUnit.getSelectedItem().toString();
                 String frecuenciaCompleta = frecuenciaNumero + " " + frecuenciaUnidad;
+                String horaInicio = tvStartTime.getText().toString();
 
                 AsignarMedicamentoRequest request = new AsignarMedicamentoRequest(
                         asignacion.getPaciente().getId(),
                         asignacion.getMedicamento().getId_medicamento(),
                         tvStartDate.getText().toString(),
                         tvEndDate.getText().toString(),
+                        horaInicio,
                         etDosage.getText().toString(),
                         frecuenciaCompleta
                 );
@@ -928,6 +946,13 @@ public class ListaAsignarMedicamentos extends Fragment {
         Spinner spinnerPatients = viewInflated.findViewById(R.id.spinner_patients);
         Spinner spinnerMedications = viewInflated.findViewById(R.id.spinner_medications);
         Spinner spinnerFrequencyUnit = viewInflated.findViewById(R.id.spinner_frequency_unit);
+        TextView tvStartDate = viewInflated.findViewById(R.id.tv_start_date);
+        TextView tvEndDate = viewInflated.findViewById(R.id.tv_end_date);
+        tvStartTime = viewInflated.findViewById(R.id.tv_start_time);
+        EditText etDosage = viewInflated.findViewById(R.id.et_dosage);
+        EditText etFrequencyNumber = viewInflated.findViewById(R.id.et_frequency_number);
+        Button btnSave = viewInflated.findViewById(R.id.btn_save);
+        LinearLayout layoutStartTime = viewInflated.findViewById(R.id.layout_start_time);
 
         ArrayAdapter<CharSequence> frequencyAdapter = ArrayAdapter.createFromResource(
                 getContext(),
@@ -938,16 +963,7 @@ public class ListaAsignarMedicamentos extends Fragment {
         spinnerFrequencyUnit.setAdapter(frequencyAdapter);
 
         LinearLayout layoutStartDate = viewInflated.findViewById(R.id.layout_start_date);
-        TextView tvStartDate = viewInflated.findViewById(R.id.tv_start_date);
-
         LinearLayout layoutEndDate = viewInflated.findViewById(R.id.layout_end_date);
-        TextView tvEndDate = viewInflated.findViewById(R.id.tv_end_date);
-
-        EditText etDosage = viewInflated.findViewById(R.id.et_dosage);
-        EditText etFrequencyNumber = viewInflated.findViewById(R.id.et_frequency_number);
-        Button btnSave = viewInflated.findViewById(R.id.btn_save);
-
-        setupSpinners(spinnerPatients, spinnerMedications);
 
         final Calendar dialogStartDate = Calendar.getInstance();
         final Calendar dialogEndDate = Calendar.getInstance();
@@ -955,9 +971,13 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         tvStartDate.setText(dateFormatter.format(dialogStartDate.getTime()));
         tvEndDate.setText(dateFormatter.format(dialogEndDate.getTime()));
+        tvStartTime.setText("08:00"); // Hora por defecto
 
         layoutStartDate.setOnClickListener(v -> showDatePickerDialog(dialogStartDate, tvStartDate, true, dialogEndDate, tvEndDate));
         layoutEndDate.setOnClickListener(v -> showDatePickerDialog(dialogEndDate, tvEndDate, false, dialogStartDate, null));
+        layoutStartTime.setOnClickListener(v -> showTimePickerDialog());
+
+        setupSpinners(spinnerPatients, spinnerMedications);
 
         if (selectedPatientId != -1 && pacientesMap.containsKey(selectedPatientId)) {
             String selectedName = pacientesMap.get(selectedPatientId);
@@ -971,7 +991,7 @@ public class ListaAsignarMedicamentos extends Fragment {
         dialog.show();
 
         btnSave.setOnClickListener(v -> {
-            if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequencyNumber, tvStartDate, tvEndDate)) {
+            if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequencyNumber, tvStartDate, tvEndDate, tvStartTime)) {
                 String pacienteNombre = spinnerPatients.getSelectedItem().toString();
                 String medicamentoNombre = spinnerMedications.getSelectedItem().toString();
                 String dosis = etDosage.getText().toString();
@@ -979,6 +999,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                 String frecuenciaUnidad = spinnerFrequencyUnit.getSelectedItem().toString();
                 String fechaInicio = tvStartDate.getText().toString();
                 String fechaFin = tvEndDate.getText().toString();
+                String horaInicio = tvStartTime.getText().toString();
 
                 String frecuenciaCompleta = frecuenciaNumero + " " + frecuenciaUnidad;
 
@@ -995,6 +1016,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                         idMedicamento,
                         fechaInicio,
                         fechaFin,
+                        horaInicio,
                         dosis,
                         frecuenciaCompleta
                 );
@@ -1004,6 +1026,36 @@ public class ListaAsignarMedicamentos extends Fragment {
         });
 
         builder.setNegativeButton("Cancelar", (dialogInterface, which) -> dialogInterface.dismiss());
+    }
+
+    private void showTimePickerDialog() {
+        final Calendar c = Calendar.getInstance();
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+
+        // Si hay una hora ya seleccionada, usarla como valor inicial
+        if (tvStartTime.getText() != null && !tvStartTime.getText().toString().isEmpty()) {
+            try {
+                String[] timeParts = tvStartTime.getText().toString().split(":");
+                if (timeParts.length == 2) {
+                    hour = Integer.parseInt(timeParts[0]);
+                    minute = Integer.parseInt(timeParts[1]);
+                }
+            } catch (Exception e) {
+                Log.e("TimePicker", "Error al parsear hora existente", e);
+            }
+        }
+
+        timePickerDialog = new TimePickerDialog(getContext(),
+                (view, hourOfDay, minute1) -> {
+                    Calendar selectedTime = Calendar.getInstance();
+                    selectedTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    selectedTime.set(Calendar.MINUTE, minute1);
+                    // Formatear siempre a HH:mm
+                    String formattedTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute1);
+                    tvStartTime.setText(formattedTime);
+                }, hour, minute, true);
+        timePickerDialog.show();
     }
 
     private void showDatePickerDialog(final Calendar dateToSet, final TextView textView,
@@ -1108,7 +1160,7 @@ public class ListaAsignarMedicamentos extends Fragment {
 
     private boolean validarCampos(Spinner spinnerPatients, Spinner spinnerMedications,
                                   EditText etDosage, EditText etFrequency,
-                                  TextView tvStartDate, TextView tvEndDate) {
+                                  TextView tvStartDate, TextView tvEndDate, TextView tvStartTime) {
         if (spinnerPatients.getSelectedItem() == null) {
             Toast.makeText(getContext(), "Selecciona un paciente", Toast.LENGTH_SHORT).show();
             return false;
@@ -1129,6 +1181,11 @@ public class ListaAsignarMedicamentos extends Fragment {
         String fechaFin = tvEndDate.getText().toString().trim();
         if (fechaInicio.isEmpty() || fechaFin.isEmpty()) {
             Toast.makeText(getContext(), "Selecciona fechas válidas", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (tvStartTime.getText().toString().trim().isEmpty() ||
+                tvStartTime.getText().toString().equals("Seleccionar hora")) {
+            Toast.makeText(getContext(), "Selecciona una hora de inicio", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;

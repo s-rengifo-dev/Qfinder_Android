@@ -40,7 +40,6 @@
                     android:src="@drawable/img"
                     android:background="@drawable/circle_azul"
                     android:padding="10dp"
-                    android:backgroundTint="@color/black"
                     android:contentDescription="Volver" />
 
                 <TextView
