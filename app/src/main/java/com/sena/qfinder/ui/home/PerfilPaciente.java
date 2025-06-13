@@ -138,7 +138,8 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         } else {
             loadPacienteData();
         }
-        verificarPermisoEliminar(pacienteId);
+        verificarRolPaciente(pacienteId, "eliminar");
+        verificarRolPaciente(pacienteId, "agregar_colaborador");
 
 
         return view;
@@ -182,7 +183,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
                 .show();
     }
 
-    private void verificarPermisoEliminar(int pacienteId) {
+    private void verificarRolPaciente(int pacienteId, String accion) {
         String token = sharedPreferences.getString("token", null);
         if (token == null) {
             showError("Sesión no válida");
@@ -195,27 +196,42 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
                     public void onResponse(@NonNull Call<RolResponse> call, @NonNull Response<RolResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             String rol = response.body().getRol();
-
                             Log.d("ROL_DEBUG", "Rol recibido: " + rol);
+
                             if ("responsable".equals(rol)) {
-                                btnEliminarPaciente.setVisibility(View.VISIBLE);
+                                if (accion.equals("eliminar")) {
+                                    btnEliminarPaciente.setVisibility(View.VISIBLE);
+                                } else if (accion.equals("agregar_colaborador")) {
+                                    btnAgregarColaborador.setVisibility(View.VISIBLE);
+                                }
                             } else {
-                                btnEliminarPaciente.setVisibility(View.GONE);
+                                if (accion.equals("eliminar")) {
+                                    btnEliminarPaciente.setVisibility(View.GONE);
+                                } else if (accion.equals("agregar_colaborador")) {
+                                    btnAgregarColaborador.setVisibility(View.GONE);
+                                }
                             }
                         } else {
-                            btnEliminarPaciente.setVisibility(View.GONE);
+                            ocultarBotonSegunAccion(accion);
                             Log.e("ROL_ERROR", "Respuesta inesperada: " + response.code());
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<RolResponse> call, @NonNull Throwable t) {
-                        btnEliminarPaciente.setVisibility(View.GONE);
+                        ocultarBotonSegunAccion(accion);
                         Log.e("ROL_FAILURE", "Error al verificar rol", t);
+                    }
+
+                    private void ocultarBotonSegunAccion(String accion) {
+                        if (accion.equals("eliminar")) {
+                            btnEliminarPaciente.setVisibility(View.GONE);
+                        } else if (accion.equals("agregar_colaborador")) {
+                            btnAgregarColaborador.setVisibility(View.GONE);
+                        }
                     }
                 });
     }
-
     private void eliminarPaciente() {
         String token = sharedPreferences.getString("token", null);
         if (token == null) {
