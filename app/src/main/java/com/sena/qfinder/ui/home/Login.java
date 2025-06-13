@@ -3,6 +3,7 @@ package com.sena.qfinder.ui.home;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +33,10 @@ import com.sena.qfinder.data.models.PerfilUsuarioResponse;
 import com.sena.qfinder.ui.auth.Fragment_password_recovery;
 import com.sena.qfinder.utils.SharedPrefManager;
 
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseView;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,11 +47,16 @@ public class Login extends Fragment {
 
     private EditText emailEditText, passwordEditText;
     private TextView btnRegistro, btnOlvidarContrasena;
+
+    private LinearLayout tuto;
     private Button btnLogin;
     private AlertDialog progressDialog;
     private AuthService authService;
     private Retrofit retrofit;
     private SharedPrefManager sharedPrefManager;
+    private MaterialShowcaseSequence sequence;
+
+    final int totalItems = 5; // Total de pasos del tutorial
 
     @Nullable
     @Override
@@ -60,21 +71,131 @@ public class Login extends Fragment {
         setupSharedPrefManager();
         setupRetrofit();
         setupListeners();
+
+        // Mostrar tutorial solo la primera vez o si el usuario lo solicita
+        if (shouldShowTutorial()) {
+            showTutorial();
+        }
     }
 
+    private boolean shouldShowTutorial() {
+        if (getContext() == null) return false;
+        SharedPreferences preferences = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
+        return preferences.getBoolean("should_show_login_tutorial", true);
+    }
+
+    private void markTutorialAsShown() {
+        if (getContext() == null) return;
+        SharedPreferences preferences = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
+        preferences.edit().putBoolean("should_show_login_tutorial", false).apply();
+    }
+    private void showTutorial() {
+        if (getActivity() == null || getView() == null) return;
+
+        // Configuración común para todos los pasos del tutorial
+        ShowcaseConfig config = new ShowcaseConfig();
+        config.setDelay(300);
+        config.setMaskColor(Color.parseColor("#CC1A1A1A"));
+        config.setShapePadding(16);
+
+        sequence = new MaterialShowcaseSequence(getActivity(), "LOGIN_TUTORIAL");
+        sequence.setConfig(config);
+
+        sequence.setOnItemDismissedListener((itemView, position) -> {
+            if (position + 1 == totalItems) {
+                markTutorialAsShown();
+            }
+        });
+
+        // Crear un diálogo de confirmación antes de mostrar el tutorial
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Tutorial de inicio de sesión")
+                .setMessage("¿Deseas ver el tutorial de cómo iniciar sesión?")
+                .setPositiveButton("Sí", (dialog, which) -> {
+                    // Mostrar tutorial si el usuario selecciona "Sí"
+                    showTutorialSteps();
+                })
+                .setNegativeButton("Omitir", (dialog, which) -> {
+                    markTutorialAsShown();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void showTutorialSteps() {
+        // 1. Explicación del campo de email
+        sequence.addSequenceItem(
+                new MaterialShowcaseView.Builder(getActivity())
+                        .setTarget(tuto)
+                        .setTitleText("Paso 1: Tu Correo")
+                        .setDismissText("Siguiente")
+                        .setContentText("Aquí debes ingresar el correo electrónico con el que te registraste.")
+                        .withRectangleShape()
+                        .build()
+        );
+
+        // 2. Explicación del campo de contraseña
+        sequence.addSequenceItem(
+                new MaterialShowcaseView.Builder(getActivity())
+                        .setTarget(passwordEditText)
+                        .setTitleText("Paso 2: Contraseña")
+                        .setDismissText("Siguiente")
+                        .setContentText("Escribe tu contraseña. Si la olvidaste, puedes recuperarla abajo.")
+                        .withRectangleShape()
+                        .build()
+        );
+
+        // 3. Explicación del botón de inicio de sesión
+        sequence.addSequenceItem(
+                new MaterialShowcaseView.Builder(getActivity())
+                        .setTarget(btnLogin)
+                        .setTitleText("Paso 3: Iniciar Sesión")
+                        .setDismissText("Siguiente")
+                        .setContentText("Presiona aquí para acceder a tu cuenta después de llenar los datos.")
+                        .withRectangleShape()
+                        .build()
+        );
+
+        // 4. Explicación del enlace de registro
+        sequence.addSequenceItem(
+                new MaterialShowcaseView.Builder(getActivity())
+                        .setTarget(btnRegistro)
+                        .setTitleText("¿No tienes cuenta?")
+                        .setDismissText("Siguiente")
+                        .setContentText("Toca aquí para registrarte si eres nuevo en la app.")
+                        .withRectangleShape()
+                        .build()
+        );
+
+        // 5. Explicación de "Olvidé mi contraseña"
+        sequence.addSequenceItem(
+                new MaterialShowcaseView.Builder(getActivity())
+                        .setTarget(btnOlvidarContrasena)
+                        .setTitleText("Recuperar Contraseña")
+                        .setDismissText("¡Listo!")
+                        .setContentText("Si no recuerdas tu contraseña, toca aquí para recuperarla.")
+                        .withRectangleShape()
+                        .build()
+        );
+
+        sequence.start();
+    }
     private void initViews(View view) {
         emailEditText = view.findViewById(R.id.emailEditText);
         passwordEditText = view.findViewById(R.id.passwordEditText);
         btnLogin = view.findViewById(R.id.loginButton);
         btnRegistro = view.findViewById(R.id.registerLink);
         btnOlvidarContrasena = view.findViewById(R.id.forgotPassword);
+        tuto=view.findViewById(R.id.emailField);
     }
 
     private void setupSharedPrefManager() {
+        if (getContext() == null) return;
         sharedPrefManager = SharedPrefManager.getInstance(requireContext());
     }
 
     private void showProgressDialog() {
+        if (getContext() == null) return;
         if (progressDialog != null && progressDialog.isShowing()) {
             return;
         }
@@ -154,9 +275,8 @@ public class Login extends Fragment {
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().getToken();
-                    Log.d("LOGIN", "Token recibido: " + token); // <- Añade este log
+                    Log.d("LOGIN", "Token recibido: " + token);
 
-                    // Verifica que sharedPrefManager no sea null
                     if (sharedPrefManager == null) {
                         Log.e("LOGIN", "sharedPrefManager es null!");
                         setupSharedPrefManager();
@@ -165,13 +285,11 @@ public class Login extends Fragment {
                     sharedPrefManager.saveToken(token);
                     sharedPrefManager.saveEmail(email);
 
-                    // Obtener el perfil completo del usuario para guardar el ID
                     obtenerPerfilUsuario(token);
-
                     guardarDatosUsuario(email, response.body().getToken());
-                    // Verifica que se guardó
+
                     String tokenGuardado = sharedPrefManager.getToken();
-                    Log.d("LOGIN", "Token guardado: " + tokenGuardado); // <- Añade este log
+                    Log.d("LOGIN", "Token guardado: " + tokenGuardado);
 
                     obtenerPerfilUsuario(token);
                 } else {
@@ -187,13 +305,16 @@ public class Login extends Fragment {
             }
         });
     }
+
     private void guardarDatosUsuario(String email, String token) {
+        if (getContext() == null) return;
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         preferences.edit()
                 .putString("correo_usuario", email)
                 .putString("token", token)
                 .apply();
     }
+
     private void obtenerPerfilUsuario(String token) {
         authService.obtenerPerfil("Bearer " + token).enqueue(new Callback<PerfilUsuarioResponse>() {
             @Override
@@ -240,6 +361,7 @@ public class Login extends Fragment {
     private void guardarDatosCompletosUsuario(String idUsuario, String nombre, String apellido,
                                               String correo, String telefono, String direccion,
                                               String identificacion, String imagenUsuario) {
+        if (getContext() == null) return;
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         preferences.edit()
                 .putString("id_usuario", idUsuario)
@@ -273,11 +395,5 @@ public class Login extends Fragment {
                 .replace(R.id.fragment_container, new Fragment_password_recovery())
                 .addToBackStack(null)
                 .commit();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        dismissProgressDialog();
     }
 }
