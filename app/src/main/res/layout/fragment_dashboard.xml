@@ -38,7 +38,7 @@
                 android:textStyle="bold"
                 android:textColor="#000000" />
             <ImageView
-                android:id="@+id/Soporte"
+                android:id="@+id/imSoporte"
                 android:layout_width="40dp"
                 android:layout_height="70dp"
                 android:src="@drawable/manual"

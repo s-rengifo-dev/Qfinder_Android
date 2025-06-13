@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -40,7 +41,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class Login extends Fragment {
 
     private EditText emailEditText, passwordEditText;
-    private TextView btnRegistro, btnOlvidarContrasena;
+    private TextView btnRegistro, btnOlvidarContrasena, manualLink;
     private Button btnLogin;
     private AlertDialog progressDialog;
     private AuthService authService;
@@ -68,6 +69,8 @@ public class Login extends Fragment {
         btnLogin = view.findViewById(R.id.loginButton);
         btnRegistro = view.findViewById(R.id.registerLink);
         btnOlvidarContrasena = view.findViewById(R.id.forgotPassword);
+        manualLink = view.findViewById(R.id.ManualLink); // NUEVA LÍNEA
+
     }
 
     private void setupSharedPrefManager() {
@@ -118,6 +121,20 @@ public class Login extends Fragment {
 
         btnRegistro.setOnClickListener(v -> navegarARegistro());
         btnOlvidarContrasena.setOnClickListener(v -> forgotPassword());
+        manualLink.setOnClickListener(v -> {
+            String videoUrl = "https://youtu.be/mfbW0sEKE1U?si=poAT9WWoe-gCpZTF"; // Reemplaza con tu URL real
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
+            intent.setPackage("com.google.android.youtube");
+
+            // Si YouTube no está instalado, abre en el navegador
+            if (intent.resolveActivity(requireActivity().getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
+                startActivity(browserIntent);
+            }
+        });
+
     }
 
     private boolean validarCampos() {

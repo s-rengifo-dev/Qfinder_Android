@@ -1,7 +1,9 @@
 package com.sena.qfinder.ui.home;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -88,12 +90,37 @@ public class DashboardFragment extends Fragment {
         boton1 = rootView.findViewById(R.id.botonActividad);
         boton2 = rootView.findViewById(R.id.botonMedicamento);
 
+        // Configurar botón de soporte (WhatsApp)
+        ImageView soporteBtn = rootView.findViewById(R.id.imSoporte);
+        if (soporteBtn != null) {
+            soporteBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String numeroWhatsApp = "573234103221"; // SIN +, solo código país + número
+                    String mensaje = "Hola, necesito soporte desde la app QFinder.";
+                    String url = "https://api.whatsapp.com/send?phone=" + numeroWhatsApp + "&text=" + Uri.encode(mensaje);
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    intent.setPackage("com.whatsapp");
+
+                    try {
+                        startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        Toast.makeText(requireContext(), "WhatsApp no está instalado.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
+
         setupUserInfo();
         setupButtonListeners();
         setupPatientsSection();
 
         return rootView;
     }
+
 
     @Override
     public void onDestroyView() {
