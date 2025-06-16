@@ -83,6 +83,7 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-appcheck-debug:18.0.0")
     implementation ("androidx.browser:browser:1.7.0")
+    implementation ("com.github.deano2390:MaterialShowcaseView:1.3.4")
     // Utilities
     implementation(libs.gson)
     implementation(libs.threetenabp)
