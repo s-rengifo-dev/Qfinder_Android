@@ -14,6 +14,7 @@ import com.sena.qfinder.data.models.CheckoutProResponse;
 import com.sena.qfinder.data.models.CitaMedica;
 import com.sena.qfinder.data.models.CodeVerificationRequest;
 import com.sena.qfinder.data.models.CodeVerificationResponse;
+import com.sena.qfinder.data.models.ColaboradorListResponse;
 import com.sena.qfinder.data.models.FirebaseTokenResponse;
 import com.sena.qfinder.data.models.MedicamentoRequest;
 import com.sena.qfinder.data.models.MedicamentoResponse;
@@ -49,6 +50,7 @@ import com.sena.qfinder.data.models.VerificarCodigoRequest;
 import com.sena.qfinder.data.models.CambiarPasswordRequest;
 
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -345,4 +347,10 @@ public interface AuthService {
             @Header("Authorization") String token,
             @Body AgregarColaboradorRequest request
     );
+    @GET("/api/colaboradores/mis-pacientes")
+    Call<ColaboradorListResponse> listarColaboradores(@Header("Authorization") String token);
+
+    @POST("/api/colaboradores/eliminar")
+    Call<Void> eliminarColaborador(@Header("Authorization") String token, @Body Map<String, Integer> body);
+
 }

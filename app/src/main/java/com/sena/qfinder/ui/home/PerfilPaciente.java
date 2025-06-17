@@ -78,7 +78,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
 
     // Views
     private TextView tvNombreApellido, tvFechaNacimiento, tvSexo, tvDiagnostico, tvIdentificacion;
-    private ImageView btnBack, ivCodigoQR, imagenPerfilP;
+    private ImageView btnBack, ivCodigoQR, imagenPerfilP, btnEditarPaciente;
     private ProgressBar progressBar;
     private LinearLayout btnAgregarColaborador;
     private LinearLayout btnEliminarPaciente;
@@ -140,6 +140,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         }
         verificarRolPaciente(pacienteId, "eliminar");
         verificarRolPaciente(pacienteId, "agregar_colaborador");
+        verificarRolPaciente(pacienteId, "editar");
 
 
         return view;
@@ -166,10 +167,11 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         imagenPerfilP = view.findViewById(R.id.ivFotoPerfil);
         progressBar = view.findViewById(R.id.progressBar);
         btnEliminarPaciente = view.findViewById(R.id.btnEliminarPaciente);
+        btnEditarPaciente = view.findViewById(R.id.boton_imagen);
     }
 
     private void setupClickListeners(View view) {
-        btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+        btnBack.setOnClickListener(v -> {requireActivity().getSupportFragmentManager().popBackStack();});
         view.findViewById(R.id.boton_imagen).setOnClickListener(v -> abrirDialogoEditar());
         btnEliminarPaciente.setOnClickListener(v -> mostrarDialogoConfirmacionEliminacion());
     }
@@ -199,39 +201,39 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
                             Log.d("ROL_DEBUG", "Rol recibido: " + rol);
 
                             if ("responsable".equals(rol)) {
-                                if (accion.equals("eliminar")) {
-                                    btnEliminarPaciente.setVisibility(View.VISIBLE);
-                                } else if (accion.equals("agregar_colaborador")) {
-                                    btnAgregarColaborador.setVisibility(View.VISIBLE);
-                                }
+                                mostrarBotonSegunAccion(accion, true);
                             } else {
-                                if (accion.equals("eliminar")) {
-                                    btnEliminarPaciente.setVisibility(View.GONE);
-                                } else if (accion.equals("agregar_colaborador")) {
-                                    btnAgregarColaborador.setVisibility(View.GONE);
-                                }
+                                mostrarBotonSegunAccion(accion, false);
                             }
                         } else {
-                            ocultarBotonSegunAccion(accion);
+                            mostrarBotonSegunAccion(accion, false);
                             Log.e("ROL_ERROR", "Respuesta inesperada: " + response.code());
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<RolResponse> call, @NonNull Throwable t) {
-                        ocultarBotonSegunAccion(accion);
+                        mostrarBotonSegunAccion(accion, false);
                         Log.e("ROL_FAILURE", "Error al verificar rol", t);
                     }
 
-                    private void ocultarBotonSegunAccion(String accion) {
-                        if (accion.equals("eliminar")) {
-                            btnEliminarPaciente.setVisibility(View.GONE);
-                        } else if (accion.equals("agregar_colaborador")) {
-                            btnAgregarColaborador.setVisibility(View.GONE);
+                    private void mostrarBotonSegunAccion(String accion, boolean visible) {
+                        int visibilidad = visible ? View.VISIBLE : View.GONE;
+                        switch (accion) {
+                            case "eliminar":
+                                btnEliminarPaciente.setVisibility(visibilidad);
+                                break;
+                            case "agregar_colaborador":
+                                btnAgregarColaborador.setVisibility(visibilidad);
+                                break;
+                            case "editar":
+                                btnEditarPaciente.setVisibility(visibilidad);
+                                break;
                         }
                     }
                 });
     }
+
     private void eliminarPaciente() {
         String token = sharedPreferences.getString("token", null);
         if (token == null) {

@@ -258,13 +258,9 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
         if (!isAdded()) return;
 
         FragmentManager fragmentManager = getParentFragmentManager();
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
-        } else {
-            fragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, new DashboardFragment())
-                    .commit();
-        }
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, new DashboardFragment())
+                .commit();
     }
 
     @Override
