@@ -207,8 +207,21 @@
                         android:textColor="#1E88E5"
                         android:textSize="16sp"
                         android:textStyle="bold" />
+
                 </LinearLayout>
             </RelativeLayout>
+
+            <TextView
+                android:id="@+id/ManualLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:text="Manual De Usuario"
+                android:focusable="true"
+                android:textColor="#1E88E5"
+                android:layout_gravity="center"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <!-- Curva inferior -->
             <ImageView
@@ -218,6 +231,8 @@
                 android:layout_marginTop="123dp"
                 android:scaleType="fitXY"
                 android:src="@drawable/curva_inferior" />
+
+
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

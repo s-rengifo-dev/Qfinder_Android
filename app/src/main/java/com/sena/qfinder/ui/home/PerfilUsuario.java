@@ -1,10 +1,13 @@
 package com.sena.qfinder.ui.home;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,6 +15,7 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -94,13 +98,52 @@ public class PerfilUsuario extends Fragment implements EditarUsuarioDialogFragme
 
     private void mostrarDialogoCerrarSesion() {
         if (!isAdded()) return;
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setTitle("Cerrar sesión")
                 .setMessage("¿Estás seguro de que deseas cerrar sesión?")
-                .setPositiveButton("Sí", (dialog, which) -> logout())
+                .setPositiveButton("Sí", (dialogInterface, which) -> logout())
                 .setNegativeButton("Cancelar", null)
-                .show();
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+            // Estilos comunes
+            if (positiveButton != null) {
+                positiveButton.setAllCaps(false);
+                positiveButton.setText("Sí");
+                positiveButton.setTextColor(Color.WHITE);
+                positiveButton.setBackgroundColor(Color.parseColor("#18A0FB"));
+
+                // Añadir margen derecho
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) positiveButton.getLayoutParams();
+                params.setMarginStart(32); // Espacio entre botones
+                positiveButton.setLayoutParams(params);
+            }
+
+            if (negativeButton != null) {
+                negativeButton.setAllCaps(false);
+                negativeButton.setText("Cancelar");
+                negativeButton.setTextColor(Color.parseColor("#18A0FB"));
+
+                // Crear borde personalizado
+                GradientDrawable borderDrawable = new GradientDrawable();
+                borderDrawable.setColor(Color.WHITE); // Fondo blanco
+                borderDrawable.setStroke(60, Color.parseColor("#18A0FB")); // Borde azul
+                borderDrawable.setCornerRadius(30); // Esquinas redondeadas
+
+                negativeButton.setBackground(borderDrawable);
+            }
+
+        });
+
+        dialog.show();
     }
+
+
+
 
     private void logout() {
         if (!isAdded()) return;
