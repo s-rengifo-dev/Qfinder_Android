@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -69,13 +68,6 @@ public class CitasFragment extends Fragment {
     private LayoutInflater currentInflater;
     private Context context;
 
-    // Variables para el calendario simple
-    private Button btnSelectDate;
-    private TextView tvSelectedDate;
-    private Calendar selectedCalendar = Calendar.getInstance();
-    private SimpleDateFormat dateDisplayFormat = new SimpleDateFormat("EEEE, d 'de' MMMM 'de' yyyy", new Locale("es", "ES"));
-    private SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_citas, container, false);
@@ -88,20 +80,10 @@ public class CitasFragment extends Fragment {
         Button btnAgregarRecordatorio = rootView.findViewById(R.id.btnAgregarRecordatorio);
         ImageView btnBack = rootView.findViewById(R.id.btnBack);
 
-        // Inicializar vistas del calendario simple
-        btnSelectDate = rootView.findViewById(R.id.btnSelectDate);
-        tvSelectedDate = rootView.findViewById(R.id.tvSelectedDate);
-
         // Configurar RecyclerView
         recyclerCitas.setLayoutManager(new LinearLayoutManager(getContext()));
         citaAdapter = new CitaAdapter(new ArrayList<>());
         recyclerCitas.setAdapter(citaAdapter);
-
-        // Mostrar fecha actual por defecto
-        updateSelectedDate();
-
-        // Listener para el botón de selección de fecha
-        btnSelectDate.setOnClickListener(v -> showDatePickerDialog());
 
         // Listener para el botón de agregar recordatorio
         btnAgregarRecordatorio.setOnClickListener(v -> mostrarDialogoAgregarRecordatorio());
@@ -125,31 +107,6 @@ public class CitasFragment extends Fragment {
 
         return rootView;
     }
-
-
-    private void showDatePickerDialog() {
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                requireContext(),
-                (view, year, month, dayOfMonth) -> {
-                    selectedCalendar.set(year, month, dayOfMonth);
-                    updateSelectedDate();
-
-                    // Mostrar citas para la fecha seleccionada
-                    if (selectedPatientId != -1) {
-                        mostrarCitasParaFecha(selectedCalendar);
-                    }
-                },
-                selectedCalendar.get(Calendar.YEAR),
-                selectedCalendar.get(Calendar.MONTH),
-                selectedCalendar.get(Calendar.DAY_OF_MONTH)
-        );
-        datePickerDialog.show();
-    }
-
-    private void updateSelectedDate() {
-        tvSelectedDate.setText("Fecha seleccionada: " + dateDisplayFormat.format(selectedCalendar.getTime()));
-    }
-
 
     private void loadPacientes() {
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
@@ -267,7 +224,7 @@ public class CitasFragment extends Fragment {
                     todasLasCitas = response.body();
                     Log.d(TAG, "Citas recibidas: " + todasLasCitas.size());
                     if (todasLasCitas != null && !todasLasCitas.isEmpty()) {
-                        mostrarCitasParaFecha(selectedCalendar);
+                        citaAdapter.updateData(todasLasCitas);
                     } else {
                         todasLasCitas = new ArrayList<>();
                         citaAdapter.updateData(new ArrayList<>());
@@ -287,28 +244,6 @@ public class CitasFragment extends Fragment {
                 citaAdapter.updateData(new ArrayList<>());
             }
         });
-    }
-
-    private void mostrarCitasParaFecha(Calendar calendar) {
-        if (calendar == null || todasLasCitas.isEmpty()) {
-            citaAdapter.updateData(new ArrayList<>());
-            return;
-        }
-
-        String fechaSeleccionada = apiDateFormat.format(calendar.getTime());
-
-        List<CitaMedica> citasParaFecha = new ArrayList<>();
-        for (CitaMedica cita : todasLasCitas) {
-            if (cita.getFechaCita() != null && cita.getFechaCita().startsWith(fechaSeleccionada)) {
-                citasParaFecha.add(cita);
-            }
-        }
-
-        citaAdapter.updateData(citasParaFecha);
-
-        if (citasParaFecha.isEmpty()) {
-            Toast.makeText(getContext(), "No hay citas para esta fecha", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void mostrarDialogoAgregarRecordatorio() {
@@ -331,6 +266,10 @@ public class CitasFragment extends Fragment {
         EditText etFechaRecordatorio = dialog.findViewById(R.id.etFechaCita);
         EditText etHoraCita = dialog.findViewById(R.id.etHoraCita);
 
+        // Configurar para que no se muestre el teclado al hacer click
+        etFechaRecordatorio.setShowSoftInputOnFocus(false);
+        etHoraCita.setShowSoftInputOnFocus(false);
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.estados_cita, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -346,33 +285,28 @@ public class CitasFragment extends Fragment {
         etFechaRecordatorio.setText(dateFormat.format(calendar.getTime()));
         etHoraCita.setText(timeFormat.format(calendar.getTime()));
 
-        etFechaRecordatorio.setOnClickListener(v -> {
-            Calendar cal = Calendar.getInstance();
-            DatePickerDialog datePickerDialog = new DatePickerDialog(context,
-                    (view, year, month, dayOfMonth) -> {
-                        String fechaSeleccionada = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
-                        etFechaRecordatorio.setText(fechaSeleccionada);
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH));
-            datePickerDialog.show();
+        // Configurar el selector de fecha
+        etFechaRecordatorio.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                showDatePicker(etFechaRecordatorio);
+            }
         });
 
-        etHoraCita.setOnClickListener(v -> {
-            Calendar cal = Calendar.getInstance();
-            TimePickerDialog timePickerDialog = new TimePickerDialog(context,
-                    (view, hourOfDay, minute) -> {
-                        String horaSeleccionada = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
-                        etHoraCita.setText(horaSeleccionada);
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    true);
-            timePickerDialog.show();
+        // También mantener el onClickListener por si acaso
+        etFechaRecordatorio.setOnClickListener(v -> showDatePicker(etFechaRecordatorio));
+
+        // Configurar el selector de hora
+        etHoraCita.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                showTimePicker(etHoraCita);
+            }
         });
+
+        // También mantener el onClickListener por si acaso
+        etHoraCita.setOnClickListener(v -> showTimePicker(etHoraCita));
 
         btnGuardar.setOnClickListener(v -> {
+            // ... (el resto del código para guardar permanece igual)
             String titulo = etTitulo.getText().toString().trim();
             String descripcion = etDescripcion.getText().toString().trim();
             String estado = spinnerEstado.getSelectedItem().toString().toLowerCase();
@@ -400,14 +334,13 @@ public class CitasFragment extends Fragment {
             }
 
             try {
-                // Parse date and time
+                // ... (resto del código de guardado)
                 SimpleDateFormat sdfFecha = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                 Date fecha = sdfFecha.parse(fechaStr);
 
                 SimpleDateFormat sdfHora = new SimpleDateFormat("HH:mm", Locale.getDefault());
                 Date hora = sdfHora.parse(horaStr);
 
-                // Combine fecha + hora para crear el campo fecha_cita completo en formato ISO 8601
                 Calendar fechaCitaCal = Calendar.getInstance();
                 fechaCitaCal.setTime(fecha);
                 Calendar horaCitaCal = Calendar.getInstance();
@@ -418,16 +351,13 @@ public class CitasFragment extends Fragment {
                 fechaCitaCal.set(Calendar.SECOND, 0);
                 fechaCitaCal.set(Calendar.MILLISECOND, 0);
 
-                // Formato requerido por el backend: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
                 SimpleDateFormat sdfFechaCitaApi = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
                 sdfFechaCitaApi.setTimeZone(TimeZone.getTimeZone("UTC"));
                 String fechaCita = sdfFechaCitaApi.format(fechaCitaCal.getTime());
 
-                // Solo la hora para el campo hora_cita
                 SimpleDateFormat sdfHoraApi = new SimpleDateFormat("HH:mm", Locale.getDefault());
                 String horaCita = sdfHoraApi.format(hora);
 
-                // Recordatorio: un día antes a las 08:00
                 Calendar reminderCal = Calendar.getInstance();
                 reminderCal.setTime(fecha);
                 reminderCal.add(Calendar.DAY_OF_YEAR, -1);
@@ -439,7 +369,6 @@ public class CitasFragment extends Fragment {
                 SimpleDateFormat sdfRecordatorioApi = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
                 String fechaRecordatorio = sdfRecordatorioApi.format(reminderCal.getTime());
 
-                // Crear objeto CitaMedica
                 CitaMedica nuevaCita = new CitaMedica();
                 nuevaCita.setTituloCita(titulo);
                 nuevaCita.setDescripcion(descripcion);
@@ -459,13 +388,39 @@ public class CitasFragment extends Fragment {
                 Toast.makeText(context, "Error al procesar fecha/hora", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Error al procesar fecha/hora", e);
             }
-
         });
 
         btnCancelar.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 
+    // Método auxiliar para mostrar el DatePicker
+    private void showDatePicker(EditText editText) {
+        Calendar calendar = Calendar.getInstance();
+        DatePickerDialog datePickerDialog = new DatePickerDialog(context,
+                (view, year, month, dayOfMonth) -> {
+                    String fechaSeleccionada = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                    editText.setText(fechaSeleccionada);
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.show();
+    }
+
+    // Método auxiliar para mostrar el TimePicker
+    private void showTimePicker(EditText editText) {
+        Calendar calendar = Calendar.getInstance();
+        TimePickerDialog timePickerDialog = new TimePickerDialog(context,
+                (view, hourOfDay, minute) -> {
+                    String horaSeleccionada = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
+                    editText.setText(horaSeleccionada);
+                },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                true);
+        timePickerDialog.show();
+    }
     private void guardarCita(CitaMedica cita) {
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
