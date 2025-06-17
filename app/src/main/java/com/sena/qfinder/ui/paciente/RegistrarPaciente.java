@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -58,23 +60,53 @@ public class RegistrarPaciente extends Fragment {
         btnRegistrar = view.findViewById(R.id.btnRegistrar);
         btnBack = view.findViewById(R.id.btnBack);
 
-        // Configurar selección de género
+        // Configurar selección de género (CON FIX PARA QUE SIEMPRE MUESTRE LAS 3 OPCIONES)
         String[] generos = {"masculino", "femenino", "otro"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, generos);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, generos) {
+            @Override
+            public Filter getFilter() {
+                return new Filter() {
+                    @Override
+                    protected FilterResults performFiltering(CharSequence constraint) {
+                        // Devuelve todas las opciones SIN FILTRAR
+                        FilterResults results = new FilterResults();
+                        results.values = generos;
+                        results.count = generos.length;
+                        return results;
+                    }
+
+                    @Override
+                    protected void publishResults(CharSequence constraint, FilterResults results) {
+                        if (results.count > 0) {
+                            notifyDataSetChanged();
+                        } else {
+                            notifyDataSetInvalidated();
+                        }
+                    }
+                };
+            }
+        };
+
         editSexo.setAdapter(adapter);
-        editSexo.setOnClickListener(v -> editSexo.showDropDown());
+        editSexo.setThreshold(1); // Mostrar opciones al primer caracter (o al hacer clic)
+
+// Al seleccionar un item (sin cerrar el dropdown)
         editSexo.setOnItemClickListener((parent, view1, position, id) -> {
             String seleccion = (String) parent.getItemAtPosition(position);
+            editSexo.setText(seleccion, false); // "false" para no filtrar
+
             if ("otro".equals(seleccion)) {
-                editSexo.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+                editSexo.setInputType(InputType.TYPE_CLASS_TEXT);
                 editSexo.setText("");
                 editSexo.setHint("Escribe tu género");
-            } else {
-                editSexo.setInputType(android.text.InputType.TYPE_NULL);
-                editSexo.setHint(null);
             }
         });
 
+// Mostrar dropdown al hacer clic/focus
+        editSexo.setOnClickListener(v -> editSexo.showDropDown());
+        editSexo.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) editSexo.showDropDown();
+        });
         // Configurar selector de fecha
         editFechaNacimiento.setOnClickListener(v -> showDatePickerDialog());
         editFechaNacimiento.setOnFocusChangeListener((v, hasFocus) -> {

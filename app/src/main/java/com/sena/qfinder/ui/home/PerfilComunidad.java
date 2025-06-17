@@ -1,11 +1,12 @@
 package com.sena.qfinder.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
@@ -18,22 +19,22 @@ import com.sena.qfinder.R;
 public class PerfilComunidad extends Fragment {
 
     private static final String ARG_PARAM1 = "nombreComunidad";
-    private static final String ARG_PARAM2 = "miembrosComunidad";
+    private static final String ARG_PARAM2 = "descripcionComunidad"; // Cambiado de miembros a descripción
     private static final String ARG_PARAM3 = "imagenComunidad";
 
     private String nombreComunidad;
-    private String miembrosComunidad;
+    private String descripcionComunidad; // Cambiado de miembros a descripción
     private String imagenRed;
 
     public PerfilComunidad() {
         // Constructor vacío requerido
     }
 
-    public static PerfilComunidad newInstance(String nombre, String miembros, String imagenUrl) {
+    public static PerfilComunidad newInstance(String nombre, String descripcion, String imagenUrl) {
         PerfilComunidad fragment = new PerfilComunidad();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, nombre);
-        args.putString(ARG_PARAM2, miembros);
+        args.putString(ARG_PARAM2, descripcion);
         args.putString(ARG_PARAM3, imagenUrl);
         fragment.setArguments(args);
         return fragment;
@@ -44,7 +45,7 @@ public class PerfilComunidad extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             nombreComunidad = getArguments().getString(ARG_PARAM1);
-            miembrosComunidad = getArguments().getString(ARG_PARAM2);
+            descripcionComunidad = getArguments().getString(ARG_PARAM2);
             imagenRed = getArguments().getString(ARG_PARAM3);
         }
     }
@@ -56,17 +57,20 @@ public class PerfilComunidad extends Fragment {
 
         // Referencias a vistas
         TextView tvNombre = view.findViewById(R.id.tvNombreComunidad);
-        TextView tvMiembros = view.findViewById(R.id.tvMiembrosComunidad);
+        TextView tvDescripcion = view.findViewById(R.id.tvMiembrosComunidad);
         ImageView imgComunidad = view.findViewById(R.id.imgComunidad);
-        ImageButton btnBack = view.findViewById(R.id.btnBack);
+        ImageView btnBack = view.findViewById(R.id.btnBack);
+        LinearLayout btnShared = view.findViewById(R.id.btnShared);
 
         // Mostrar los datos
         if (nombreComunidad != null) {
             tvNombre.setText(nombreComunidad);
         }
 
-        if (miembrosComunidad != null) {
-            tvMiembros.setText("Comunidad " + miembrosComunidad + " miembros");
+        if (descripcionComunidad != null && !descripcionComunidad.isEmpty()) {
+            tvDescripcion.setText(descripcionComunidad);
+        } else {
+            tvDescripcion.setText("Esta comunidad no tiene descripción");
         }
 
         // Cargar la imagen con Glide
@@ -78,7 +82,6 @@ public class PerfilComunidad extends Fragment {
                     .error(R.drawable.imgcomunidad)
                     .into(imgComunidad);
         } else {
-            // Si no hay imagen, mostrar una por defecto
             imgComunidad.setImageResource(R.drawable.imgcomunidad);
         }
 
@@ -91,6 +94,27 @@ public class PerfilComunidad extends Fragment {
             transaction.commit();
         });
 
+        // Acción del botón compartir
+        btnShared.setOnClickListener(v -> compartirComunidad());
+
         return view;
+    }
+
+    // Función para compartir comunidad
+    private void compartirComunidad() {
+        String nombre = nombreComunidad != null ? nombreComunidad : "Comunidad";
+        String descripcion = descripcionComunidad != null ? descripcionComunidad : "Sin descripción";
+
+        String mensaje = "¡Únete a nuestra comunidad!\n\n" +
+                "Nombre: " + nombre + "\n" +
+                "Descripción: " + descripcion + "\n" +
+                "Descubre más en la app QFinder.";
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "¡Te invito a una comunidad!");
+        intent.putExtra(Intent.EXTRA_TEXT, mensaje);
+
+        startActivity(Intent.createChooser(intent, "Compartir comunidad con..."));
     }
 }

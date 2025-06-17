@@ -9,6 +9,7 @@
     <string-array name="sexo_array">
         <item>masculino</item>
         <item>femenino</item>
+        <item>otro</item>
     </string-array>
     <string name="payment_success_title">¡Pago Exitoso!</string>
     <string name="payment_success_generic_message">Tu suscripción ha sido activada correctamente.</string>
@@ -148,6 +149,11 @@ Teléfono: 31022589685
     </string-array>
 
     <string name="fecha_prefix">Fecha: </string>
+
+    <string name="sexo_masculino">Masculino</string>
+    <string name="sexo_femenino">Femenino</string>
+    <string name="sexo_otro">Otro</string>
+    <string name="sexo_prefiero_no_decir">Prefiero no decir</string>
 
 </resources>
 

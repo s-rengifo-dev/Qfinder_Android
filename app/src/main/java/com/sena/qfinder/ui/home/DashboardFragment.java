@@ -23,6 +23,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -179,6 +180,8 @@ public class DashboardFragment extends Fragment {
 
         ImageView ivUserProfile = rootView.findViewById(R.id.ivUserProfile);
 
+        ivUserProfile.setOnClickListener(v -> openPerfilUsuarioFragment());
+
         Retrofit retrofit = ApiClient.getClient();
         AuthService authService = retrofit.create(AuthService.class);
         Call<PerfilUsuarioResponse> call = authService.obtenerPerfil("Bearer " + token);
@@ -223,6 +226,15 @@ public class DashboardFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void openPerfilUsuarioFragment() {
+        Fragment perfilFragment = new PerfilUsuario(); // Reemplaza con el nombre real del fragmento
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.fragment_container, perfilFragment); // Reemplaza con el ID de tu contenedor
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private void handleUserInfoFallback(SharedPreferences preferences, ImageView ivUserProfile) {
