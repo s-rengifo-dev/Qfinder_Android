@@ -68,13 +68,13 @@
     </RelativeLayout>
     <ImageButton
         android:id="@+id/btnEliminarColaborador"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:src="@drawable/deletered"
         android:background="@android:color/transparent"
         android:contentDescription="Eliminar colaborador"
-        android:tint="#FF0000"
+        android:tint="@color/black"
         android:scaleType="centerInside"
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="12dp"/>
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="30dp"/>
 </LinearLayout>

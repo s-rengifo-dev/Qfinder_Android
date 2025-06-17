@@ -227,6 +227,7 @@
                 android:layout_weight="1"
                 android:background="#EAF2FF"
                 android:padding="8dp" />
+
         </LinearLayout>
     </LinearLayout>
 

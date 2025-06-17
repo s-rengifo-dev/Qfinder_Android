@@ -25,6 +25,7 @@ import com.sena.qfinder.data.models.ActividadGetResponse;
 import com.sena.qfinder.data.models.ActividadListResponse;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.ui.home.DashboardFragment;
 import com.sena.qfinder.ui.home.Fragment_Serivicios;
 import com.sena.qfinder.ui.paciente.PatientAdapter;
 
@@ -102,8 +103,8 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-            Fragment_Serivicios serviciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
-            fragmentTransaction.replace(R.id.fragment_container, serviciosFragment); // Usa el ID correcto de tu contenedor
+            DashboardFragment DashBoardFragment = new DashboardFragment(); // Asegúrate de tener esta clase creada
+            fragmentTransaction.replace(R.id.fragment_container, DashBoardFragment); // Usa el ID correcto de tu contenedor
             fragmentTransaction.addToBackStack(null); // Opcional
             fragmentTransaction.commit();
         });

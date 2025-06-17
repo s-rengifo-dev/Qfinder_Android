@@ -108,27 +108,35 @@ public class GestionColaboradorFragment extends Fragment {
                     .into(imagen);
 
             btnEliminar.setOnClickListener(v -> {
-                Map<String, Integer> body = new HashMap<>();
-                body.put("id_usuario", colaborador.getId_usuario());
-                body.put("id_paciente", colaborador.getId_paciente());
+                new android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Confirmar eliminación")
+                        .setMessage("¿Estás seguro de que deseas eliminar este colaborador?")
+                        .setPositiveButton("Sí", (dialog, which) -> {
+                            Map<String, Integer> body = new HashMap<>();
+                            body.put("id_usuario", colaborador.getId_usuario());
+                            body.put("id_paciente", colaborador.getId_paciente());
 
-                authService.eliminarColaborador("Bearer " + token, body).enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            Toast.makeText(getContext(), "Colaborador eliminado", Toast.LENGTH_SHORT).show();
-                            cargarColaboradores(inflater);
-                        } else {
-                            Toast.makeText(getContext(), "Error al eliminar", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+                            authService.eliminarColaborador("Bearer " + token, body).enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    if (response.isSuccessful()) {
+                                        Toast.makeText(getContext(), "Colaborador eliminado", Toast.LENGTH_SHORT).show();
+                                        cargarColaboradores(inflater);
+                                    } else {
+                                        Toast.makeText(getContext(), "Error al eliminar", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
 
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        Toast.makeText(getContext(), "Fallo al eliminar", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Toast.makeText(getContext(), "Fallo al eliminar", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
             });
+
 
             containerColaboradores.addView(card);
         }

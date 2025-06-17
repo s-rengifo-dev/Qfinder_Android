@@ -46,6 +46,7 @@ import com.sena.qfinder.data.models.PacienteResponse;
 import com.sena.qfinder.data.models.AsignacionMedicamentoResponse;
 import com.sena.qfinder.database.DatabaseHelper;
 import com.sena.qfinder.database.entity.AlarmaEntity;
+import com.sena.qfinder.ui.home.DashboardFragment;
 import com.sena.qfinder.ui.home.Fragment_Serivicios;
 import com.sena.qfinder.utils.ActivityAlarmReceiver;
 
@@ -120,8 +121,10 @@ public class ListaAsignarMedicamentos extends Fragment {
         btnBack.setOnClickListener(v -> {
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.fragment_container, new Fragment_Serivicios());
-            fragmentTransaction.addToBackStack(null);
+
+            DashboardFragment DashBoardFragment = new DashboardFragment(); // Asegúrate de tener esta clase creada
+            fragmentTransaction.replace(R.id.fragment_container, DashBoardFragment); // Usa el ID correcto de tu contenedor
+            fragmentTransaction.addToBackStack(null); // Opcional
             fragmentTransaction.commit();
         });
 
