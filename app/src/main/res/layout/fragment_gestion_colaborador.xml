@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_colaboradores"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <!-- Botón para retroceder -->
+    <RelativeLayout
+        android:id="@+id/encabezado"
+        android:layout_width="match_parent"
+        android:layout_height="99dp">
+
+        <!-- Imagen de encabezado -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="99dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/top_nav_background" />
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="34dp"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/circle_azul"
+            android:contentDescription="Volver"
+            android:padding="10dp"
+            android:src="@drawable/img" />
+
+        <!-- Título sobre la imagen -->
+        <TextView
+            android:id="@+id/tituloServicios"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gestión Colaboradores"
+            android:textColor="#000000"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_centerInParent="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="33dp" />
+    </RelativeLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/containerColaboradores"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="32dp">
+
+            <!-- Aquí se agregan dinámicamente los pacientes -->
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- MUEVE EL BOTÓN AQUÍ -->
+</LinearLayout>

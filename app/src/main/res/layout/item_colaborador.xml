@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+
+    android:background="@drawable/bg_card"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginTop="12dp"
+    android:elevation="4dp">
+
+    <!-- Fondo azul y foto -->
+    <FrameLayout
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@drawable/esquina"
+        android:clipToPadding="false"
+        android:clipChildren="false">
+
+        <!-- Imagen del paciente (circular) -->
+        <ImageView
+            android:id="@+id/imagenColaborador"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/perfil_paciente"
+            android:background="@drawable/circle_mask"
+            android:layout_marginTop="6dp"/>
+
+    </FrameLayout>
+
+    <!-- Nombre, edad y enfermedad -->
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:paddingStart="12dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:id="@+id/nombreColaborador"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nombre Apellido"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#000000"/>
+
+        <TextView
+            android:id="@+id/correoColaborador"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="correo@ejemplo.com"
+            android:textSize="14sp"
+            android:textColor="#000000"
+            android:layout_marginTop="30dp"/>
+
+        <TextView
+            android:id="@+id/pacienteAsociado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:text="Paciente: Juan Carlos"
+            android:textColor="#000000"
+            android:textSize="14sp" />
+    </RelativeLayout>
+    <ImageButton
+        android:id="@+id/btnEliminarColaborador"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/deletered"
+        android:background="@android:color/transparent"
+        android:contentDescription="Eliminar colaborador"
+        android:tint="#FF0000"
+        android:scaleType="centerInside"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="12dp"/>
+</LinearLayout>
