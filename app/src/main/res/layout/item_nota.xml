@@ -22,16 +22,6 @@
         android:text="Descripción"
         android:textSize="14sp"
         android:paddingTop="4dp" />
-
-    <TextView
-        android:id="@+id/textSeveridad"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Severidad"
-        android:textSize="14sp"
-        android:paddingTop="4dp"
-        android:textColor="#D32F2F" />
-
     <TextView
         android:id="@+id/textFecha"
         android:layout_width="wrap_content"
