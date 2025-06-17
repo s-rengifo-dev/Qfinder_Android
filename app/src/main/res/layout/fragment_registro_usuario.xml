@@ -47,8 +47,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/text1RegUsuario"
+                    android:gravity="center"
                     android:textSize="24sp"
-                    android:layout_marginStart="20dp"
                     android:textColor="@color/black"/>
             </LinearLayout>
 
@@ -63,6 +63,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text2RegUsuario"
+                    android:gravity="center"
                     android:textColor="#202244"
                     android:textSize="28sp"
                     android:textStyle="bold"
