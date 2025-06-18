@@ -148,4 +148,12 @@
         <item name="boxStrokeWidthFocused">2dp</item>
     </style>
 
+    <style name="SexoInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="hintTextColor">@color/colorPrimary</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
 </resources>

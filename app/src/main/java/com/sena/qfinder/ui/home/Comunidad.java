@@ -74,12 +74,6 @@ public class Comunidad extends Fragment {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-//        FloatingActionButton fab = view.findViewById(R.id.fabAddComunidad);
-//        fab.setOnClickListener(v -> {
-//            Log.d(TAG, "Clic en botón añadir comunidad");
-//            mostrarDialogoCrearRed();
-//        });
-
         cargarRedes();
 
         return view;
@@ -156,102 +150,6 @@ public class Comunidad extends Fragment {
         });
     }
 
-    private void mostrarDialogoCrearRed() {
-        Log.d(TAG, "Mostrando diálogo para crear red");
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Nueva red");
-
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_crear_comunidad, null);
-        EditText etNombre = dialogView.findViewById(R.id.etNombreComunidad);
-        EditText etDescripcion = dialogView.findViewById(R.id.etMiembrosComunidad);
-        builder.setView(dialogView);
-
-        builder.setPositiveButton("Crear", (dialog, which) -> {
-            String nombre = etNombre.getText().toString().trim();
-            String descripcion = etDescripcion.getText().toString().trim();
-            Log.d(TAG, "Datos ingresados - Nombre: " + nombre + ", Descripción: " + descripcion);
-
-            if (!nombre.isEmpty()) {
-                crearRed(nombre, descripcion);
-            } else {
-                Log.w(TAG, "Intento de crear red sin nombre");
-                Toast.makeText(getContext(), "El nombre es obligatorio", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        builder.setNegativeButton("Cancelar", null);
-        builder.show();
-    }
-
-    private void crearRed(String nombre, String descripcion) {
-        Log.d(TAG, "Creando red con nombre: " + nombre);
-        String token = sharedPreferences.getString("token", null);
-        if (token == null) {
-            Log.e(TAG, "Token no encontrado al crear red");
-            Toast.makeText(getContext(), "Sesión no válida", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        progressBar.setVisibility(View.VISIBLE);
-        Log.d(TAG, "Mostrando ProgressBar");
-
-        RedRequest request = new RedRequest(nombre, descripcion);
-        AuthService authService = ApiClient.getClient().create(AuthService.class);
-        Call<RedResponse> call = authService.crearRed("Bearer " + token, request);
-        Log.d(TAG, "Realizando llamada a crearRed");
-
-        call.enqueue(new Callback<RedResponse>() {
-            @Override
-            public void onResponse(Call<RedResponse> call, Response<RedResponse> response) {
-                progressBar.setVisibility(View.GONE);
-                Log.d(TAG, "Respuesta recibida. Código: " + response.code());
-
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        Log.d(TAG, "Respuesta completa: " + response.body().toString());
-
-                        if (response.body().isSuccess()) {
-                            Log.d(TAG, "Red creada exitosamente");
-                            Toast.makeText(getContext(), "Red creada exitosamente", Toast.LENGTH_SHORT).show();
-                            cargarRedes();
-                        } else {
-                            Log.e(TAG, "Success: false en la respuesta");
-                            Log.e(TAG, "Mensaje del servidor: " + response.body().getMessage());
-                            Toast.makeText(getContext(), "Error: " + response.body().getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Log.e(TAG, "Cuerpo de respuesta vacío");
-                        try {
-                            if (response.errorBody() != null) {
-                                Log.e(TAG, "Error body: " + response.errorBody().string());
-                            }
-                        } catch (IOException e) {
-                            Log.e(TAG, "Error al leer errorBody", e);
-                        }
-                        Toast.makeText(getContext(), "Error en la respuesta del servidor", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Log.e(TAG, "Respuesta no exitosa");
-                    try {
-                        if (response.errorBody() != null) {
-                            Log.e(TAG, "Error body: " + response.errorBody().string());
-                        }
-                    } catch (IOException e) {
-                        Log.e(TAG, "Error al leer errorBody", e);
-                    }
-                    Toast.makeText(getContext(), "Error al crear red. Código: " + response.code(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<RedResponse> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Log.e(TAG, "Error en la llamada: " + t.getMessage(), t);
-                Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     private class ComunidadAdapter extends RecyclerView.Adapter<ComunidadAdapter.ViewHolder> {
 
         private Context context;
@@ -304,25 +202,21 @@ public class Comunidad extends Fragment {
             Log.d(TAG, "Enlazando red: " + red.getNombre_red());
 
             holder.nombre.setText(red.getNombre_red());
-            holder.miembros.setText(red.getDescripcion_red() != null ? red.getDescripcion_red() : "");
 
             // Cargar imagen con Glide
             if (red.getImagen_red() != null && !red.getImagen_red().isEmpty()) {
                 Glide.with(context)
                         .load(red.getImagen_red())
-                        .placeholder(R.drawable.imgcomunidad) // Imagen mientras carga
-                        .error(R.drawable.imgcomunidad) // Imagen si hay error
-                        .circleCrop() // Para imágenes circulares
+                        .placeholder(R.drawable.imgcomunidad)
+                        .error(R.drawable.imgcomunidad)
+                        .circleCrop()
                         .into(holder.imgComunidad);
             } else {
-                // Si no hay imagen, mostrar la por defecto
                 holder.imgComunidad.setImageResource(R.drawable.imgcomunidad);
             }
 
-
             boolean unido = obtenerEstadoUnion(red.getNombre_red());
 
-            // Mostrar solo el botón Unirme si no está unido
             if (unido) {
                 holder.btnUnirme.setVisibility(View.GONE);
             } else {
@@ -331,7 +225,6 @@ public class Comunidad extends Fragment {
                 holder.btnUnirme.setBackgroundColor(context.getResources().getColor(R.color.azul_link));
             }
 
-            // Configurar clic en el botón Unirme
             holder.btnUnirme.setOnClickListener(v -> {
                 Log.d(TAG, "Uniendose a la red: " + red.getNombre_red());
                 guardarEstadoUnion(red.getNombre_red(), true);
@@ -340,13 +233,13 @@ public class Comunidad extends Fragment {
                 abrirChatComunidad(red);
             });
 
-            // Configurar clic en la imagen de la comunidad
             holder.imgComunidad.setOnClickListener(view -> {
                 Log.d(TAG, "Abriendo perfil de la red: " + red.getNombre_red());
                 PerfilComunidad pf = PerfilComunidad.newInstance(
-                        red.getNombre_red(),
-                        red.getDescripcion_red() != null ? red.getDescripcion_red() : "",
-                        red.getImagen_red() // Asegúrate de que RedResponse tenga este campo
+                        red.getNombre_red()
+                        ,red.getDescripcion_red(),
+                        // Descripción vacía
+                        red.getImagen_red()
                 );
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
                 transaction.replace(R.id.fragment_container, pf);
@@ -358,7 +251,6 @@ public class Comunidad extends Fragment {
         private void abrirChatComunidad(RedResponse red) {
             boolean unido = obtenerEstadoUnion(red.getNombre_red());
             if (unido) {
-                // Pasar tanto el nombre como la imagen de la red
                 ChatComunidad chat = ChatComunidad.newInstance(red.getNombre_red(), red.getImagen_red());
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
                 transaction.replace(R.id.fragment_container, chat);
@@ -390,7 +282,7 @@ public class Comunidad extends Fragment {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            TextView nombre, miembros;
+            TextView nombre;
             ImageView imgComunidad;
             Button btnUnirme;
             CardView cardComunidad;
@@ -398,7 +290,6 @@ public class Comunidad extends Fragment {
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
                 nombre = itemView.findViewById(R.id.nombre_comunidad);
-                miembros = itemView.findViewById(R.id.miembros_comunidad);
                 imgComunidad = itemView.findViewById(R.id.imgComunidad);
                 btnUnirme = itemView.findViewById(R.id.btnUnirme1);
                 cardComunidad = itemView.findViewById(R.id.cardComunidad);

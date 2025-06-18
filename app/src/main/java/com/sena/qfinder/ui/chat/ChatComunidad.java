@@ -38,6 +38,7 @@ import com.sena.qfinder.data.api.AuthService;
 import com.sena.qfinder.data.services.ChatService;
 import com.sena.qfinder.data.models.Mensaje;
 import com.sena.qfinder.data.models.RedResponse;
+import com.sena.qfinder.ui.home.PerfilComunidad;
 import com.sena.qfinder.utils.Constants;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -82,6 +83,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
     private Button btnEnviar;
     private Button btnUnirmeComunidad;
     private Button btnAbandonarComunidad;
+    private Button informacion;
     private ImageView volverComunidad;
     private TextView txtTitulo;
 
@@ -191,6 +193,7 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         btnAbandonarComunidad = view.findViewById(R.id.btnAbandonarComunidad);
         txtTitulo = view.findViewById(R.id.txtTitulo);
         volverComunidad = view.findViewById(R.id.btnvolver);
+        informacion = view.findViewById(R.id.btnInfo);
 
         ImageView imgComunidadHeader = view.findViewById(R.id.imgComunidad);
 
@@ -234,6 +237,12 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
             }
         });
 
+        informacion.setOnClickListener(v -> {
+                    if (validarSesion()) {
+                        navegarAPerfilComunidad();
+                    }
+                });
+
         etMensaje.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEND) {
                 enviarMensaje();
@@ -249,6 +258,31 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
         });
     }
 
+
+    private void navegarAPerfilComunidad() {
+        requireActivity().runOnUiThread(() -> {
+            // Obtener los datos necesarios
+            String nombre = nombreComunidad;
+            String imagenUrl = getArguments() != null ? getArguments().getString("imagen_red") : null;
+            String descripcion = sharedPreferences.getString("descripcion_comunidad", "Descripción no disponible");
+
+            // Crear instancia del fragmento PerfilComunidad con los datos
+            PerfilComunidad perfilFragment = PerfilComunidad.newInstance(
+                    nombre,
+                    descripcion,
+                    imagenUrl
+            );
+
+            // Configurar la transacción
+            FragmentTransaction transaction = requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction();
+
+            transaction.replace(R.id.fragment_container, perfilFragment);
+            transaction.addToBackStack("chat_a_perfil"); // Para poder volver al chat
+            transaction.commit();
+        });
+    }
     private void mostrarDialogoConfirmacionAbandono() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Abandonar Comunidad")
@@ -450,6 +484,13 @@ public class ChatComunidad extends Fragment implements ChatService.ChatCallback 
                         Log.d(TAG, "ID de red obtenido: " + idRed);
 
                         String imagenRed = apiResponse.getImagen_red();
+                        String descripcionRed = apiResponse.getDescripcion_red();
+
+                        // Guardar la descripción para usarla luego
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("descripcion_comunidad", descripcionRed);
+                        editor.apply();
+
                         Log.d(TAG, "Imagen de la red: " + imagenRed);
                         mostrarImagenRed(imagenRed);
 

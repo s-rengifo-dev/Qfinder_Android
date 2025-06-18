@@ -3,177 +3,132 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     tools:context=".ui.home.PerfilComunidad">
 
-    <!-- TODO: Update blank fragment layout -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="30dp"
-        >
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_height="match_parent">
+        android:fillViewport="true">
 
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_marginLeft="20dp"
-                android:src="@drawable/back"
-                android:scaleType="fitCenter"
-                android:background="@color/white"
-                />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <!-- Imagen circular -->
-            <ImageView
-                android:id="@+id/imgComunidad"
-                android:layout_width="110dp"
-                android:layout_height="110dp"
-                android:layout_gravity="center_horizontal"
-                android:scaleType="centerCrop"
-                android:background="@drawable/circle_azul"
-                android:padding="12dp" />
-
-            <!-- Nombre y miembros -->
-            <TextView
-                android:id="@+id/tvNombreComunidad"
-                android:layout_width="wrap_content"
+            <!-- Header with back button -->
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Titulo de comunidad"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="8dp"
-                android:layout_gravity="center_horizontal"/>
+                android:padding="16dp"
+                android:background="@android:color/white">
 
-            <TextView
-                android:id="@+id/tvMiembrosComunidad"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Numero de integrantes"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp"/>
+                <ImageView
+                    android:id="@+id/btnBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentStart="true"
+                    android:background="@drawable/circle_azul"
+                    android:padding="10dp"
+                    android:src="@drawable/img"
+                    android:contentDescription="Volver"
+                    android:elevation="4dp"/>
 
-            <!-- Botones -->
+            </RelativeLayout>
+
+            <!-- Community profile section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:padding="16dp">
 
-                android:layout_marginTop="16dp">
+                <!-- Profile image with border -->
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:elevation="8dp">
 
+                    <ImageView
+                        android:id="@+id/imgComunidad"
+                        android:layout_width="140dp"
+                        android:layout_height="140dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/circle_azul"
+                        android:padding="4dp"/>
+                </FrameLayout>
 
+                <!-- Name and members -->
+                <TextView
+                    android:id="@+id/tvNombreComunidad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Titulo de comunidad"
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp"
+                    android:textStyle="bold"/>
+
+                <!-- Description container -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@android:color/white"
+                    android:layout_marginTop="12dp"
+                    android:elevation="2dp"
+                    android:padding="16dp"
+                    android:layout_marginHorizontal="8dp" >
+
+                    <TextView
+                        android:id="@+id/tvMiembrosComunidad"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Descripcion de comunidad"
+                        android:textColor="#80000000"
+                        android:textSize="16sp"
+                        android:gravity="center"/>
+                </LinearLayout>
+
+                <!-- Share button with improved style -->
                 <LinearLayout
                     android:id="@+id/btnShared"
-                    android:layout_width="180dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
+                    android:layout_width="220dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="24dp"
                     android:background="@drawable/shapeeste"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="10dp">
+                    android:orientation="horizontal"
+                    android:padding="12dp"
+                    android:elevation="2dp">
 
                     <ImageView
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
-                        android:src="@drawable/compartiricono" />
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/compartiricono"
+                        android:tint="@android:color/black"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="Compartir"
-                        android:textColor="#000000"
-                        android:textSize="19sp" />
+                        android:text="Compartir comunidad"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
                 </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="16dp"
-            android:background="#000000"/>
-            <!-- Descripción -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-            <TextView
-                android:id="@+id/textDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:textColor="@color/black"
-                android:text="Descripción de la comunidad"
-                android:layout_marginTop="17dp"/>
-
-            <!-- Fecha de creación -->
-            <TextView
-                android:id="@+id/textCreatedAt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:text="Se creó el 29/04/2025"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
+            <!-- Divider -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#000000"
-                android:layout_marginTop="16dp"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+                android:layout_marginVertical="8dp"
+                android:background="#10000000"/>
 
-            <Button
-                android:id="@+id/btnsalirComunidad"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="false"
-                android:text="Salir de la comunidad"
-                android:textColor="@color/rojopasion"
-                android:drawablePadding="10dp"
-                android:fontFamily="sans-serif-medium"
-                android:textSize="20sp"
-                android:paddingHorizontal="0dp"
-                android:background="@android:color/transparent"
-                android:layout_alignParentBottom="true"
-                android:drawableLeft="@drawable/salircomunidad"/>
-
-            <Button
-                android:id="@+id/dislike"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="false"
-                android:layout_marginTop="15dp"
-                android:text="Reportar canal"
-                android:textColor="@color/rojopasion"
-                android:drawablePadding="10dp"
-                android:fontFamily="sans-serif-medium"
-                android:textSize="20sp"
-                android:paddingHorizontal="0dp"
-                android:background="@android:color/transparent"
-                android:layout_alignParentBottom="true"
-                android:drawableLeft="@drawable/dislike"/>
-        </LinearLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#000000"/>
-    </LinearLayout>
+               </LinearLayout>
     </ScrollView>
-
 </FrameLayout>
