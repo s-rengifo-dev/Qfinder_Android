@@ -28,7 +28,15 @@
         android:layout_height="wrap_content"
         android:text="Fecha"
         android:textSize="12sp"
-        android:textColor="#757575"
+        android:textColor="@color/black"
+        android:paddingTop="2dp" />
+    <TextView
+        android:id="@+id/textHora"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hora:"
+        android:textSize="12sp"
+        android:textColor="@color/black"
         android:paddingTop="2dp" />
 
 </LinearLayout>
