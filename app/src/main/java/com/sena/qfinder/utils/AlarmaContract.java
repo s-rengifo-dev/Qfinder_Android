@@ -9,6 +9,8 @@ public class AlarmaContract {
     public static final String COLUMN_HORA = "hora";
     public static final String COLUMN_TIMESTAMP = "timestamp";
     public static final String COLUMN_ACTIVE = "active";
+    public static final String COLUMN_RECURRENTE = "recurrente";
+    public static final String COLUMN_INTERVALO = "intervalo";
 
     public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME + " (" +
@@ -18,7 +20,9 @@ public class AlarmaContract {
                     COLUMN_FECHA + " TEXT," +
                     COLUMN_HORA + " TEXT," +
                     COLUMN_TIMESTAMP + " INTEGER," +
-                    COLUMN_ACTIVE + " INTEGER)";
+                    COLUMN_ACTIVE + " INTEGER," +
+                    COLUMN_RECURRENTE + " INTEGER," +
+                    COLUMN_INTERVALO + " INTEGER)";
 
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + TABLE_NAME;

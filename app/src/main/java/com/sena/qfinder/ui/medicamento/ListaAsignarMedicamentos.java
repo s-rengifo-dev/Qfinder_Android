@@ -8,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -49,6 +50,7 @@ import com.sena.qfinder.database.entity.AlarmaEntity;
 import com.sena.qfinder.ui.home.DashboardFragment;
 import com.sena.qfinder.ui.home.Fragment_Serivicios;
 import com.sena.qfinder.utils.ActivityAlarmReceiver;
+import com.sena.qfinder.utils.AlarmReceiver;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -140,27 +142,25 @@ public class ListaAsignarMedicamentos extends Fragment {
         if (listarMedicamentosCall != null) listarMedicamentosCall.cancel();
     }
 
-    private void programarAlarmaMedicamento(PacienteMedicamento asignacion) {
-        if (asignacion == null) {
-            Log.e("AlarmaMedicamento", "La asignación es nula");
-            return;
-        }
-
+    private void programarAlarmaMedicamento(PacienteMedicamento pm) {
         try {
-            if (asignacion.getFecha_inicio() == null || asignacion.getFrecuencia() == null || asignacion.getHora_inicio() == null) {
-                Log.e("AlarmaMedicamento", "Faltan campos requeridos en la asignación");
+            if (pm == null || pm.getFecha_inicio() == null ||
+                    pm.getFrecuencia() == null || pm.getHora_inicio() == null) {
+                Log.e("AlarmaMedicamento", "Datos incompletos en PacienteMedicamento");
                 return;
             }
 
-            String[] partesFrecuencia = asignacion.getFrecuencia().split(" ");
+            // Parsear frecuencia (ejemplo: "2 horas", "1 día", "30 minutos")
+            String[] partesFrecuencia = pm.getFrecuencia().split(" ");
             if (partesFrecuencia.length < 2) {
-                Log.e("AlarmaMedicamento", "Formato de frecuencia inválido: " + asignacion.getFrecuencia());
+                Log.e("AlarmaMedicamento", "Formato de frecuencia inválido: " + pm.getFrecuencia());
                 return;
             }
 
             int cantidad = Integer.parseInt(partesFrecuencia[0]);
-            String unidad = partesFrecuencia[1];
+            String unidad = partesFrecuencia[1].toLowerCase();
 
+            // Calcular intervalo en milisegundos
             long intervaloMillis = calcularIntervaloMillis(cantidad, unidad);
             if (intervaloMillis <= 0) {
                 Log.e("AlarmaMedicamento", "Intervalo inválido calculado");
@@ -168,44 +168,96 @@ public class ListaAsignarMedicamentos extends Fragment {
             }
 
             // Parsear hora de inicio
-            String[] partesHora = asignacion.getHora_inicio().split(":");
+            String[] partesHora = pm.getHora_inicio().split(":");
             int hora = Integer.parseInt(partesHora[0]);
             int minutos = Integer.parseInt(partesHora[1]);
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             Calendar calendar = Calendar.getInstance();
-            calendar.setTime(sdf.parse(asignacion.getFecha_inicio()));
+            calendar.setTime(sdf.parse(pm.getFecha_inicio()));
 
+            // Configurar hora inicial
             calendar.set(Calendar.HOUR_OF_DAY, hora);
             calendar.set(Calendar.MINUTE, minutos);
             calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
 
-            String nombreMedicamento = "Medicamento";
-            String titulo = "Tomar medicamento: " + nombreMedicamento;
-            String descripcion = "Dosis: " + (asignacion.getDosis() != null ? asignacion.getDosis() : "No especificada") + "\n" +
-                    "Frecuencia: " + asignacion.getFrecuencia();
+            // Si la fecha/hora ya pasó, calcular la próxima ocurrencia
+            Calendar ahora = Calendar.getInstance();
+            if (calendar.before(ahora)) {
+                long diferencia = ahora.getTimeInMillis() - calendar.getTimeInMillis();
+                long ocurrenciasPasadas = diferencia / intervaloMillis;
+                calendar.setTimeInMillis(calendar.getTimeInMillis() + (ocurrenciasPasadas + 1) * intervaloMillis);
+            }
 
-            int alarmaId = asignacion.getId_pac_medicamento();
+            // Configurar información de la alarma
+            String titulo = "Tomar medicamento (ID: " + pm.getId_medicamento() + ")";
+            String descripcion = "Dosis: " + pm.getDosis() + "\n" +
+                    "Frecuencia: " + pm.getFrecuencia();
 
+            int alarmaId = pm.getId_pac_medicamento();
+
+            // Programar la alarma inicial
             ActivityAlarmReceiver.programarAlarma(
                     requireContext(),
                     alarmaId,
                     titulo,
                     descripcion,
                     sdf.format(calendar.getTime()),
-                    asignacion.getHora_inicio(),
+                    pm.getHora_inicio(),
                     calendar.getTimeInMillis()
             );
 
+            // Programar alarmas recurrentes si es necesario
+            if (intervaloMillis > 0) {
+                AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(requireContext(), AlarmReceiver.class);
+                intent.putExtra("actividad_id", alarmaId);
+                intent.putExtra("titulo", titulo);
+                intent.putExtra("descripcion", descripcion);
+                intent.putExtra("fecha", sdf.format(calendar.getTime()));
+                intent.putExtra("hora", pm.getHora_inicio());
+                intent.putExtra("es_recurrente", true);
+                intent.putExtra("intervalo_millis", intervaloMillis);
+
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                        requireContext(),
+                        alarmaId,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                );
+
+                if (alarmManager != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        alarmManager.setRepeating(
+                                AlarmManager.RTC_WAKEUP,
+                                calendar.getTimeInMillis(),
+                                intervaloMillis,
+                                pendingIntent
+                        );
+                    } else {
+                        alarmManager.setInexactRepeating(
+                                AlarmManager.RTC_WAKEUP,
+                                calendar.getTimeInMillis(),
+                                intervaloMillis,
+                                pendingIntent
+                        );
+                    }
+                }
+            }
+
+            // Guardar en base de datos
             DatabaseHelper dbHelper = DatabaseHelper.getInstance(requireContext());
             AlarmaEntity alarma = new AlarmaEntity(
                     alarmaId,
                     titulo,
                     descripcion,
                     sdf.format(calendar.getTime()),
-                    asignacion.getHora_inicio(),
+                    pm.getHora_inicio(),
                     calendar.getTimeInMillis(),
-                    true
+                    true,
+                    intervaloMillis > 0, // esRecurrente
+                    intervaloMillis
             );
             dbHelper.guardarAlarma(alarma);
 
@@ -213,92 +265,48 @@ public class ListaAsignarMedicamentos extends Fragment {
             Log.e("AlarmaMedicamento", "Error al programar alarma", e);
             Toast.makeText(getContext(), "Error al programar alarma", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void programarAlarmaMedicamento(AsignacionMedicamentoResponse asignacion) {
-        try {
-            if (asignacion == null || asignacion.getFechaInicio() == null ||
-                    asignacion.getFrecuencia() == null || asignacion.getMedicamento() == null ||
-                    asignacion.getHoraInicio() == null) {
-                return;
-            }
-
-            String[] partesFrecuencia = asignacion.getFrecuencia().split(" ");
-            if (partesFrecuencia.length < 2) return;
-
-            int cantidad = Integer.parseInt(partesFrecuencia[0]);
-            String unidad = partesFrecuencia[1];
-
-            long intervaloMillis = calcularIntervaloMillis(cantidad, unidad);
-            if (intervaloMillis <= 0) return;
-
-            // Parsear hora de inicio
-            String[] partesHora = asignacion.getHoraInicio().split(":");
-            int hora = Integer.parseInt(partesHora[0]);
-            int minutos = Integer.parseInt(partesHora[1]);
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(sdf.parse(asignacion.getFechaInicio()));
-
-            calendar.set(Calendar.HOUR_OF_DAY, hora);
-            calendar.set(Calendar.MINUTE, minutos);
-            calendar.set(Calendar.SECOND, 0);
-
-            String titulo = "Tomar medicamento: " + asignacion.getMedicamento().getNombre();
-            String descripcion = "Dosis: " + asignacion.getDosis() + "\n" +
-                    "Frecuencia: " + asignacion.getFrecuencia();
-
-            int alarmaId = asignacion.getIdAsignacion();
-
-            ActivityAlarmReceiver.programarAlarma(
-                    requireContext(),
-                    alarmaId,
-                    titulo,
-                    descripcion,
-                    sdf.format(calendar.getTime()),
-                    asignacion.getHoraInicio(),
-                    calendar.getTimeInMillis()
-            );
-
-            DatabaseHelper dbHelper = DatabaseHelper.getInstance(requireContext());
-            AlarmaEntity alarma = new AlarmaEntity(
-                    alarmaId,
-                    titulo,
-                    descripcion,
-                    sdf.format(calendar.getTime()),
-                    asignacion.getHoraInicio(),
-                    calendar.getTimeInMillis(),
-                    true
-            );
-            dbHelper.guardarAlarma(alarma);
-
-        } catch (Exception e) {
-            Log.e("AlarmaMedicamento", "Error al programar alarma", e);
-        }
-    }
-
-    private long calcularIntervaloMillis(int cantidad, String unidad) {
+    }    private long calcularIntervaloMillis(int cantidad, String unidad) {
         switch (unidad.toLowerCase()) {
+            case "hora":
             case "horas":
                 return cantidad * 60 * 60 * 1000L;
-            case "días":
+            case "día":
             case "dias":
+            case "días":
                 return cantidad * 24 * 60 * 60 * 1000L;
+            case "minuto":
             case "minutos":
                 return cantidad * 60 * 1000L;
+            case "semana":
+            case "semanas":
+                return cantidad * 7 * 24 * 60 * 60 * 1000L;
             default:
+                Log.e("Frecuencia", "Unidad de tiempo no reconocida: " + unidad);
                 return 0;
         }
     }
-
     private void cancelarAlarmaMedicamento(int idAsignacion) {
+        // Cancelar alarma principal
         ActivityAlarmReceiver.cancelarAlarma(requireContext(), idAsignacion);
 
+        // Cancelar alarmas recurrentes
+        AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(requireContext(), AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                requireContext(),
+                idAsignacion,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
+
+        // Eliminar de la base de datos
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(requireContext());
         dbHelper.eliminarAlarma(idAsignacion);
     }
-
     private void asignarMedicamento(AsignarMedicamentoRequest request, AlertDialog dialog) {
         showLoading(true);
         sharedPreferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
@@ -565,7 +573,18 @@ public class ListaAsignarMedicamentos extends Fragment {
                 .setMessage("¿Qué deseas hacer con las alarmas de este medicamento?")
                 .setPositiveButton("Reprogramar", (dialog, which) -> {
                     cancelarAlarmaMedicamento(asignacion.getIdAsignacion());
-                    programarAlarmaMedicamento(asignacion);
+
+                    // Convertir AsignacionMedicamentoResponse a PacienteMedicamento
+                    PacienteMedicamento pm = new PacienteMedicamento();
+                    pm.setId_pac_medicamento(asignacion.getIdAsignacion());
+                    pm.setFecha_inicio(asignacion.getFechaInicio());
+                    pm.setFecha_fin(asignacion.getFechaFin());
+                    pm.setHora_inicio(asignacion.getHoraInicio());
+                    pm.setDosis(asignacion.getDosis());
+                    pm.setFrecuencia(asignacion.getFrecuencia());
+
+                    programarAlarmaMedicamento(pm); // Ahora funciona
+
                     Toast.makeText(getContext(), "Alarmas reprogramadas", Toast.LENGTH_SHORT).show();
                     if (selectedPatientId != -1) {
                         cargarMedicamentosPaciente(selectedPatientId);
@@ -581,7 +600,6 @@ public class ListaAsignarMedicamentos extends Fragment {
                 .setNeutralButton("Cerrar", null)
                 .show();
     }
-
     private void setupPatientsSection(View rootView, LayoutInflater inflater) {
         HorizontalScrollView horizontalScrollView = new HorizontalScrollView(getContext());
         horizontalScrollView.setLayoutParams(new LinearLayout.LayoutParams(

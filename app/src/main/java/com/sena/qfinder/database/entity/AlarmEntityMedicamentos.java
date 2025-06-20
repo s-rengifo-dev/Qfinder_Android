@@ -1,6 +1,6 @@
 package com.sena.qfinder.database.entity;
 
-public class AlarmaEntity {
+public class AlarmEntityMedicamentos {
     private int id;
     private String titulo;
     private String descripcion;
@@ -11,8 +11,7 @@ public class AlarmaEntity {
     private boolean esRecurrente;
     private long intervaloMillis;
 
-    // Constructor completo (9 parámetros)
-    public AlarmaEntity(int id, String titulo, String descripcion,
+    public AlarmEntityMedicamentos(int id, String titulo, String descripcion,
                         String fecha, String hora, long timestamp,
                         boolean active, boolean esRecurrente, long intervaloMillis) {
         this.id = id;
@@ -26,15 +25,7 @@ public class AlarmaEntity {
         this.intervaloMillis = intervaloMillis;
     }
 
-    // Constructor alternativo (7 parámetros) para alarmas no recurrentes
-    public AlarmaEntity(int id, String titulo, String descripcion,
-                        String fecha, String hora, long timestamp,
-                        boolean active) {
-        this(id, titulo, descripcion, fecha, hora, timestamp,
-                active, false, 0L);
-    }
-
-    // Getters y Setters
+    // Getters y Setters usando nomenclatura Java estándar
     public int getId() {
         return id;
     }
