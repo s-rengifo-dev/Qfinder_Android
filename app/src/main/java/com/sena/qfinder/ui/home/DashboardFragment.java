@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -625,18 +626,32 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupMedicationsSection() {
-        if (rvMedications == null) {
-            rvMedications = rootView.findViewById(R.id.rvMedications);
-            if (rvMedications == null) return;
+        // Inicializar vistas
+        rvMedications = rootView.findViewById(R.id.rvMedications);
+        ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
+        TextView tvNoMedications = rootView.findViewById(R.id.tvNoMedications);
+
+        // Configurar RecyclerView
+        if (rvMedications != null) {
             rvMedications.setLayoutManager(new LinearLayoutManager(getContext()));
         }
 
-        ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
+        // Estado inicial
         progressBar.setVisibility(View.VISIBLE);
+        if (rvMedications != null) {
+            rvMedications.setVisibility(View.GONE);
+        }
+        if (tvNoMedications != null) {
+            tvNoMedications.setVisibility(View.GONE);
+        }
 
         Context context = getContext();
         if (context == null) {
             progressBar.setVisibility(View.GONE);
+            if (tvNoMedications != null) {
+                tvNoMedications.setVisibility(View.VISIBLE);
+                tvNoMedications.setText("Error de contexto");
+            }
             return;
         }
 
@@ -645,15 +660,31 @@ public class DashboardFragment extends Fragment {
 
         if (token == null) {
             progressBar.setVisibility(View.GONE);
+            if (tvNoMedications != null) {
+                tvNoMedications.setVisibility(View.VISIBLE);
+                tvNoMedications.setText("No autenticado");
+            }
             return;
         }
 
+        // Si no hay paciente seleccionado
+        if (selectedPatientId == -1) {
+            progressBar.setVisibility(View.GONE);
+            if (rvMedications != null) {
+                rvMedications.setVisibility(View.GONE);
+            }
+            if (tvNoMedications != null) {
+                tvNoMedications.setVisibility(View.VISIBLE);
+                tvNoMedications.setText("Seleccione un paciente");
+            }
+            return;
+        }
+
+        // Configurar Retrofit y llamada API
         Retrofit retrofit = ApiClient.getClient();
         AuthService authService = retrofit.create(AuthService.class);
 
-        int pacienteId = selectedPatientId != -1 ? selectedPatientId : -1;
-
-        Call<List<AsignacionMedicamentoResponse>> call = authService.listarAsignacionesMedicamentos("Bearer " + token, pacienteId);
+        Call<List<AsignacionMedicamentoResponse>> call = authService.listarAsignacionesMedicamentos("Bearer " + token, selectedPatientId);
         activeCalls.add(call);
 
         call.enqueue(new Callback<List<AsignacionMedicamentoResponse>>() {
@@ -668,8 +699,15 @@ public class DashboardFragment extends Fragment {
                     List<AsignacionMedicamentoResponse> asignaciones = response.body();
 
                     if (asignaciones != null && !asignaciones.isEmpty()) {
-                        List<Medication> medications = new ArrayList<>();
+                        // Caso: Hay medicamentos
+                        if (rvMedications != null) {
+                            rvMedications.setVisibility(View.VISIBLE);
+                        }
+                        if (tvNoMedications != null) {
+                            tvNoMedications.setVisibility(View.GONE);
+                        }
 
+                        List<Medication> medications = new ArrayList<>();
                         for (AsignacionMedicamentoResponse asignacion : asignaciones) {
                             String nombreMedicamento = asignacion.getMedicamento() != null ?
                                     asignacion.getMedicamento().getNombre() : "Medicamento desconocido";
@@ -687,18 +725,37 @@ public class DashboardFragment extends Fragment {
                             ));
                         }
 
-                        rvMedications.setAdapter(new MedicationAdapter(medications));
+                        if (rvMedications != null) {
+                            rvMedications.setAdapter(new MedicationAdapter(medications));
+                        }
                     } else {
-                        rvMedications.setAdapter(new MedicationAdapter(new ArrayList<>()));
+                        // Caso: No hay medicamentos
+                        if (rvMedications != null) {
+                            rvMedications.setVisibility(View.GONE);
+                            rvMedications.setAdapter(null); // Limpiar adapter
+                        }
+                        if (tvNoMedications != null) {
+                            tvNoMedications.setVisibility(View.VISIBLE);
+                            tvNoMedications.setText("No hay medicamentos registrados");
+                        }
                     }
                 } else {
+                    // Caso: Error en la respuesta
+                    if (rvMedications != null) {
+                        rvMedications.setVisibility(View.GONE);
+                        rvMedications.setAdapter(null);
+                    }
+                    if (tvNoMedications != null) {
+                        tvNoMedications.setVisibility(View.VISIBLE);
+                        tvNoMedications.setText("Error al cargar medicamentos");
+                    }
+
                     try {
                         String errorBody = response.errorBody() != null ?
-                                "Error: " + response.errorBody().string() :
-                                "Error: Código " + response.code();
-                        Log.e("API_MEDICAMENTOS", errorBody);
+                                response.errorBody().string() : "Sin detalles";
+                        Log.e("API_MEDICAMENTOS", "Error: " + response.code() + " - " + errorBody);
                     } catch (Exception e) {
-                        Log.e("API_MEDICAMENTOS", "Error al procesar respuesta", e);
+                        Log.e("API_MEDICAMENTOS", "Error al leer errorBody", e);
                     }
                 }
             }
@@ -708,6 +765,16 @@ public class DashboardFragment extends Fragment {
                                   @NonNull Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 if (!isAdded() || getContext() == null || call.isCanceled()) return;
+
+                if (rvMedications != null) {
+                    rvMedications.setVisibility(View.GONE);
+                    rvMedications.setAdapter(null);
+                }
+                if (tvNoMedications != null) {
+                    tvNoMedications.setVisibility(View.VISIBLE);
+                    tvNoMedications.setText("Error de conexión");
+                }
+
                 Log.e("API Error", "Error al obtener medicamentos", t);
             }
         });

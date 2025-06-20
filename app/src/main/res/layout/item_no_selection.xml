@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="#EAF2FF"
     android:padding="16dp">
 
     <TextView
@@ -10,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
+        android:text="No hay datos disponibles"
         android:textSize="16sp"
-        android:textColor="@color/azulClaro2"/>
+        android:textColor="@color/black"/>
 </LinearLayout>

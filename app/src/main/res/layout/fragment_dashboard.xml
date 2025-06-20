@@ -76,159 +76,104 @@
                     android:orientation="horizontal" />
             </HorizontalScrollView>
 
-            <!-- ACTIVIDADES -->
-            <TextView
-                android:id="@+id/tvActivitiesSectionTitle"
-                android:layout_marginBottom="8dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Actividades"
-                android:textStyle="bold"
-                android:textSize="18sp"/>
-
-            <ImageButton
-                android:id="@+id/botonActividad"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/masicono"
-                android:background="@drawable/fondo_redondeado_con_sombra"
-                android:layout_gravity="end"/>
-
-            <ScrollView
+            <!-- SECCIÓN DE ACTIVIDADES -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_weight="0.6"
+                android:orientation="vertical"
                 android:layout_marginBottom="16dp"
                 android:background="#EAF2FF"
                 android:padding="8dp">
 
-                <LinearLayout
-                    android:id="@+id/activitiesContainer"
+                <TextView
+                    android:id="@+id/tvActivitiesSectionTitle"
+                    android:layout_marginBottom="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginBottom="8dp">
+                    android:gravity="center"
+                    android:text="Actividades"
+                    android:textStyle="bold"
+                    android:textSize="18sp"/>
 
-                    <!-- EJEMPLO DE CARDVIEW PARA ACTIVIDADES (ESTE SE AÑADIRÁ DINÁMICAMENTE) -->
-                    <androidx.cardview.widget.CardView
+                <ImageButton
+                    android:id="@+id/botonActividad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/masicono"
+                    android:background="@drawable/fondo_redondeado_con_sombra"
+                    android:layout_gravity="end"/>
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fillViewport="true">
+
+                    <LinearLayout
+                        android:id="@+id/activitiesContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="4dp">
+                        android:orientation="vertical">
+                        <!-- Contenido dinámico -->
+                    </LinearLayout>
+                </ScrollView>
+            </LinearLayout>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="10dp">
-
-                            <!-- Nombre del paciente arriba (Juan Carlos:) -->
-                            <TextView
-                                android:id="@+id/tvPatient"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/gray"
-                                android:layout_marginBottom="4dp"/>
-
-                            <!-- Fila principal: Actividad con viñeta (●) -->
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-
-                                <TextView
-                                    android:id="@+id/tvMedicationName"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    android:paddingLeft="8dp"/>
-
-                                <TextView
-                                    android:id="@+id/tvStatus"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:textSize="14sp"
-                                    android:padding="4dp"
-                                    android:textColor="@color/green"/>
-                            </LinearLayout>
-
-                            <!-- Fila de información adicional -->
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:layout_marginTop="8dp">
-
-                                <TextView
-                                    android:id="@+id/tvDosage"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:textSize="14sp"
-                                    android:visibility="gone"/>
-
-                                <TextView
-                                    android:id="@+id/tvSchedule"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:textSize="14sp"
-                                    android:layout_marginStart="8dp"/>
-                            </LinearLayout>
-
-                            <!-- Fechas (oculto por defecto) -->
-                            <TextView
-                                android:id="@+id/tvDates"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:layout_marginTop="8dp"
-                                android:visibility="gone"/>
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-                    <!-- FIN EJEMPLO CARDVIEW -->
-
-                </LinearLayout>
-            </ScrollView>
-
-            <!-- MEDICAMENTOS -->
-            <TextView
-                android:id="@+id/tvMedicationsSectionTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Medicamentos"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginBottom="8dp" />
-
-            <ImageButton
-                android:id="@+id/botonMedicamento"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/masicono"
-                android:background="@drawable/fondo_redondeado_con_sombra"
-                android:layout_gravity="end"/>
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvMedications"
+            <!-- SECCIÓN DE MEDICAMENTOS -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_weight="0.6"
+                android:orientation="vertical"
                 android:background="#EAF2FF"
-                android:padding="8dp" />
+                android:padding="8dp">
 
+                <TextView
+                    android:id="@+id/tvMedicationsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Medicamentos"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_marginBottom="8dp" />
+
+                <ImageButton
+                    android:id="@+id/botonMedicamento"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/masicono"
+                    android:background="@drawable/fondo_redondeado_con_sombra"
+                    android:layout_gravity="end"/>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvMedications"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvNoMedications"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="No hay medicamentos registrados"
+                        android:gravity="center"
+                        android:textSize="16sp"
+                        android:visibility="gone"/>
+                </FrameLayout>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
 </RelativeLayout>
