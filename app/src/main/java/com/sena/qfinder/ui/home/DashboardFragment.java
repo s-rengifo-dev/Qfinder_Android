@@ -438,9 +438,6 @@ public class DashboardFragment extends Fragment {
             ((TextView) noPatientView.findViewById(R.id.tvMessage)).setText("Selecciona un paciente para ver sus actividades");
             activitiesContainer.addView(noPatientView);
         } else {
-            tvTitle.setText("Actividades de " + selectedPatientName);
-            tvSubtitle.setText("Últimas actividades registradas");
-            activitiesContainer.addView(headerView);
 
             View loadingView = currentInflater.inflate(R.layout.item_loading, activitiesContainer, false);
             activitiesContainer.addView(loadingView);
@@ -630,6 +627,8 @@ public class DashboardFragment extends Fragment {
         rvMedications = rootView.findViewById(R.id.rvMedications);
         ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
         TextView tvNoMedications = rootView.findViewById(R.id.tvNoMedications);
+        TextView tvLoading = rootView.findViewById(R.id.tvLoading);
+        LinearLayout loadingContainer = rootView.findViewById(R.id.loadingContainer);
 
         // Configurar RecyclerView
         if (rvMedications != null) {
@@ -637,7 +636,7 @@ public class DashboardFragment extends Fragment {
         }
 
         // Estado inicial
-        progressBar.setVisibility(View.VISIBLE);
+        loadingContainer.setVisibility(View.VISIBLE);
         if (rvMedications != null) {
             rvMedications.setVisibility(View.GONE);
         }
@@ -647,7 +646,7 @@ public class DashboardFragment extends Fragment {
 
         Context context = getContext();
         if (context == null) {
-            progressBar.setVisibility(View.GONE);
+            loadingContainer.setVisibility(View.GONE);
             if (tvNoMedications != null) {
                 tvNoMedications.setVisibility(View.VISIBLE);
                 tvNoMedications.setText("Error de contexto");
@@ -659,7 +658,7 @@ public class DashboardFragment extends Fragment {
         String token = preferences.getString("token", null);
 
         if (token == null) {
-            progressBar.setVisibility(View.GONE);
+            loadingContainer.setVisibility(View.GONE);
             if (tvNoMedications != null) {
                 tvNoMedications.setVisibility(View.VISIBLE);
                 tvNoMedications.setText("No autenticado");
@@ -669,7 +668,7 @@ public class DashboardFragment extends Fragment {
 
         // Si no hay paciente seleccionado
         if (selectedPatientId == -1) {
-            progressBar.setVisibility(View.GONE);
+            loadingContainer.setVisibility(View.GONE);
             if (rvMedications != null) {
                 rvMedications.setVisibility(View.GONE);
             }
@@ -691,7 +690,7 @@ public class DashboardFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<List<AsignacionMedicamentoResponse>> call,
                                    @NonNull Response<List<AsignacionMedicamentoResponse>> response) {
-                progressBar.setVisibility(View.GONE);
+                loadingContainer.setVisibility(View.GONE);
 
                 if (!isAdded() || getContext() == null) return;
 
@@ -732,7 +731,7 @@ public class DashboardFragment extends Fragment {
                         // Caso: No hay medicamentos
                         if (rvMedications != null) {
                             rvMedications.setVisibility(View.GONE);
-                            rvMedications.setAdapter(null); // Limpiar adapter
+                            rvMedications.setAdapter(null);
                         }
                         if (tvNoMedications != null) {
                             tvNoMedications.setVisibility(View.VISIBLE);
@@ -763,7 +762,7 @@ public class DashboardFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call<List<AsignacionMedicamentoResponse>> call,
                                   @NonNull Throwable t) {
-                progressBar.setVisibility(View.GONE);
+                loadingContainer.setVisibility(View.GONE);
                 if (!isAdded() || getContext() == null || call.isCanceled()) return;
 
                 if (rvMedications != null) {
