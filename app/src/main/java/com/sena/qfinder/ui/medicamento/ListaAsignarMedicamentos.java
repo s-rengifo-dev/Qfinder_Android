@@ -217,7 +217,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                 intent.putExtra("descripcion", descripcion);
                 intent.putExtra("fecha", sdf.format(calendar.getTime()));
                 intent.putExtra("hora", pm.getHora_inicio());
-                intent.putExtra("es_recurrente", true);
+                intent.putExtra("es_recurrente", intervaloMillis > 0);
                 intent.putExtra("intervalo_millis", intervaloMillis);
 
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -229,19 +229,15 @@ public class ListaAsignarMedicamentos extends Fragment {
 
                 if (alarmManager != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        alarmManager.setRepeating(
+                        alarmManager.setExactAndAllowWhileIdle(
                                 AlarmManager.RTC_WAKEUP,
                                 calendar.getTimeInMillis(),
-                                intervaloMillis,
                                 pendingIntent
                         );
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                     } else {
-                        alarmManager.setInexactRepeating(
-                                AlarmManager.RTC_WAKEUP,
-                                calendar.getTimeInMillis(),
-                                intervaloMillis,
-                                pendingIntent
-                        );
+                        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                     }
                 }
             }
@@ -265,11 +261,12 @@ public class ListaAsignarMedicamentos extends Fragment {
             Log.e("AlarmaMedicamento", "Error al programar alarma", e);
             Toast.makeText(getContext(), "Error al programar alarma", Toast.LENGTH_SHORT).show();
         }
-    }    private long calcularIntervaloMillis(int cantidad, String unidad) {
+    } private long calcularIntervaloMillis(int cantidad, String unidad) {
         switch (unidad.toLowerCase()) {
             case "hora":
             case "horas":
                 return cantidad * 60 * 60 * 1000L;
+            case "dia":
             case "día":
             case "dias":
             case "días":
@@ -280,6 +277,9 @@ public class ListaAsignarMedicamentos extends Fragment {
             case "semana":
             case "semanas":
                 return cantidad * 7 * 24 * 60 * 60 * 1000L;
+            case "mes":
+            case "meses":
+                return cantidad * 30 * 24 * 60 * 60 * 1000L; // Aproximación
             default:
                 Log.e("Frecuencia", "Unidad de tiempo no reconocida: " + unidad);
                 return 0;
