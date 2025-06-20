@@ -8,6 +8,10 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 public class AlarmReceiver extends BroadcastReceiver {
     private static final String TAG = "AlarmReceiver";
 
@@ -28,8 +32,11 @@ public class AlarmReceiver extends BroadcastReceiver {
             String descripcion = intent.getStringExtra("descripcion");
             String fecha = intent.getStringExtra("fecha");
             String hora = intent.getStringExtra("hora");
+            boolean esRecurrente = intent.getBooleanExtra("es_recurrente", false);
+            long intervaloMillis = intent.getLongExtra("intervalo_millis", 0);
 
-            Log.d(TAG, "Alarma recibida para ID: " + actividadId);
+            Log.d(TAG, "Alarma recibida para ID: " + actividadId +
+                    (esRecurrente ? " (Recurrente)" : ""));
 
             // Validar datos
             if (titulo == null || fecha == null || hora == null) {
@@ -72,6 +79,29 @@ public class AlarmReceiver extends BroadcastReceiver {
             } else {
                 context.startActivity(fullScreenIntent);
             }
+
+            // Si es recurrente, programar la próxima alarma
+            if (esRecurrente && intervaloMillis > 0) {
+                long nextTriggerTime = System.currentTimeMillis() + intervaloMillis;
+
+                // Actualizar la fecha para mostrar en la próxima alarma
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Calendar nextCalendar = Calendar.getInstance();
+                nextCalendar.setTimeInMillis(nextTriggerTime);
+                String nextDate = sdf.format(nextCalendar.getTime());
+
+                // Programar próxima alarma
+                ActivityAlarmReceiver.programarAlarma(
+                        context,
+                        actividadId,
+                        titulo,
+                        descripcion,
+                        nextDate,
+                        hora,
+                        nextTriggerTime
+                );
+            }
+
         } finally {
             if (wakeLock != null && wakeLock.isHeld()) {
                 wakeLock.release();

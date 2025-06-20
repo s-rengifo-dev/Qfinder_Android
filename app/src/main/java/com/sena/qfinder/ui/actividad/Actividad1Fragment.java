@@ -103,8 +103,8 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-            DashboardFragment DashBoardFragment = new DashboardFragment(); // Asegúrate de tener esta clase creada
-            fragmentTransaction.replace(R.id.fragment_container, DashBoardFragment); // Usa el ID correcto de tu contenedor
+            Fragment_Serivicios ServiciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
+            fragmentTransaction.replace(R.id.fragment_container, ServiciosFragment); // Usa el ID correcto de tu contenedor
             fragmentTransaction.addToBackStack(null); // Opcional
             fragmentTransaction.commit();
         });
