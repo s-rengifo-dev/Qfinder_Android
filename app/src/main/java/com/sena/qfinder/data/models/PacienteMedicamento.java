@@ -9,7 +9,7 @@ public class PacienteMedicamento {
     private String hora_inicio; // Nuevo campo
     private String dosis;
     private String frecuencia;
-
+    private String nombre_medicamento;
     // Getters y Setters
     public int getId_pac_medicamento() {
         return id_pac_medicamento;
@@ -72,5 +72,12 @@ public class PacienteMedicamento {
 
     public void setFrecuencia(String frecuencia) {
         this.frecuencia = frecuencia;
+    }
+    public String getNombre_medicamento() {
+        return nombre_medicamento;
+    }
+
+    public void setNombre_medicamento(String nombre_medicamento) {
+        this.nombre_medicamento = nombre_medicamento;
     }
 }
