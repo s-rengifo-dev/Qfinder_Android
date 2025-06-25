@@ -63,7 +63,7 @@
 <!--    <string name="payment_success_generic_message">¡Felicidades! Tu suscripción se ha activado correctamente.</string>-->
     <string name="payment_success_toast">¡Pago exitoso! Plan: %1$s</string>
     <string name="text1RegUsuario">Registra tus datos</string>
-    <string name="text2RegUsuario">Crear cuenta</string>
+    <string name="text2RegUsuario">Crear Cuenta</string>
     <string name="txtNombre">Nombres:</string>
     <string name="txtApellido">Apellidos:</string>
     <string name="txtCorreo">Correo electrónico:</string>
