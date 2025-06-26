@@ -58,6 +58,7 @@ public class NotaEpisodioAdapter extends BaseAdapter {
             holder.tvDescripcion = convertView.findViewById(R.id.textDescripcion);
             //holder.tvTipo = convertView.findViewById(R.id.textSeveridad); // Ahora muestra el tipo
             holder.tvFecha = convertView.findViewById(R.id.textFecha);
+            holder.tvHora = convertView.findViewById(R.id.textHora); // <--- agregado aquí también
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -75,25 +76,33 @@ public class NotaEpisodioAdapter extends BaseAdapter {
         // Descripción: intervenciones o fallback
         holder.tvDescripcion.setText(nota.getIntervenciones() != null ? nota.getIntervenciones() : "Sin intervenciones");
 
-        // Tipo (antes severidad)
-       // holder.tvTipo.setText("Tipo: " + (nota.getTipo() != null ? nota.getTipo() : "N/A"));
+        // Obtener fecha y hora por separado
+        String fecha = "";
+        String hora = "";
 
-        // Fecha formateada
-        String fechaFormateada = nota.getFechaHoraInicio() != null ? nota.getFechaHoraInicio() : "";
         try {
-            Date fecha = inputFormat.parse(nota.getFechaHoraInicio());
-            fechaFormateada = outputFormat.format(fecha);
+            Date fechaHora = inputFormat.parse(nota.getFechaHoraInicio());
+            SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            fecha = formatoFecha.format(fechaHora);
+            hora = formatoHora.format(fechaHora);
         } catch (ParseException | NullPointerException e) {
-            // Si hay error, dejamos la fecha tal cual viene
+            fecha = nota.getFechaHoraInicio(); // fallback si hay error
+            hora = "";
         }
-        holder.tvFecha.setText("Fecha: " + fechaFormateada);
+
+        holder.tvFecha.setText("Fecha: " + fecha);
+        holder.tvHora.setText("Hora: " + hora);
 
         return convertView;
     }
 
+
     private static class ViewHolder {
         TextView tvTitulo;
         TextView tvDescripcion;
+        TextView tvHora;
         //TextView tvTipo; // Cambiado de severidad a tipo
         TextView tvFecha;
     }
