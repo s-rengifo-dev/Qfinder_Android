@@ -185,7 +185,7 @@
                     android:id="@+id/et_dosage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Especificar dosis"
+                    android:hint="Ej: 500 mg, 1 tableta, 10 ml, etc."
                     android:inputType="text"
                     android:backgroundTint="#CCCCCC"
                     android:layout_marginBottom="16dp" />
@@ -210,7 +210,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Número"
+                        android:hint="Ej: 8 horas,2 días"
                         android:inputType="number"
                         android:layout_marginEnd="8dp"
                         android:backgroundTint="#CCCCCC" />

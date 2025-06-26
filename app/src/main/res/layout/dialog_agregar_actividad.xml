@@ -12,13 +12,21 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal">
 
+        <!-- Título Paciente -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Paciente"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
+
         <!-- Spinner de Pacientes -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:hint="Seleccione un paciente"
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
@@ -31,15 +39,24 @@
                 android:layout_height="wrap_content"
                 android:inputType="none"
                 android:padding="12dp"
+                android:hint="Seleccione un paciente"
                 android:textColor="@android:color/black" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Título Tipo de Actividad -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tipo de Actividad"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
 
         <!-- Tipo de Actividad -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:hint="Tipo de actividad"
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
@@ -51,8 +68,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:hint="Ej: Caminata"
                 android:padding="12dp" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Título Fecha y Hora -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fecha y Hora"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
 
         <!-- Fecha y Hora -->
         <LinearLayout
@@ -107,6 +134,15 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <!-- Título Duración -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Duración"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
+
         <!-- Duración -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -127,13 +163,21 @@
                 android:padding="12dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Título Intensidad -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Intensidad"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
+
         <!-- Intensidad -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:hint="Intensidad"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
@@ -144,8 +188,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
-                android:inputType="none" />
+                android:inputType="none"
+                android:hint="Ej: Alta" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Título Estado -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Estado"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
 
         <!-- Estado -->
         <com.google.android.material.textfield.TextInputLayout
@@ -153,7 +207,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:hint="Estado"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
@@ -164,15 +217,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
-                android:inputType="none" />
+                android:inputType="none"
+                android:hint="Ej: Completado" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Título Descripción -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Descripción"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
 
         <!-- Descripción -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:hint="Descripción"
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
@@ -185,15 +247,24 @@
                 android:layout_height="wrap_content"
                 android:minLines="3"
                 android:padding="12dp"
+                android:hint="Ej: Caminata en el parque durante la mañana"
                 android:gravity="top" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Título Observaciones -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Observaciones (Opcional)"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="4dp"/>
 
         <!-- Observaciones -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            android:hint="Observaciones (opcional)"
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
@@ -206,6 +277,7 @@
                 android:layout_height="wrap_content"
                 android:minLines="2"
                 android:padding="12dp"
+                android:hint="Ej: Paciente se sintió cansado al final"
                 android:gravity="top" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -258,7 +330,6 @@
 
         <View
             android:layout_width="wrap_content"
-            android:layout_height="230dp"/>
-
+            android:layout_height="230dp" />
     </LinearLayout>
 </ScrollView>

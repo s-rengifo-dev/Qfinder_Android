@@ -1,5 +1,6 @@
 package com.sena.qfinder.ui.auth;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -19,9 +21,12 @@ import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.AuthService;
 import com.sena.qfinder.data.models.CodeVerificationRequest;
 import com.sena.qfinder.data.models.CodeVerificationResponse;
+import com.sena.qfinder.data.models.ResendCodeRequest;
+import com.sena.qfinder.data.models.ResendCodeResponse;
 import com.sena.qfinder.ui.home.Login;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,12 +37,19 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class VerficacionCorreo extends Fragment {
 
     private static final String ARG_EMAIL = "correo_usuario";
+    private static final int MAX_ATTEMPTS = 3;
+    private static final long RESEND_DELAY_MINUTES = 1;
+    private static final String TAG = "EmailVerification";
+
     private String correoUsuario;
     private ImageView backButton;
-
-
+    private TextView resendCodeButton;
+    private ProgressDialog progressDialog;
+    private int attempts = 0;
+    private long lastResendTime = 0;
 
     public VerficacionCorreo() {
+        // Constructor público vacío requerido
     }
 
     public static VerficacionCorreo newInstance(String correo) {
@@ -54,6 +66,10 @@ public class VerficacionCorreo extends Fragment {
         if (getArguments() != null) {
             correoUsuario = getArguments().getString(ARG_EMAIL);
         }
+
+        // Inicializar ProgressDialog
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setCancelable(false);
     }
 
     @Override
@@ -70,61 +86,79 @@ public class VerficacionCorreo extends Fragment {
         };
 
         Button confirmButton = view.findViewById(R.id.confirmButton);
+        resendCodeButton = view.findViewById(R.id.resendCodeText);
 
-        // Botón de imagen para regresar a RegistroUsuario
-        ImageView backButton = view.findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> {
-            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new RegistroUsuario());
-            transaction.addToBackStack(null);
-            transaction.commit();
-        });
+        backButton = view.findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> volverAtras());
 
-        // Configura el auto-foco para cada campo de dígito
-        for (int i = 0; i < digits.length - 1; i++) {
-            setupAutoFocus(digits[i], digits[i + 1]);
-        }
+        configurarAutoFoco(digits);
 
-        confirmButton.setOnClickListener(v -> {
-            StringBuilder codeBuilder = new StringBuilder();
-            for (EditText digit : digits) {
-                String digitText = digit.getText().toString().trim();
-                if (digitText.isEmpty()) {
-                    Toast.makeText(getContext(), "Por favor completa todos los dígitos", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                codeBuilder.append(digitText);
-            }
+        confirmButton.setOnClickListener(v -> validarYVerificarCodigo(digits));
 
-            String codeEntered = codeBuilder.toString();
-            verificarCodigoConBackend(correoUsuario, codeEntered);
-        });
+        configurarBotonReenvio();
 
         return view;
     }
 
+    private void volverAtras() {
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, new RegistroUsuario());
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
 
-    private void setupAutoFocus(EditText current, EditText next) {
-        current.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+    private void configurarAutoFoco(EditText[] digits) {
+        for (int i = 0; i < digits.length - 1; i++) {
+            final int nextIndex = i + 1;
+            digits[i].addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() == 1) {
-                    next.requestFocus();
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (s.length() == 1) {
+                        digits[nextIndex].requestFocus();
+                    }
                 }
+
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+    }
+
+    private void validarYVerificarCodigo(EditText[] digits) {
+        StringBuilder codeBuilder = new StringBuilder();
+        for (EditText digit : digits) {
+            String digitText = digit.getText().toString().trim();
+            if (digitText.isEmpty()) {
+                Toast.makeText(getContext(), "Por favor completa todos los dígitos", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            codeBuilder.append(digitText);
+        }
+
+        String codeEntered = codeBuilder.toString();
+        verificarCodigoConBackend(correoUsuario, codeEntered);
+    }
+
+    private void configurarBotonReenvio() {
+        resendCodeButton.setOnClickListener(v -> {
+            long currentTime = System.currentTimeMillis();
+            long timeSinceLastResend = currentTime - lastResendTime;
+
+            if (timeSinceLastResend < TimeUnit.MINUTES.toMillis(RESEND_DELAY_MINUTES)) {
+                long remainingTime = RESEND_DELAY_MINUTES - TimeUnit.MILLISECONDS.toMinutes(timeSinceLastResend);
+                String message = "Espera " + remainingTime + " minuto(s) antes de reenviar";
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
+            reenviarCodigoVerificacion(correoUsuario);
         });
     }
 
     private void verificarCodigoConBackend(String correo, String codigo) {
-        // Validaciones básicas
         if (correo == null || correo.isEmpty()) {
             Toast.makeText(getContext(), "Correo electrónico no válido", Toast.LENGTH_SHORT).show();
             return;
@@ -135,7 +169,8 @@ public class VerficacionCorreo extends Fragment {
             return;
         }
 
-        Log.d("VerificacionCodigo", "Verificando código: " + codigo + " para correo: " + correo);
+        Log.d(TAG, "Verificando código: " + codigo + " para correo: " + correo);
+        showProgress("Verificando código...");
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://qfinder-production.up.railway.app/")
@@ -148,42 +183,140 @@ public class VerficacionCorreo extends Fragment {
         service.verificarCodigo(request).enqueue(new Callback<CodeVerificationResponse>() {
             @Override
             public void onResponse(Call<CodeVerificationResponse> call, Response<CodeVerificationResponse> response) {
+                dismissProgress();
+
                 if (!response.isSuccessful()) {
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
-                        Log.e("API_ERROR", "Código de error: " + response.code() + ", Mensaje: " + errorBody);
-                        Toast.makeText(getContext(), "Error en la verificación: " + errorBody, Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        Log.e("API_ERROR", "Error al leer el cuerpo del error", e);
-                        Toast.makeText(getContext(), "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
-                    }
+                    attempts++;
+                    manejarErrorVerificacion(response);
                     return;
                 }
 
                 CodeVerificationResponse verificationResponse = response.body();
                 if (verificationResponse != null) {
                     if (verificationResponse.isSuccess()) {
-                        // Verificación exitosa
-                        Toast.makeText(getContext(), verificationResponse.getMessage(), Toast.LENGTH_SHORT).show();
-
-                        // Cambiar de fragmento
-                        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                        transaction.replace(R.id.fragment_container, new Login());
-                        transaction.addToBackStack(null);
-                        transaction.commit();
-
+                        attempts = 0; // Resetear intentos si es exitoso
+                        manejarVerificacionExitosa(verificationResponse);
                     } else {
-                        // Código incorrecto u otro error
+                        attempts++;
                         Toast.makeText(getContext(), verificationResponse.getMessage(), Toast.LENGTH_LONG).show();
+
+                        if (attempts >= MAX_ATTEMPTS) {
+                            Toast.makeText(getContext(),
+                                    "Has excedido el máximo de intentos. Por favor solicita un nuevo código.",
+                                    Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
             }
 
             @Override
             public void onFailure(Call<CodeVerificationResponse> call, Throwable t) {
-                Log.e("NETWORK_ERROR", "Error de red: " + t.getMessage(), t);
+                dismissProgress();
+                Log.e(TAG, "Error de red: " + t.getMessage(), t);
                 Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void manejarErrorVerificacion(Response<CodeVerificationResponse> response) {
+        try {
+            String errorBody = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
+            Log.e(TAG, "Código de error: " + response.code() + ", Mensaje: " + errorBody);
+
+            String errorMessage = "Error en la verificación";
+            if (response.code() == 400) {
+                errorMessage = "Código incorrecto o expirado";
+            } else if (response.code() == 404) {
+                errorMessage = "Usuario no encontrado";
+            }
+
+            Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Log.e(TAG, "Error al leer el cuerpo del error", e);
+            Toast.makeText(getContext(), "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void manejarVerificacionExitosa(CodeVerificationResponse verificationResponse) {
+        Toast.makeText(getContext(), verificationResponse.getMessage(), Toast.LENGTH_SHORT).show();
+
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, new Login());
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    private void reenviarCodigoVerificacion(String correo) {
+        if (correo == null || correo.isEmpty()) {
+            Toast.makeText(getContext(), "Correo electrónico no válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Solicitando reenvío de código para: " + correo);
+        showProgress("Enviando nuevo código...");
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://qfinder-production.up.railway.app/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        AuthService service = retrofit.create(AuthService.class);
+        ResendCodeRequest request = new ResendCodeRequest(correo);
+
+        service.reenviarCodigo(request).enqueue(new Callback<ResendCodeResponse>() {
+            @Override
+            public void onResponse(Call<ResendCodeResponse> call, Response<ResendCodeResponse> response) {
+                dismissProgress();
+
+                if (!response.isSuccessful()) {
+                    manejarErrorReenvio(response);
+                    return;
+                }
+
+                ResendCodeResponse resendResponse = response.body();
+                if (resendResponse != null) {
+                    lastResendTime = System.currentTimeMillis();
+                    attempts = 0; // Resetear intentos al reenviar
+                    Toast.makeText(getContext(), "Nuevo código enviado", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResendCodeResponse> call, Throwable t) {
+                dismissProgress();
+                Log.e(TAG, "Error de red al reenviar código: " + t.getMessage(), t);
+                Toast.makeText(getContext(), "Error de conexión al reenviar código: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void manejarErrorReenvio(Response<ResendCodeResponse> response) {
+        try {
+            String errorBody = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
+            Log.e(TAG, "Código de error al reenviar: " + response.code() + ", Mensaje: " + errorBody);
+            Toast.makeText(getContext(), "Error al reenviar código: " + errorBody, Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Log.e(TAG, "Error al leer el cuerpo del error al reenviar", e);
+            Toast.makeText(getContext(), "Error al procesar la respuesta del reenvío", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showProgress(String message) {
+        if (progressDialog != null && !progressDialog.isShowing()) {
+            progressDialog.setMessage(message);
+            progressDialog.show();
+        }
+    }
+
+    private void dismissProgress() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        dismissProgress();
+        super.onDestroyView();
     }
 }
