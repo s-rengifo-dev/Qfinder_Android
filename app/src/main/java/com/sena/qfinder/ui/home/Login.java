@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.sena.qfinder.R;
+import com.sena.qfinder.data.api.AuthInterceptor;
 import com.sena.qfinder.ui.auth.RegistroUsuario;
 import com.sena.qfinder.data.api.AuthService;
 import com.sena.qfinder.controller.MainActivityDash;
@@ -34,6 +35,7 @@ import com.sena.qfinder.data.models.PerfilUsuarioResponse;
 import com.sena.qfinder.ui.auth.Fragment_password_recovery;
 import com.sena.qfinder.utils.SharedPrefManager;
 
+import okhttp3.OkHttpClient;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseView;
 import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
@@ -225,8 +227,13 @@ public class Login extends Fragment {
     }
 
     private void setupRetrofit() {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new AuthInterceptor(requireContext()))
+                .build();
+
         retrofit = new Retrofit.Builder()
                 .baseUrl("https://qfinder-production.up.railway.app/")
+                .client(client) // <-- Aquí se agrega el interceptor
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

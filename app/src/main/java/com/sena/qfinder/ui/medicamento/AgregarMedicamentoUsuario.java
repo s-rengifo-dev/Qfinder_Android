@@ -76,6 +76,8 @@ public class AgregarMedicamentoUsuario extends Fragment {
 
         btnSave.setOnClickListener(v -> savePrescription());
 
+        view.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+
         return view;
     }
 
@@ -147,11 +149,11 @@ public class AgregarMedicamentoUsuario extends Fragment {
         }
 
         if (etDosage.getText().toString().trim().isEmpty()) {
-            showToast("Ingresa la dosis");
+            showToast("Ingresa la cantidad a suministar del medicamento");
             return;
         }
         if (etFrequencyNumber.getText().toString().trim().isEmpty()) {
-            showToast("Ingresa la Frecuencia");
+            showToast("Ingresa cada cuanto se debe de suministrar el medicamento");
             return;
         }
 
