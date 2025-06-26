@@ -164,24 +164,21 @@ public class ListaAsignarMedicamentos extends Fragment {
                 return cantidad * 7 * 24 * 60 * 60 * 1000L;
             case "mes":
             case "meses":
-                return cantidad * 30L * 24 * 60 * 60 * 1000L; // Aproximación de 30 días
+                return cantidad * 30L * 24 * 60 * 60 * 1000L;
             default:
                 Log.e("Frecuencia", "Unidad de tiempo no reconocida: " + unidad);
                 return 0;
         }
     }
 
-
     private void programarAlarmaMedicamento(PacienteMedicamento pm) {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             AlarmManager alarmManager = ContextCompat.getSystemService(requireContext(), AlarmManager.class);
-
 
             if (!alarmManager.canScheduleExactAlarms()) {
                 Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
                 startActivity(intent);
-                return; // Salir hasta que el permiso sea concedido
+                return;
             }
         }
         try {
@@ -191,28 +188,24 @@ public class ListaAsignarMedicamentos extends Fragment {
                 horasFrecuencia = Integer.parseInt(pm.getFrecuencia());
             } catch (NumberFormatException e) {
                 Log.e("Alarma", "Frecuencia no es un número válido: " + pm.getFrecuencia());
-                horasFrecuencia = 1; // Valor por defecto
+                horasFrecuencia = 1;
             }
-            // Convertir frecuencia de horas a formato descriptivo
+
             String frecuenciaDescriptiva = AlarmCalculator.convertirHorasAFrecuencia(horasFrecuencia);
             Log.d("Alarma", "Frecuencia convertida: " + pm.getFrecuencia() + " horas -> " + frecuenciaDescriptiva);
 
-            // Parsear frecuencia
             String[] frecuenciaParts = AlarmCalculator.parseFrecuencia(frecuenciaDescriptiva);
             int cantidad = Integer.parseInt(frecuenciaParts[0]);
             String unidad = frecuenciaParts[1];
             Log.d("Alarma", "Frecuencia parseada: " + cantidad + " " + unidad);
 
-            // Calcular intervalo
             long intervaloMillis = AlarmCalculator.calcularIntervalo(cantidad, unidad);
             Log.d("Alarma", "Intervalo calculado: " + intervaloMillis + " ms");
 
-            // Calcular próxima alarma
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
             Date fechaHoraInicio = sdf.parse(pm.getFecha_inicio() + " " + pm.getHora_inicio());
             long nextTriggerTime = fechaHoraInicio.getTime();
 
-            // Si ya pasó, calcular siguiente ocurrencia
             if (nextTriggerTime < System.currentTimeMillis()) {
                 long diferencia = System.currentTimeMillis() - nextTriggerTime;
                 long ocurrenciasPasadas = diferencia / intervaloMillis;
@@ -220,7 +213,6 @@ public class ListaAsignarMedicamentos extends Fragment {
                 Log.d("Alarma", "Ajustando alarma futura: " + new Date(nextTriggerTime));
             }
 
-            // Crear entidad de alarma
             AlarmaMedicamentoEntity alarma = new AlarmaMedicamentoEntity(
                     pm.getId_pac_medicamento(),
                     pm.getId_medicamento(),
@@ -236,12 +228,10 @@ public class ListaAsignarMedicamentos extends Fragment {
                     intervaloMillis
             );
 
-            // Guardar en BD
             DatabaseMedicamentoHelper dbHelper = DatabaseMedicamentoHelper.getInstance(getContext());
             dbHelper.guardarAlarmaMedicamento(alarma);
             Log.d("Alarma", "Alarma guardada en BD");
 
-            // Programar alarma
             MedicamentoAlarmManager.programarAlarmaExacta(
                     getContext(),
                     alarma.getId(),
@@ -272,6 +262,7 @@ public class ListaAsignarMedicamentos extends Fragment {
             Log.e("MedicamentoAlarma", "Error al cancelar alarma", e);
         }
     }
+
     private void asignarMedicamento(AsignarMedicamentoRequest request, AlertDialog dialog) {
         showLoading(true);
         sharedPreferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
@@ -300,9 +291,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                         Toast.makeText(getContext(), "Medicamento asignado correctamente", Toast.LENGTH_SHORT).show();
 
                         if (apiResponse.getData() != null) {
-                            // Obtener el nombre del medicamento de otra fuente
                             String nombreMedicamento = obtenerNombreMedicamento(request.getId_medicamento());
-
                             PacienteMedicamento pm = apiResponse.getData();
                             pm.setNombre_medicamento(nombreMedicamento);
                             Log.d("MedicamentoDebug", "Nombre medicamento asignado: " + pm.getNombre_medicamento());
@@ -370,9 +359,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                         cancelarAlarmaMedicamento(idAsignacion);
 
                         if (apiResponse.getData() != null) {
-                            // Obtener el nombre del medicamento de otra fuente
                             String nombreMedicamento = obtenerNombreMedicamento(request.getId_medicamento());
-
                             PacienteMedicamento pm = apiResponse.getData();
                             pm.setNombre_medicamento(nombreMedicamento);
                             Log.d("MedicamentoDebug", "Nombre medicamento actualizado: " + pm.getNombre_medicamento());
@@ -410,13 +397,15 @@ public class ListaAsignarMedicamentos extends Fragment {
         });
     }
 
-    // Método auxiliar para obtener el nombre del medicamento
     private String obtenerNombreMedicamento(int idMedicamento) {
-        if (medicamentosMap.containsKey(idMedicamento)) {
-            return medicamentosMap.get(idMedicamento);
+        if (medicamentosMap == null) {
+            Log.e("MedicamentoError", "medicamentosMap es null!");
+            return "Medicamento";
         }
-        return "Medicamento"; // Valor por defecto
+        String nombre = medicamentosMap.get(idMedicamento);
+        return nombre != null ? nombre : "Medicamento";
     }
+
     private void eliminarMedicamento(AsignacionMedicamentoResponse asignacion) {
         showLoading(true);
         sharedPreferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
@@ -497,7 +486,16 @@ public class ListaAsignarMedicamentos extends Fragment {
         tvFrecuencia.setText("Frecuencia: " + (asignacion.getFrecuencia() != null ? asignacion.getFrecuencia() : "No especificada"));
 
         if (asignacion.getHoraInicio() != null) {
-            tvHoraInicio.setText("Hora: " + asignacion.getHoraInicio());
+            try {
+                String horaOriginal = asignacion.getHoraInicio();
+                if (horaOriginal.length() > 5) {
+                    horaOriginal = horaOriginal.substring(0, 5);
+                }
+                tvHoraInicio.setText("Hora: " + horaOriginal);
+            } catch (Exception e) {
+                Log.e("TimeFormat", "Error al formatear hora", e);
+                tvHoraInicio.setText("Hora: " + asignacion.getHoraInicio());
+            }
         } else {
             tvHoraInicio.setText("Hora no especificada");
         }
@@ -739,60 +737,64 @@ public class ListaAsignarMedicamentos extends Fragment {
 
     private void cargarMedicamentosPaciente(int pacienteId) {
         showLoading(true);
-        sharedPreferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
-        String token = sharedPreferences.getString("token", null);
+        // Primero cargar medicamentos disponibles
+        loadMedications(null, () -> {
+            // Luego cargar asignaciones del paciente
+            sharedPreferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
+            String token = sharedPreferences.getString("token", null);
 
-        if (token == null) {
-            Toast.makeText(getContext(), "No se encontró token de autenticación", Toast.LENGTH_SHORT).show();
-            showLoading(false);
-            return;
-        }
-
-        Retrofit retrofit = ApiClient.getClient();
-        AuthService authService = retrofit.create(AuthService.class);
-        medicamentosCall = authService.listarAsignacionesMedicamentos("Bearer " + token, pacienteId);
-
-        medicamentosCall.enqueue(new Callback<List<AsignacionMedicamentoResponse>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<AsignacionMedicamentoResponse>> call,
-                                   @NonNull Response<List<AsignacionMedicamentoResponse>> response) {
+            if (token == null) {
+                Toast.makeText(getContext(), "No se encontró token de autenticación", Toast.LENGTH_SHORT).show();
                 showLoading(false);
-                if (!isAdded()) return;
+                return;
+            }
 
-                if (response.isSuccessful()) {
-                    List<AsignacionMedicamentoResponse> asignaciones = response.body();
+            Retrofit retrofit = ApiClient.getClient();
+            AuthService authService = retrofit.create(AuthService.class);
+            medicamentosCall = authService.listarAsignacionesMedicamentos("Bearer " + token, pacienteId);
 
-                    Log.d("API_RESPONSE", "Respuesta recibida: " + new Gson().toJson(asignaciones));
+            medicamentosCall.enqueue(new Callback<List<AsignacionMedicamentoResponse>>() {
+                @Override
+                public void onResponse(@NonNull Call<List<AsignacionMedicamentoResponse>> call,
+                                       @NonNull Response<List<AsignacionMedicamentoResponse>> response) {
+                    showLoading(false);
+                    if (!isAdded()) return;
 
-                    if (asignaciones != null && !asignaciones.isEmpty()) {
-                        mostrarMedicamentosAsignados(asignaciones);
+                    if (response.isSuccessful()) {
+                        List<AsignacionMedicamentoResponse> asignaciones = response.body();
+
+                        Log.d("API_RESPONSE", "Respuesta recibida: " + new Gson().toJson(asignaciones));
+
+                        if (asignaciones != null && !asignaciones.isEmpty()) {
+                            mostrarMedicamentosAsignados(asignaciones);
+                        } else {
+                            showEmptyState("No hay medicamentos asignados para " + selectedPatientName);
+                        }
                     } else {
-                        showEmptyState("No hay medicamentos asignados para " + selectedPatientName);
+                        try {
+                            String errorBody = response.errorBody() != null ?
+                                    "Error: " + response.errorBody().string() :
+                                    "Error: Código " + response.code();
+                            Toast.makeText(getContext(), errorBody, Toast.LENGTH_SHORT).show();
+                            Log.e("API_ERROR", errorBody);
+                        } catch (Exception e) {
+                            Toast.makeText(getContext(), "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
+                            Log.e("API_ERROR", "Error al procesar error", e);
+                        }
+                        showEmptyState("Error al cargar medicamentos");
                     }
-                } else {
-                    try {
-                        String errorBody = response.errorBody() != null ?
-                                "Error: " + response.errorBody().string() :
-                                "Error: Código " + response.code();
-                        Toast.makeText(getContext(), errorBody, Toast.LENGTH_SHORT).show();
-                        Log.e("API_ERROR", errorBody);
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
-                        Log.e("API_ERROR", "Error al procesar error", e);
-                    }
-                    showEmptyState("Error al cargar medicamentos");
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<List<AsignacionMedicamentoResponse>> call,
-                                  @NonNull Throwable t) {
-                showLoading(false);
-                if (!isAdded() || call.isCanceled()) return;
-                Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.e("API Error", "Error al obtener medicamentos", t);
-                showEmptyState("Error de conexión");
-            }
+                @Override
+                public void onFailure(@NonNull Call<List<AsignacionMedicamentoResponse>> call,
+                                      @NonNull Throwable t) {
+                    showLoading(false);
+                    if (!isAdded() || call.isCanceled()) return;
+                    Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("API Error", "Error al obtener medicamentos", t);
+                    showEmptyState("Error de conexión");
+                }
+            });
         });
     }
 
@@ -851,10 +853,11 @@ public class ListaAsignarMedicamentos extends Fragment {
         patientsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerPatients.setAdapter(patientsAdapter);
 
+        // Configurar spinner de medicamentos con callback
         ArrayAdapter<String> medicationsAdapter = new ArrayAdapter<>(
                 getContext(),
                 android.R.layout.simple_spinner_item,
-                new ArrayList<>(medicamentosMap.values())
+                new ArrayList<>()
         );
         medicationsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMedications.setAdapter(medicationsAdapter);
@@ -869,15 +872,14 @@ public class ListaAsignarMedicamentos extends Fragment {
             }
             if (asignacion.getHoraInicio() != null) {
                 try {
-                    // Si la hora viene en formato "HH:mm:ss", la convertimos a "HH:mm"
                     String horaOriginal = asignacion.getHoraInicio();
-                    if (horaOriginal.length() > 5) { // Si tiene segundos (ejemplo: "08:30:00")
-                        horaOriginal = horaOriginal.substring(0, 5); // Cortamos los segundos
+                    if (horaOriginal.length() > 5) {
+                        horaOriginal = horaOriginal.substring(0, 5);
                     }
                     tvStartTime.setText(horaOriginal);
                 } catch (Exception e) {
                     Log.e("TimeFormat", "Error al formatear hora", e);
-                    tvStartTime.setText(asignacion.getHoraInicio()); // Si falla, asignamos el valor original
+                    tvStartTime.setText(asignacion.getHoraInicio());
                 }
             }
             if (asignacion.getDosis() != null) {
@@ -902,7 +904,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                 }
             }
 
-            // Seleccionar paciente por nombre completo
+            // Seleccionar paciente
             if (asignacion.getPaciente() != null) {
                 int idPaciente = asignacion.getPaciente().getId();
                 String nombreCompleto = asignacion.getPaciente().getNombre() + " " + asignacion.getPaciente().getApellido();
@@ -922,24 +924,13 @@ public class ListaAsignarMedicamentos extends Fragment {
                 }
             }
 
-            if (asignacion.getMedicamento() != null) {
-                int idMedicamentoAsignado = asignacion.getMedicamento().getId_medicamento();
-
-                for (Map.Entry<Integer, String> entry : medicamentosMap.entrySet()) {
-                    if (entry.getKey() == idMedicamentoAsignado) {
-                        String nombreMedicamento = entry.getValue();
-
-                        for (int i = 0; i < spinnerMedications.getCount(); i++) {
-                            String item = spinnerMedications.getItemAtPosition(i).toString().trim();
-                            if (item.equalsIgnoreCase(nombreMedicamento.trim())) {
-                                spinnerMedications.setSelection(i);
-                                break;
-                            }
-                        }
-                        break;
-                    }
+            // Cargar medicamentos y luego seleccionar el correcto
+            loadMedications(spinnerMedications, () -> {
+                if (asignacion.getMedicamento() != null) {
+                    int idMedicamentoAsignado = asignacion.getMedicamento().getId_medicamento();
+                    seleccionarMedicamentoEnSpinner(spinnerMedications, idMedicamentoAsignado);
                 }
-            }
+            });
         }
 
         // Configurar DatePickers
@@ -996,6 +987,20 @@ public class ListaAsignarMedicamentos extends Fragment {
         builder.setNegativeButton("Cancelar", (dialogInterface, which) -> dialogInterface.dismiss());
     }
 
+    private void seleccionarMedicamentoEnSpinner(Spinner spinner, int idMedicamento) {
+        String nombreMedicamento = medicamentosMap.get(idMedicamento);
+        if (nombreMedicamento != null) {
+            ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinner.getAdapter();
+            int position = adapter.getPosition(nombreMedicamento);
+            if (position >= 0) {
+                spinner.setSelection(position);
+            } else {
+                Log.w("MedicamentoSpinner", "Medicamento no encontrado en spinner: " + nombreMedicamento);
+            }
+        } else {
+            Log.e("MedicamentoSpinner", "No se encontró el medicamento con ID: " + idMedicamento);
+        }
+    }
 
     private void mostrarDialogoConfirmarEliminacion(AsignacionMedicamentoResponse asignacion) {
         new AlertDialog.Builder(getContext())
@@ -1039,7 +1044,7 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         tvStartDate.setText(dateFormatter.format(dialogStartDate.getTime()));
         tvEndDate.setText(dateFormatter.format(dialogEndDate.getTime()));
-        tvStartTime.setText("08:00"); // Hora por defecto
+        tvStartTime.setText("08:00");
 
         layoutStartDate.setOnClickListener(v -> showDatePickerDialog(dialogStartDate, tvStartDate, true, dialogEndDate, tvEndDate));
         layoutEndDate.setOnClickListener(v -> showDatePickerDialog(dialogEndDate, tvEndDate, false, dialogStartDate, null));
@@ -1053,7 +1058,6 @@ public class ListaAsignarMedicamentos extends Fragment {
             if (position >= 0) {
                 spinnerPatients.setSelection(position);
             }
-
         }
 
         AlertDialog dialog = builder.create();
@@ -1170,15 +1174,16 @@ public class ListaAsignarMedicamentos extends Fragment {
         medicationsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMedications.setAdapter(medicationsAdapter);
 
-        loadMedications(spinnerMedications);
+        loadMedications(spinnerMedications, null);
     }
 
-    private void loadMedications(Spinner spinnerMedications) {
+    private void loadMedications(Spinner spinnerMedications, Runnable onComplete) {
         sharedPreferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
 
         if (token == null) {
             Toast.makeText(getContext(), "No se encontró token de autenticación", Toast.LENGTH_SHORT).show();
+            if (onComplete != null) onComplete.run();
             return;
         }
 
@@ -1202,20 +1207,17 @@ public class ListaAsignarMedicamentos extends Fragment {
                         nombresMedicamentos.add(medicamento.getNombre());
                     }
 
-                    ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinnerMedications.getAdapter();
-                    adapter.clear();
-                    adapter.addAll(nombresMedicamentos);
-                    adapter.notifyDataSetChanged();
-                } else {
-                    try {
-                        String errorBody = response.errorBody() != null ?
-                                "Error: " + response.errorBody().string() :
-                                "Error: Código " + response.code();
-                        Toast.makeText(getContext(), errorBody, Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "Error al obtener medicamentos", Toast.LENGTH_SHORT).show();
+                    if (spinnerMedications != null) {
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                                getContext(),
+                                android.R.layout.simple_spinner_item,
+                                nombresMedicamentos
+                        );
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerMedications.setAdapter(adapter);
                     }
                 }
+                if (onComplete != null) onComplete.run();
             }
 
             @Override
@@ -1223,6 +1225,7 @@ public class ListaAsignarMedicamentos extends Fragment {
                                   @NonNull Throwable t) {
                 if (!isAdded() || call.isCanceled()) return;
                 Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (onComplete != null) onComplete.run();
             }
         });
     }
