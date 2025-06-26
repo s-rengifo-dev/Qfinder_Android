@@ -867,7 +867,17 @@ public class ListaAsignarMedicamentos extends Fragment {
                 tvEndDate.setText(asignacion.getFechaFin());
             }
             if (asignacion.getHoraInicio() != null) {
-                tvStartTime.setText(asignacion.getHoraInicio());
+                try {
+                    // Si la hora viene en formato "HH:mm:ss", la convertimos a "HH:mm"
+                    String horaOriginal = asignacion.getHoraInicio();
+                    if (horaOriginal.length() > 5) { // Si tiene segundos (ejemplo: "08:30:00")
+                        horaOriginal = horaOriginal.substring(0, 5); // Cortamos los segundos
+                    }
+                    tvStartTime.setText(horaOriginal);
+                } catch (Exception e) {
+                    Log.e("TimeFormat", "Error al formatear hora", e);
+                    tvStartTime.setText(asignacion.getHoraInicio()); // Si falla, asignamos el valor original
+                }
             }
             if (asignacion.getDosis() != null) {
                 etDosage.setText(asignacion.getDosis());
