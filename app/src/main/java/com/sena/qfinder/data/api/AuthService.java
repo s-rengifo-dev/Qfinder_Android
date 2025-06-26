@@ -36,6 +36,8 @@ import com.sena.qfinder.data.models.RegisterPacienteResponse;
 import com.sena.qfinder.data.models.LoginRequest;
 import com.sena.qfinder.data.models.LoginResponse;
 import com.sena.qfinder.data.models.PerfilUsuarioResponse;
+import com.sena.qfinder.data.models.ResendCodeRequest;
+import com.sena.qfinder.data.models.ResendCodeResponse;
 import com.sena.qfinder.data.models.RolResponse;
 import com.sena.qfinder.data.models.SendCodeRequest;
 import com.sena.qfinder.data.models.SendCodeResponse;
@@ -76,6 +78,9 @@ public interface AuthService {
     Call<SendCodeResponse> SendCode(@Body SendCodeRequest request);
     @POST("api/auth/verificar-codigo")
     Call<Void> verificarCodigo(@Body VerificarCodigoRequest request);
+
+    @POST("api/auth/resend-code")
+    Call<ResendCodeResponse> reenviarCodigo(@Body ResendCodeRequest request);
 
     @POST("api/auth/cambiar-password")
     Call<Void> cambiarPassword(

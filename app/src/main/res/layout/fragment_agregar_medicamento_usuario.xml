@@ -3,14 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
     android:padding="16dp"
+    android:background="@android:color/transparent"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="@android:color/transparent"
         android:padding="8dp">
 
         <com.google.android.material.card.MaterialCardView
@@ -185,7 +186,7 @@
                     android:id="@+id/et_dosage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Especificar dosis"
+                    android:hint="Ej: 500 mg, 1 tableta, 10 ml, etc."
                     android:inputType="text"
                     android:backgroundTint="#CCCCCC"
                     android:layout_marginBottom="16dp" />
@@ -210,7 +211,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Número"
+                        android:hint="Ej: 8 horas,2 días"
                         android:inputType="number"
                         android:layout_marginEnd="8dp"
                         android:backgroundTint="#CCCCCC" />
@@ -240,7 +241,7 @@
         <!-- Espaciador para evitar que el botón quede tapado -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="250dp" />
+            android:layout_height="260dp" />
 
     </LinearLayout>
 </ScrollView>

@@ -10,6 +10,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -833,6 +834,7 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         btnSave.setText("Actualizar");
 
+        // Adaptadores para los spinners
         ArrayAdapter<CharSequence> frequencyAdapter = ArrayAdapter.createFromResource(
                 getContext(),
                 R.array.frequency_units,
@@ -841,33 +843,106 @@ public class ListaAsignarMedicamentos extends Fragment {
         frequencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFrequencyUnit.setAdapter(frequencyAdapter);
 
-        tvStartDate.setText(asignacion.getFechaInicio());
-        tvEndDate.setText(asignacion.getFechaFin());
-        etDosage.setText(asignacion.getDosis());
+        ArrayAdapter<String> patientsAdapter = new ArrayAdapter<>(
+                getContext(),
+                android.R.layout.simple_spinner_item,
+                new ArrayList<>(pacientesMap.values())
+        );
+        patientsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerPatients.setAdapter(patientsAdapter);
 
-        if (asignacion.getHoraInicio() != null) {
-            tvStartTime.setText(asignacion.getHoraInicio());
-        }
+        ArrayAdapter<String> medicationsAdapter = new ArrayAdapter<>(
+                getContext(),
+                android.R.layout.simple_spinner_item,
+                new ArrayList<>(medicamentosMap.values())
+        );
+        medicationsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMedications.setAdapter(medicationsAdapter);
 
-        layoutStartTime.setOnClickListener(v -> showTimePickerDialog());
+        // Rellenar campos con datos existentes
+        if (asignacion != null) {
+            if (asignacion.getFechaInicio() != null) {
+                tvStartDate.setText(asignacion.getFechaInicio());
+            }
+            if (asignacion.getFechaFin() != null) {
+                tvEndDate.setText(asignacion.getFechaFin());
+            }
+            if (asignacion.getHoraInicio() != null) {
+                try {
+                    // Si la hora viene en formato "HH:mm:ss", la convertimos a "HH:mm"
+                    String horaOriginal = asignacion.getHoraInicio();
+                    if (horaOriginal.length() > 5) { // Si tiene segundos (ejemplo: "08:30:00")
+                        horaOriginal = horaOriginal.substring(0, 5); // Cortamos los segundos
+                    }
+                    tvStartTime.setText(horaOriginal);
+                } catch (Exception e) {
+                    Log.e("TimeFormat", "Error al formatear hora", e);
+                    tvStartTime.setText(asignacion.getHoraInicio()); // Si falla, asignamos el valor original
+                }
+            }
+            if (asignacion.getDosis() != null) {
+                etDosage.setText(asignacion.getDosis());
+            }
 
-        if (asignacion.getFrecuencia() != null && !asignacion.getFrecuencia().isEmpty()) {
-            String[] frecuenciaParts = asignacion.getFrecuencia().split(" ");
-            if (frecuenciaParts.length >= 2) {
-                etFrequencyNumber.setText(frecuenciaParts[0]);
-                for (int i = 0; i < spinnerFrequencyUnit.getCount(); i++) {
-                    if (spinnerFrequencyUnit.getItemAtPosition(i).toString().equalsIgnoreCase(frecuenciaParts[1])) {
-                        spinnerFrequencyUnit.setSelection(i);
+            // Frecuencia (número y unidad)
+            if (asignacion.getFrecuencia() != null && !asignacion.getFrecuencia().isEmpty()) {
+                String[] frecuenciaParts = asignacion.getFrecuencia().split(" ");
+                if (frecuenciaParts.length >= 2) {
+                    etFrequencyNumber.setText(frecuenciaParts[0]);
+                    for (int i = 0; i < spinnerFrequencyUnit.getCount(); i++) {
+                        String unidad = spinnerFrequencyUnit.getItemAtPosition(i).toString();
+                        if (unidad.equalsIgnoreCase(frecuenciaParts[1])) {
+                            spinnerFrequencyUnit.setSelection(i);
+                            break;
+                        }
+                    }
+                } else {
+                    etFrequencyNumber.setText(frecuenciaParts[0]);
+                    spinnerFrequencyUnit.setSelection(0);
+                }
+            }
+
+            // Seleccionar paciente por nombre completo
+            if (asignacion.getPaciente() != null) {
+                int idPaciente = asignacion.getPaciente().getId();
+                String nombreCompleto = asignacion.getPaciente().getNombre() + " " + asignacion.getPaciente().getApellido();
+
+                int index = -1;
+                for (int i = 0; i < spinnerPatients.getCount(); i++) {
+                    if (spinnerPatients.getItemAtPosition(i).toString().equalsIgnoreCase(nombreCompleto)) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index != -1) {
+                    spinnerPatients.setSelection(index);
+                } else {
+                    Log.w("PacienteSpinner", "No se encontró el paciente en el spinner: " + nombreCompleto);
+                }
+            }
+
+            if (asignacion.getMedicamento() != null) {
+                int idMedicamentoAsignado = asignacion.getMedicamento().getId_medicamento();
+
+                for (Map.Entry<Integer, String> entry : medicamentosMap.entrySet()) {
+                    if (entry.getKey() == idMedicamentoAsignado) {
+                        String nombreMedicamento = entry.getValue();
+
+                        for (int i = 0; i < spinnerMedications.getCount(); i++) {
+                            String item = spinnerMedications.getItemAtPosition(i).toString().trim();
+                            if (item.equalsIgnoreCase(nombreMedicamento.trim())) {
+                                spinnerMedications.setSelection(i);
+                                break;
+                            }
+                        }
                         break;
                     }
                 }
             }
         }
 
-        setupSpinners(spinnerPatients, spinnerMedications);
-        spinnerPatients.setEnabled(false);
-        spinnerMedications.setEnabled(false);
-
+        // Configurar DatePickers
         LinearLayout layoutStartDate = viewInflated.findViewById(R.id.layout_start_date);
         LinearLayout layoutEndDate = viewInflated.findViewById(R.id.layout_end_date);
 
@@ -876,37 +951,25 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            dialogStartDate.setTime(sdf.parse(asignacion.getFechaInicio()));
-            dialogEndDate.setTime(sdf.parse(asignacion.getFechaFin()));
+            if (asignacion.getFechaInicio() != null) {
+                dialogStartDate.setTime(sdf.parse(asignacion.getFechaInicio()));
+            }
+            if (asignacion.getFechaFin() != null) {
+                dialogEndDate.setTime(sdf.parse(asignacion.getFechaFin()));
+            }
         } catch (Exception e) {
             Log.e("DateError", "Error al parsear fechas", e);
         }
 
         layoutStartDate.setOnClickListener(v -> showDatePickerDialog(dialogStartDate, tvStartDate, true, dialogEndDate, tvEndDate));
         layoutEndDate.setOnClickListener(v -> showDatePickerDialog(dialogEndDate, tvEndDate, false, dialogStartDate, null));
+        layoutStartTime.setOnClickListener(v -> showTimePickerDialog());
+
+        // Bloquear selección
+        spinnerPatients.setEnabled(false);
+        spinnerMedications.setEnabled(false);
 
         AlertDialog dialog = builder.create();
-
-        spinnerPatients.post(() -> {
-            if (asignacion.getPaciente() != null && pacientesMap.containsKey(asignacion.getPaciente().getId())) {
-                String pacienteNombre = pacientesMap.get(asignacion.getPaciente().getId());
-                int position = ((ArrayAdapter<String>) spinnerPatients.getAdapter()).getPosition(pacienteNombre);
-                if (position >= 0) {
-                    spinnerPatients.setSelection(position);
-                }
-            }
-        });
-
-        spinnerMedications.post(() -> {
-            if (asignacion.getMedicamento() != null && medicamentosMap.containsKey(asignacion.getMedicamento().getId_medicamento())) {
-                String medicamentoNombre = medicamentosMap.get(asignacion.getMedicamento().getId_medicamento());
-                int position = ((ArrayAdapter<String>) spinnerMedications.getAdapter()).getPosition(medicamentoNombre);
-                if (position >= 0) {
-                    spinnerMedications.setSelection(position);
-                }
-            }
-        });
-
         dialog.show();
 
         btnSave.setOnClickListener(v -> {
@@ -932,6 +995,7 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         builder.setNegativeButton("Cancelar", (dialogInterface, which) -> dialogInterface.dismiss());
     }
+
 
     private void mostrarDialogoConfirmarEliminacion(AsignacionMedicamentoResponse asignacion) {
         new AlertDialog.Builder(getContext())
@@ -989,11 +1053,14 @@ public class ListaAsignarMedicamentos extends Fragment {
             if (position >= 0) {
                 spinnerPatients.setSelection(position);
             }
+
         }
 
         AlertDialog dialog = builder.create();
         dialog.show();
-
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
         btnSave.setOnClickListener(v -> {
             if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequencyNumber, tvStartDate, tvEndDate, tvStartTime)) {
                 String pacienteNombre = spinnerPatients.getSelectedItem().toString();
