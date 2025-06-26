@@ -38,7 +38,13 @@
         <item>2 días antes</item>
         <item>No recordar</item>
     </string-array>
-
+    <string name="user_identification_error">No pudimos identificar tu cuenta. Por favor, inicia sesión nuevamente.</string>
+    <string name="connectionerror">Problemas de conexión. Verifica tu internet e intenta nuevamente.</string>
+    <string name="payment_service_error">El servicio de pagos no está disponible en este momento.</string>
+    <string name="checkout_process_error">Ocurrió un error al preparar el pago.</string>
+    <string name="service_temporarily_unavailable">El servicio no está disponible temporalmente. Por favor, intenta más tarde.</string>
+    <string name="unexpected_error">Ocurrió un error inesperado.</string>
+    <string name="payment_cancelled_error">El pago fue cancelado o no se completó.</string>
     <string name="patient_section">Pacientes</string>
     <string name="activities_section">Actividades</string>
     <string name="medications_section">Medicamentos</string>

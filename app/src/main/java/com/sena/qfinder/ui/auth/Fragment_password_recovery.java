@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +59,9 @@ public class Fragment_password_recovery extends Fragment {
             String email = edtEmail.getText().toString().trim();
 
             if (email.isEmpty()) {
-                Toast.makeText(getContext(), "Ingresa un correo electrónico válido", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Ingresa un correo electrónico", Toast.LENGTH_SHORT).show();
+            } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(getContext(), "El correo electrónico no es válido", Toast.LENGTH_SHORT).show();
             } else {
                 enviarCodigoRecuperacion(email);
             }
@@ -75,7 +78,6 @@ public class Fragment_password_recovery extends Fragment {
 
         AuthService authService = retrofit.create(AuthService.class);
         Call<SendCodeResponse> call = authService.SendCode(new SendCodeRequest(email));
-
 
         call.enqueue(new Callback<SendCodeResponse>() {
             @Override

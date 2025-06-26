@@ -43,21 +43,20 @@ public class SubscriptionActivity extends AppCompatActivity {
 
         Button btnPlus = findViewById(R.id.btn_plus_plan);
         Button btnPro = findViewById(R.id.btn_pro_plan);
-        ImageView btnBack = findViewById(R.id.btnBack); // ← Agregamos el botón "atrás"
+        ImageView btnBack = findViewById(R.id.btnBack);
 
         btnPlus.setOnClickListener(v -> initiateCheckoutPro("plus"));
         btnPro.setOnClickListener(v -> initiateCheckoutPro("pro"));
 
-        btnBack.setOnClickListener(v -> finish()); // ← Cierra la actividad actual
+        btnBack.setOnClickListener(v -> finish());
     }
-
 
     private void initiateCheckoutPro(String planType) {
         currentPlanType = planType;
         String userId = prefManager.getUserId();
 
         if (userId == null || userId.isEmpty()) {
-            Toast.makeText(this, "Error: No se pudo identificar al usuario", Toast.LENGTH_LONG).show();
+            showUserError(R.string.user_identification_error);
             return;
         }
 
@@ -84,8 +83,7 @@ public class SubscriptionActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<CheckoutProResponse> call, Throwable t) {
                 dismissLoading();
-                Toast.makeText(SubscriptionActivity.this,
-                        getString(R.string.connection_error), Toast.LENGTH_LONG).show();
+                showUserError(R.string.connectionerror);
                 Log.e(TAG, "API call failed", t);
             }
         });
@@ -93,41 +91,33 @@ public class SubscriptionActivity extends AppCompatActivity {
 
     private void launchMercadoPagoCheckout(CheckoutProResponse response) {
         try {
-            String checkoutUrl = response.getInitPoint();  // Usar sandbox solo en desarrollo
+            String checkoutUrl = response.getInitPoint();
             Log.d(TAG, "Iniciando checkout con URL: " + checkoutUrl);
 
             if (checkoutUrl == null || checkoutUrl.isEmpty()) {
-                Toast.makeText(this, getString(R.string.invalid_payment_url), Toast.LENGTH_LONG).show();
+                showUserError(R.string.payment_service_error);
                 return;
             }
 
-            // Configurar Custom Tabs
             CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
             builder.setShowTitle(true);
             builder.setUrlBarHidingEnabled(true);
-
-            // Personalizar la barra de herramientas
             builder.setToolbarColor(getResources().getColor(R.color.colorPrimaryDark));
 
             CustomTabsIntent customTabsIntent = builder.build();
 
-            // Asegurar que usa Chrome si está disponible
             String packageName = CustomTabsHelper.getPackageNameToUse(this);
             if (packageName != null) {
                 customTabsIntent.intent.setPackage(packageName);
             }
 
-            // Añadir flags para manejar mejor la navegación
             customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            // Lanzar el checkout
             customTabsIntent.launchUrl(this, Uri.parse(checkoutUrl));
         } catch (Exception e) {
             Log.e(TAG, "Error al iniciar checkout", e);
-            Toast.makeText(this,
-                    getString(R.string.checkout_launch_error),
-                    Toast.LENGTH_LONG).show();
+            showUserError(R.string.checkout_process_error);
         }
     }
 
@@ -137,10 +127,8 @@ public class SubscriptionActivity extends AppCompatActivity {
 
         if (requestCode == REQUEST_CODE_PAYMENT) {
             if (resultCode == RESULT_OK) {
-                // El pago fue exitoso
                 handlePaymentResult(true, data);
             } else {
-                // El pago falló o fue cancelado
                 handlePaymentResult(false, data);
             }
         }
@@ -148,21 +136,16 @@ public class SubscriptionActivity extends AppCompatActivity {
 
     private void handlePaymentResult(boolean success, Intent data) {
         if (success) {
-            String paymentId = data != null ? data.getStringExtra("payment_id") : null;
             Toast.makeText(this,
                     getString(R.string.payment_success_message_short),
                     Toast.LENGTH_SHORT).show();
-
-            // Podrías verificar el pago con tu backend aquí si es necesario
         } else {
-            Toast.makeText(this,
-                    getString(R.string.payment_cancelled_or_failed),
-                    Toast.LENGTH_LONG).show();
+            showUserError(R.string.payment_cancelled_error);
         }
     }
 
     private void showLoading(String message) {
-        dismissLoading(); // Asegurarse de que no hay diálogos previos
+        dismissLoading();
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(message);
         progressDialog.setCancelable(false);
@@ -177,20 +160,22 @@ public class SubscriptionActivity extends AppCompatActivity {
 
     private void handleErrorResponse(Response<CheckoutProResponse> response) {
         try {
-            String errorMsg;
+            // Registramos el error completo para debugging
             if (response.errorBody() != null) {
-                errorMsg = response.errorBody().string();
+                Log.e(TAG, "Error response: " + response.errorBody().string());
             } else {
-                errorMsg = getString(R.string.unknown_error, response.code());
+                Log.e(TAG, "Error with code: " + response.code());
             }
 
-            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
-            Log.e(TAG, "Error en la respuesta: " + errorMsg);
+            // Mostramos mensaje genérico al usuario
+            showUserError(R.string.service_temporarily_unavailable);
         } catch (Exception e) {
-            Toast.makeText(this,
-                    getString(R.string.error_processing_response),
-                    Toast.LENGTH_LONG).show();
+            showUserError(R.string.unexpected_error);
             Log.e(TAG, "Error al procesar respuesta fallida", e);
         }
+    }
+
+    private void showUserError(int stringResId) {
+        Toast.makeText(this, getString(stringResId), Toast.LENGTH_LONG).show();
     }
 }
