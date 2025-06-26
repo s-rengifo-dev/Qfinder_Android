@@ -19,6 +19,7 @@ import com.sena.qfinder.data.models.FirebaseTokenResponse;
 import com.sena.qfinder.data.models.MedicamentoRequest;
 import com.sena.qfinder.data.models.MedicamentoResponse;
 import com.sena.qfinder.data.models.MedicamentoSimpleResponse;
+import com.sena.qfinder.data.models.MembresiaResponse;
 import com.sena.qfinder.data.models.MensajeRequest;
 import com.sena.qfinder.data.models.MensajesResponse;
 import com.sena.qfinder.data.models.NotaEpisodio;
@@ -254,6 +255,12 @@ public interface AuthService {
     @GET("api/membresiaRed/listarRedPertenece")
     Call<List<RedResponse>> listarRedesPertenecientes(
             @Header("Authorization") String token
+    );
+
+    @GET("api/auth/membresia")
+    Call<MembresiaResponse> getUserMembership(
+            @Header("Authorization") String token,
+            @Query("id_usuario") String userId
     );
     @GET("api/chat/{id_red}/mensajes")
     Call<ApiResponse<MensajesResponse>> obtenerMensajes(

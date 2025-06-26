@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F9F9F9">
+
+    <!-- Encabezado común -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="99dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="99dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/top_nav_background" />
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="34dp"
+            android:layout_marginStart="10dp"
+            android:layout_alignParentStart="true"
+            android:background="@drawable/circle_azul"
+            android:contentDescription="Volver"
+            android:padding="10dp"
+            android:src="@drawable/img" />
+
+        <TextView
+            android:id="@+id/tvPlanTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="35dp"/>
+    </RelativeLayout>
+
+    <!-- Contenedor dinámico para los planes -->
+    <FrameLayout
+        android:id="@+id/plan_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+</LinearLayout>
