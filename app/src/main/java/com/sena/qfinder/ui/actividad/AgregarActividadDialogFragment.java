@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -78,8 +79,11 @@ public class AgregarActividadDialogFragment extends DialogFragment {
     private String tempFecha;
     private String tempHora;
 
+
     public interface OnActividadGuardadaListener {
         void onActividadGuardada();
+
+
     }
 
     private OnActividadGuardadaListener listener;
@@ -748,10 +752,17 @@ public class AgregarActividadDialogFragment extends DialogFragment {
         super.onStart();
         Dialog dialog = getDialog();
         if (dialog != null && dialog.getWindow() != null) {
+            // Establecer el tamaño del diálogo
             dialog.getWindow().setLayout(
                     (int) (getResources().getDisplayMetrics().widthPixels * 0.95),
                     (int) (getResources().getDisplayMetrics().heightPixels * 0.9)
             );
+
+            // Hacer transparente el fondo del diálogo
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+
+            // Opcional: Quitar las sombras/decoration si lo deseas
+            // dialog.getWindow().setDimAmount(0f);
         }
     }
 }
