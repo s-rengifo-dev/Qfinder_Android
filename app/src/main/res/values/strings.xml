@@ -57,10 +57,10 @@
     <string name="unknown_error">Error desconocido (Código: %1$d)</string>
     <string name="error_processing_response">Error al procesar la respuesta</string>
     <string name="payment_error_processing">Error al procesar el pago</string>
-<!--    <string name="payment_success_title">¡Pago Exitoso!</string>-->
-<!--    <string name="payment_success_plus_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PLUS.</string>-->
-<!--    <string name="payment_success_pro_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PRO.</string>-->
-<!--    <string name="payment_success_generic_message">¡Felicidades! Tu suscripción se ha activado correctamente.</string>-->
+    <!--    <string name="payment_success_title">¡Pago Exitoso!</string>-->
+    <!--    <string name="payment_success_plus_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PLUS.</string>-->
+    <!--    <string name="payment_success_pro_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PRO.</string>-->
+    <!--    <string name="payment_success_generic_message">¡Felicidades! Tu suscripción se ha activado correctamente.</string>-->
     <string name="payment_success_toast">¡Pago exitoso! Plan: %1$s</string>
     <string name="text1RegUsuario">Registra tus datos</string>
     <string name="text2RegUsuario">Crear Cuenta</string>
