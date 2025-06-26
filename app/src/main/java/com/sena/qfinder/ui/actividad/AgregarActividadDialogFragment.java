@@ -155,7 +155,12 @@ public class AgregarActividadDialogFragment extends DialogFragment {
         btnGuardar = view.findViewById(R.id.btnGuardar);
         btnCancelar = view.findViewById(R.id.btnCancelar);
         btnEliminar = view.findViewById(R.id.btnEliminar);
-        btnEliminar.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
+
+        // Configurar visibilidad de botones
+        btnGuardar.setVisibility(View.VISIBLE); // Siempre visible
+        btnGuardar.setText(isEditMode ? "Actualizar" : "Guardar"); // Cambiar texto
+
+        btnEliminar.setVisibility(isEditMode ? View.VISIBLE : View.GONE); // Solo en edición
     }
 
     private void setupSpinners() {

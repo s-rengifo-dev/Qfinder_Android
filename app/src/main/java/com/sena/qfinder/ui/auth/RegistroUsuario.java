@@ -78,11 +78,16 @@ public class RegistroUsuario extends Fragment {
             chkAceptarTerminos.setButtonTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#18A0FB")));
         }
 
+        // Limitar a 10 dígitos y tipo de entrada telefónica
+        edtTelefono.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(10)});
+        edtTelefono.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+
         progressDialog = new ProgressDialog(getContext());
         progressDialog.setTitle("Registrando");
         progressDialog.setMessage("Por favor espere...");
         progressDialog.setCancelable(false);
     }
+
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> volverALogin());
@@ -196,8 +201,13 @@ public class RegistroUsuario extends Fragment {
             valido = false;
         }
 
-        if (edtTelefono.getText().toString().trim().isEmpty()) {
+        String telefono = edtTelefono.getText().toString().trim();
+        if (telefono.isEmpty()) {
             edtTelefono.setError("El teléfono es obligatorio");
+            valido = false;
+        } else if (!telefono.matches("\\d{10}")) {
+            edtTelefono.setError("El teléfono debe tener exactamente 10 dígitos numéricos");
+            Toast.makeText(getContext(), "El teléfono debe tener 10 dígitos numéricos", Toast.LENGTH_SHORT).show();
             valido = false;
         }
 
