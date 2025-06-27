@@ -1,5 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="180dp"
+    android:id="@+id/cardContainer"
     android:layout_height="90dp"
     android:orientation="horizontal"
     android:paddingTop="8dp"

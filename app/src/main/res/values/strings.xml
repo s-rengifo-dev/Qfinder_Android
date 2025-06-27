@@ -147,4 +147,10 @@
     <string name="loading_user_data">Cargando tu plan...</string>
     <string name="payment_error">Error en el proceso de pago</string>
     <string name="service_error">Error al obtener información</string>
+
+    <string name="pending_subscription_title">Suscripción Pendiente</string>
+    <string name="pending_subscription_message">Ya tienes una suscripción pendiente de pago. Por favor espera a que se complete el proceso o contacta con soporte si necesitas ayuda.</string>
+    <string name="understand">Entendido</string>
+    <string name="contact_support">Contactar Soporte</string>
+    <string name="payment_pending">Pendiente de pago</string>
 </resources>

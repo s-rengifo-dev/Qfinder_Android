@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -702,6 +703,7 @@ public class ListaAsignarMedicamentos extends Fragment {
         TextView tvName = patientCard.findViewById(R.id.tvPatientName);
         TextView tvConditions = patientCard.findViewById(R.id.tvPatientConditions);
         ImageView ivProfile = patientCard.findViewById(R.id.ivPatientProfile);
+        LinearLayout cardContainer = patientCard.findViewById(R.id.cardContainer); // Asegúrate de tener este ID en tu layout
 
         tvName.setText(name);
 
@@ -727,14 +729,52 @@ public class ListaAsignarMedicamentos extends Fragment {
             ivProfile.setImageResource(R.drawable.perfil_familiar);
         }
 
+        // Configurar el estado inicial
+        updateCardSelectionAppearance(cardContainer, patientId == selectedPatientId);
+
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;
             selectedPatientName = name;
             updatePatientSelection();
             cargarMedicamentosPaciente(patientId);
+
+            // Actualizar la apariencia de todas las tarjetas
+            updateAllCardsSelection();
         });
 
         patientsContainer.addView(patientCard);
+    }
+
+    private void updateCardSelectionAppearance(View cardView, boolean isSelected) {
+        Context context = getContext();
+        if (context == null) return;
+
+        // Obtener el fondo original
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setCornerRadius(dpToPx(8)); // 8dp en píxeles
+        drawable.setColor(ContextCompat.getColor(context, isSelected ? R.color.selected_card_color : R.color.default_card_color));
+        drawable.setStroke(dpToPx(1), ContextCompat.getColor(context, isSelected ? R.color.selected_stroke_color : R.color.default_stroke_color));
+
+        cardView.setBackground(drawable);
+        cardView.setElevation(isSelected ? dpToPx(4) : dpToPx(2)); // Mayor elevación cuando está seleccionado
+    }
+
+    private void updateAllCardsSelection() {
+        for (int i = 0; i < patientsContainer.getChildCount(); i++) {
+            View child = patientsContainer.getChildAt(i);
+            if (child.getTag() instanceof Integer) {
+                int patientId = (int) child.getTag();
+                LinearLayout cardContainer = child.findViewById(R.id.cardContainer);
+                if (cardContainer != null) {
+                    updateCardSelectionAppearance(cardContainer, patientId == selectedPatientId);
+                }
+            }
+        }
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     private void cargarMedicamentosPaciente(int pacienteId) {
