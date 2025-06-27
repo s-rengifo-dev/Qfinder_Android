@@ -2,13 +2,13 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <solid android:color="@color/azulitoInput" /> <!-- Fondo azul claro -->
+ <!-- Fondo azul claro -->
 
     <corners android:radius="10dp" /> <!-- Esquinas redondeadas -->
 
     <!-- Un solo stroke con las propiedades correctas -->
     <stroke
-        android:width="3dp"
+        android:width="2dp"
         android:color="#1989F1" /> <!-- Borde azul fuerte -->
 
     <padding

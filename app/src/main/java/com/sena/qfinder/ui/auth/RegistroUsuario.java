@@ -45,7 +45,6 @@ public class RegistroUsuario extends Fragment {
     private TextView tvCondiciones;
     private CheckBox chkAceptarTerminos;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_registro_usuario, container, false);
@@ -79,11 +78,16 @@ public class RegistroUsuario extends Fragment {
             chkAceptarTerminos.setButtonTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#18A0FB")));
         }
 
+        // Limitar a 10 dígitos y tipo de entrada telefónica
+        edtTelefono.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(10)});
+        edtTelefono.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+
         progressDialog = new ProgressDialog(getContext());
         progressDialog.setTitle("Registrando");
         progressDialog.setMessage("Por favor espere...");
         progressDialog.setCancelable(false);
     }
+
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> volverALogin());
@@ -112,8 +116,8 @@ public class RegistroUsuario extends Fragment {
             @Override
             public void updateDrawState(@NonNull TextPaint ds) {
                 super.updateDrawState(ds);
-                ds.setColor(0xFF18A0FB);// Azul personalizado
-                ds.setUnderlineText(false); // Sin subrayado
+                ds.setColor(0xFF18A0FB);
+                ds.setUnderlineText(false);
             }
         };
 
@@ -153,13 +157,11 @@ public class RegistroUsuario extends Fragment {
 
             dialog.setOnShowListener(dialogInterface -> {
                 Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                button.setTextColor(Color.parseColor("#FFFFFF")); // Texto azul
-                button.setBackgroundColor(Color.parseColor("#18A0FB")); // Fondo gris claro
+                button.setTextColor(Color.parseColor("#FFFFFF"));
+                button.setBackgroundColor(Color.parseColor("#18A0FB"));
             });
 
             dialog.show();
-
-            // Fondo completo del diálogo
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#F9F9F9")));
 
             return false;
@@ -167,10 +169,6 @@ public class RegistroUsuario extends Fragment {
 
         return true;
     }
-
-
-
-
 
     private boolean validarCampos() {
         boolean valido = true;
@@ -203,8 +201,13 @@ public class RegistroUsuario extends Fragment {
             valido = false;
         }
 
-        if (edtTelefono.getText().toString().trim().isEmpty()) {
+        String telefono = edtTelefono.getText().toString().trim();
+        if (telefono.isEmpty()) {
             edtTelefono.setError("El teléfono es obligatorio");
+            valido = false;
+        } else if (!telefono.matches("\\d{10}")) {
+            edtTelefono.setError("El teléfono debe tener exactamente 10 dígitos numéricos");
+            Toast.makeText(getContext(), "El teléfono debe tener 10 dígitos numéricos", Toast.LENGTH_SHORT).show();
             valido = false;
         }
 
@@ -212,6 +215,7 @@ public class RegistroUsuario extends Fragment {
             Toast.makeText(getContext(), "Debes aceptar los Términos y Condiciones", Toast.LENGTH_SHORT).show();
             valido = false;
         }
+
         String contrasena = edtContrasena.getText().toString().trim();
         if (!validarContrasena(contrasena)) {
             valido = false;
@@ -268,7 +272,12 @@ public class RegistroUsuario extends Fragment {
             @Override
             public void onFailure(Call<RegisterResponse> call, Throwable t) {
                 progressDialog.dismiss();
-                Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+
+                if (t instanceof IOException) {
+                    Toast.makeText(getContext(), "Problema de conexión. Verifica tu internet e intenta nuevamente.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Error inesperado. Por favor intenta más tarde.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -284,11 +293,28 @@ public class RegistroUsuario extends Fragment {
 
     private void manejarErrorRegistro(Response<RegisterResponse> response) {
         try {
-            String errorBody = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
-            Toast.makeText(getContext(), "Error al registrar: " + errorBody, Toast.LENGTH_LONG).show();
-            System.out.println(errorBody);
+            String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+
+            String mensajeUsuario;
+            switch (response.code()) {
+                case 400:
+                    mensajeUsuario = "Datos de registro incompletos o inválidos. Por favor verifica la información.";
+                    break;
+                case 409:
+                    mensajeUsuario = "El correo electrónico o identificación ya están registrados.";
+                    break;
+                case 500:
+                    mensajeUsuario = "Error en el servidor. Por favor intenta nuevamente más tarde.";
+                    break;
+                default:
+                    mensajeUsuario = "Ocurrió un error al registrar. Por favor intenta nuevamente.";
+                    break;
+            }
+
+            Toast.makeText(getContext(), mensajeUsuario, Toast.LENGTH_LONG).show();
+            System.out.println("Error detallado: " + errorBody);
         } catch (IOException e) {
-            Toast.makeText(getContext(), "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Error al procesar la respuesta del servidor", Toast.LENGTH_SHORT).show();
         }
     }
 

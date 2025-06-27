@@ -98,7 +98,6 @@
                     android:layout_height="wrap_content"
                     android:text="Estado"
                     android:layout_marginBottom="4dp"/>
-
                 <Spinner
                     android:id="@+id/spinnerEstado"
                     android:layout_width="match_parent"
@@ -111,30 +110,44 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:orientation="vertical"
+            android:layout_marginTop="16dp">
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnCancelar"
-                android:layout_width="100dp"
-                android:layout_height="41dp"
-                android:layout_marginEnd="8dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="12dp">
+
+                <!-- Botón Guardar (ahora a la izquierda) -->
+                <Button
+                    android:id="@+id/btnGuardar"
+                    android:layout_width="0dp"
+                    android:layout_height="39dp"
+                    android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/Botones"
+                android:text="Guardar"
+                android:textColor="#FFFFFF" />
+
+                <!-- Botón Cancelar (ahora a la derecha) -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnCancelar"
+                    android:layout_width="0dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="8dp"
+                android:layout_weight="1"
                 android:background="@drawable/button_cancelar"
                 android:text="Cancelar"
                 android:textAllCaps="false"
                 android:textColor="#4E9EFB" />
-
-            <Button
-                android:id="@+id/btnGuardar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Guardar"
-                android:backgroundTint="@color/Botones"
-                android:textColor="#FFFFFF"/>
+            </LinearLayout>
         </LinearLayout>
+
         <View
             android:layout_width="wrap_content"
-            android:layout_height="300dp"/>
+            android:layout_height="300dp" />
 
     </LinearLayout>
 </ScrollView>

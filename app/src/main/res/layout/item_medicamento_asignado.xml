@@ -48,7 +48,7 @@
                 android:id="@+id/ivAlarm"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/borrar"
+                android:src="@drawable/alarmas"
                 android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"/>
         </LinearLayout>
