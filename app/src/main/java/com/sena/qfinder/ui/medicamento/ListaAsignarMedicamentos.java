@@ -10,6 +10,8 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -701,6 +703,7 @@ public class ListaAsignarMedicamentos extends Fragment {
         TextView tvName = patientCard.findViewById(R.id.tvPatientName);
         TextView tvConditions = patientCard.findViewById(R.id.tvPatientConditions);
         ImageView ivProfile = patientCard.findViewById(R.id.ivPatientProfile);
+        LinearLayout cardContainer = patientCard.findViewById(R.id.cardContainer); // Asegúrate de tener este ID en tu layout
 
         tvName.setText(name);
 
@@ -726,14 +729,52 @@ public class ListaAsignarMedicamentos extends Fragment {
             ivProfile.setImageResource(R.drawable.perfil_familiar);
         }
 
+        // Configurar el estado inicial
+        updateCardSelectionAppearance(cardContainer, patientId == selectedPatientId);
+
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;
             selectedPatientName = name;
             updatePatientSelection();
             cargarMedicamentosPaciente(patientId);
+
+            // Actualizar la apariencia de todas las tarjetas
+            updateAllCardsSelection();
         });
 
         patientsContainer.addView(patientCard);
+    }
+
+    private void updateCardSelectionAppearance(View cardView, boolean isSelected) {
+        Context context = getContext();
+        if (context == null) return;
+
+        // Obtener el fondo original
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setCornerRadius(dpToPx(8)); // 8dp en píxeles
+        drawable.setColor(ContextCompat.getColor(context, isSelected ? R.color.selected_card_color : R.color.default_card_color));
+        drawable.setStroke(dpToPx(1), ContextCompat.getColor(context, isSelected ? R.color.selected_stroke_color : R.color.default_stroke_color));
+
+        cardView.setBackground(drawable);
+        cardView.setElevation(isSelected ? dpToPx(4) : dpToPx(2)); // Mayor elevación cuando está seleccionado
+    }
+
+    private void updateAllCardsSelection() {
+        for (int i = 0; i < patientsContainer.getChildCount(); i++) {
+            View child = patientsContainer.getChildAt(i);
+            if (child.getTag() instanceof Integer) {
+                int patientId = (int) child.getTag();
+                LinearLayout cardContainer = child.findViewById(R.id.cardContainer);
+                if (cardContainer != null) {
+                    updateCardSelectionAppearance(cardContainer, patientId == selectedPatientId);
+                }
+            }
+        }
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     private void cargarMedicamentosPaciente(int pacienteId) {
@@ -867,7 +908,17 @@ public class ListaAsignarMedicamentos extends Fragment {
                 tvEndDate.setText(asignacion.getFechaFin());
             }
             if (asignacion.getHoraInicio() != null) {
-                tvStartTime.setText(asignacion.getHoraInicio());
+                try {
+                    // Si la hora viene en formato "HH:mm:ss", la convertimos a "HH:mm"
+                    String horaOriginal = asignacion.getHoraInicio();
+                    if (horaOriginal.length() > 5) { // Si tiene segundos (ejemplo: "08:30:00")
+                        horaOriginal = horaOriginal.substring(0, 5); // Cortamos los segundos
+                    }
+                    tvStartTime.setText(horaOriginal);
+                } catch (Exception e) {
+                    Log.e("TimeFormat", "Error al formatear hora", e);
+                    tvStartTime.setText(asignacion.getHoraInicio()); // Si falla, asignamos el valor original
+                }
             }
             if (asignacion.getDosis() != null) {
                 etDosage.setText(asignacion.getDosis());
@@ -999,7 +1050,6 @@ public class ListaAsignarMedicamentos extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.fragment_agregar_medicamento_usuario, null);
         builder.setView(viewInflated);
-
         Spinner spinnerPatients = viewInflated.findViewById(R.id.spinner_patients);
         Spinner spinnerMedications = viewInflated.findViewById(R.id.spinner_medications);
         Spinner spinnerFrequencyUnit = viewInflated.findViewById(R.id.spinner_frequency_unit);
@@ -1047,7 +1097,9 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         AlertDialog dialog = builder.create();
         dialog.show();
-
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
         btnSave.setOnClickListener(v -> {
             if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequencyNumber, tvStartDate, tvEndDate, tvStartTime)) {
                 String pacienteNombre = spinnerPatients.getSelectedItem().toString();
