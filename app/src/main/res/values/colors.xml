@@ -61,4 +61,12 @@
     <color name="alta">#F35254</color>
     <color name="media">#F39552</color>
     <color name="baja">#52F36A</color>
+
+    <!-- Colores para estados normales -->
+    <color name="default_card_color">#FFFFFF</color> <!-- Blanco -->
+    <color name="default_stroke_color">#9E9E9E</color> <!-- Gris claro para el borde normal -->
+
+    <!-- Colores para estado seleccionado -->
+    <color name="selected_card_color">#E3F2FD</color> <!-- Azul claro -->
+    <color name="selected_stroke_color">#2196F3</color> <!-- Azul -->
 </resources>

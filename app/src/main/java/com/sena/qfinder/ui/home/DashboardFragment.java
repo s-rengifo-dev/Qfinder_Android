@@ -3,6 +3,8 @@ package com.sena.qfinder.ui.home;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -22,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -338,7 +341,6 @@ public class DashboardFragment extends Fragment {
             PacienteResponse primerPaciente = pacientes.get(0);
             selectedPatientId = primerPaciente.getId();
             selectedPatientName = primerPaciente.getNombre() + " " + primerPaciente.getApellido();
-
             loadPatientActivities();
             setupMedicationsSection();
         }
@@ -347,7 +349,6 @@ public class DashboardFragment extends Fragment {
             String nombreCompleto = paciente.getNombre() + " " + paciente.getApellido();
             String diagnostico = paciente.getDiagnostico_principal() != null ?
                     paciente.getDiagnostico_principal() : "Sin diagnóstico";
-
             String fecha_nacimiento = paciente.getFecha_nacimiento();
             String imagenPaciente = paciente.getImagen_paciente();
 
@@ -357,6 +358,9 @@ public class DashboardFragment extends Fragment {
         View addCard = currentInflater.inflate(R.layout.item_add_patient_card, patientsContainer, false);
         addCard.setOnClickListener(v -> navigateToAddPatient());
         patientsContainer.addView(addCard);
+
+        // Actualizar el highlight después de agregar todas las tarjetas
+        updatePatientCardsHighlight();
     }
 
     private void addPatientCard(String name, String relation, String conditions, String imageUrl, int patientId) {
@@ -386,13 +390,16 @@ public class DashboardFragment extends Fragment {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(context)
                     .load(imageUrl)
-                    .placeholder(R.drawable.perfil_familiar)
-                    .error(R.drawable.perfil_familiar)
+                    .placeholder(R.drawable.perfil_paciente)
+                    .error(R.drawable.perfil_paciente)
                     .circleCrop()
                     .into(ivProfile);
         } else {
-            ivProfile.setImageResource(R.drawable.perfil_familiar);
+            ivProfile.setImageResource(R.drawable.perfil_paciente);
         }
+
+        // Configurar el estado inicial
+        updateCardAppearance(patientCard, patientId == selectedPatientId);
 
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;
@@ -412,16 +419,31 @@ public class DashboardFragment extends Fragment {
             View child = patientsContainer.getChildAt(i);
             if (child.getTag() instanceof Integer) {
                 int patientId = (int) child.getTag();
-
-                // Solo cambiamos el estado seleccionado sin tocar el fondo
-                child.setSelected(patientId == selectedPatientId);
-
-                // Opcional: Cambiar la elevación para feedback visual
-                child.setElevation(patientId == selectedPatientId ? 8f : 2f);
+                updateCardAppearance(child, patientId == selectedPatientId);
             }
         }
     }
 
+    private void updateCardAppearance(View cardView, boolean isSelected) {
+        Context context = getContext();
+        if (context == null) return;
+
+        // Obtener el fondo original (debe ser un GradientDrawable)
+        GradientDrawable drawable = (GradientDrawable) ContextCompat.getDrawable(context, R.drawable.card_background).mutate();
+        cardView.setBackground(drawable);
+
+        if (isSelected) {
+            // Estilo cuando está seleccionado
+            drawable.setStroke(4, ContextCompat.getColor(context, R.color.selected_stroke_color));
+            drawable.setColor(ContextCompat.getColor(context, R.color.selected_card_color));
+            cardView.setElevation(8f);
+        } else {
+            // Volver al estilo original
+            drawable.setStroke(1, ContextCompat.getColor(context, R.color.default_stroke_color)); // Usar el color original del borde
+            drawable.setColor(ContextCompat.getColor(context, R.color.default_card_color));
+            cardView.setElevation(2f);
+        }
+    }
     private void setupActivitiesSection() {
         activitiesContainer.removeAllViews();
 
