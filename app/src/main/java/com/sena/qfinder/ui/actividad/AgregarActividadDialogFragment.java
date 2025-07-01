@@ -324,7 +324,9 @@ public class AgregarActividadDialogFragment extends DialogFragment {
                 },
                 year, month, day
         );
+
         datePickerDialog.show();
+
     }
 
     private void mostrarTimePicker() {

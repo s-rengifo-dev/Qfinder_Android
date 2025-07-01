@@ -64,7 +64,6 @@ public class episodios_salud_menu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_episodios_salud_menu);
-
         listViewNotas = findViewById(R.id.listViewNotas);
         cantidadRegistros = findViewById(R.id.cantidadRegistros);
         searchInput = findViewById(R.id.searchInput);
@@ -83,7 +82,6 @@ public class episodios_salud_menu extends AppCompatActivity {
             finish();
             return;
         }
-
         configurarBusqueda();
         setupRecyclerPacientes();
         cargarPacientes();
@@ -110,7 +108,6 @@ public class episodios_salud_menu extends AppCompatActivity {
         });
         recyclerPacientes.setAdapter(patientAdapter);
     }
-
     private void configurarBusqueda() {
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }

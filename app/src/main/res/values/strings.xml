@@ -1,22 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Qfinder</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="prompt_elige_paciente">Elige al paciente</string>
     <string name="payment_success_message">¡Pago exitoso! Tu suscripción está activa.</string>
     <string name="payment_failure_message">El pago no pudo ser procesado. Por favor intenta nuevamente.</string>
     <string name="payment_failure_title">¡Pago fallido!</string>
+
     <string-array name="sexo_array">
         <item>masculino</item>
         <item>femenino</item>
         <item>otro</item>
     </string-array>
+
     <string name="payment_success_title">¡Pago Exitoso!</string>
     <string name="payment_success_generic_message">Tu suscripción ha sido activada correctamente.</string>
     <string name="payment_success_plus_message">Tu suscripción Plus está ahora activa. Disfruta de 5 pacientes y 3 cuidadores.</string>
     <string name="payment_success_pro_message">Tu suscripción Pro está ahora activa. Disfruta de 15 pacientes y 10 cuidadores.</string>
     <string name="payment_success_premium_message">Tu suscripción Premium está ahora activa. Disfruta de beneficios exclusivos.</string>
     <string name="continue_button">Continuar</string>
+
     <string-array name="frecuencia_opciones">
         <item>Selecciones Frecuencia</item>
         <item>Diaria</item>
@@ -24,11 +27,12 @@
         <item>Mensual</item>
         <item>Una sola vez</item>
     </string-array>
+
     <string name="payment_pending_title">Payment Pending</string>
     <string name="payment_pending_message">Your payment is being processed. Please wait or check back later.</string>
     <string name="check_status">Check Status</string>
     <string name="go_to_home">Go to Home</string>
-    <!-- Opciones de recordatorio -->
+
     <string-array name="recordatorio_opciones">
         <item>Selecciones Recordatorio</item>
         <item>1 hora antes</item>
@@ -38,6 +42,7 @@
         <item>2 días antes</item>
         <item>No recordar</item>
     </string-array>
+
     <string name="user_identification_error">No pudimos identificar tu cuenta. Por favor, inicia sesión nuevamente.</string>
     <string name="connectionerror">Problemas de conexión. Verifica tu internet e intenta nuevamente.</string>
     <string name="payment_service_error">El servicio de pagos no está disponible en este momento.</string>
@@ -45,16 +50,18 @@
     <string name="service_temporarily_unavailable">El servicio no está disponible temporalmente. Por favor, intenta más tarde.</string>
     <string name="unexpected_error">Ocurrió un error inesperado.</string>
     <string name="payment_cancelled_error">El pago fue cancelado o no se completó.</string>
+
     <string name="patient_section">Pacientes</string>
     <string name="activities_section">Actividades</string>
     <string name="medications_section">Medicamentos</string>
-    <!--Alejandro modificacion en values-->
+
+    <!-- Modificación Alejandro -->
     <string-array name="tipos_recordatorio">
         <item>Medicamentos</item>
         <item>Citas</item>
     </string-array>
-    <!--hasta aqui-->
-    <string name="preparing_payment">Preparando pago\u2026</string>
+
+    <string name="preparing_payment">Preparando pago…</string>
     <string name="connection_error">Error de conexión</string>
     <string name="invalid_payment_url">URL de pago no válida</string>
     <string name="checkout_launch_error">No se pudo iniciar el proceso de pago</string>
@@ -63,11 +70,9 @@
     <string name="unknown_error">Error desconocido (Código: %1$d)</string>
     <string name="error_processing_response">Error al procesar la respuesta</string>
     <string name="payment_error_processing">Error al procesar el pago</string>
-    <!--    <string name="payment_success_title">¡Pago Exitoso!</string>-->
-    <!--    <string name="payment_success_plus_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PLUS.</string>-->
-    <!--    <string name="payment_success_pro_message">¡Felicidades! Ahora tienes acceso a todas las funciones del plan PRO.</string>-->
-    <!--    <string name="payment_success_generic_message">¡Felicidades! Tu suscripción se ha activado correctamente.</string>-->
     <string name="payment_success_toast">¡Pago exitoso! Plan: %1$s</string>
+
+    <!-- Registro de usuario -->
     <string name="text1RegUsuario">Registra tus datos</string>
     <string name="text2RegUsuario">Crear Cuenta</string>
     <string name="txtNombre">Nombres:</string>
@@ -80,66 +85,41 @@
     <string name="txtCondiciones">Al registrarte aceptas nuestros términos y condiciones de privacidad y manejo de datos.</string>
     <string name="txtContra2">Confirmación de contraseña:</string>
 
+    <!-- Términos -->
     <string name="terminos_completos">Términos y Condiciones de Privacidad y Uso de Datos</string>
-    <string name="titulo1">1.	Aceptación de los términos</string>
-    <string name="titulo2">2.	Descripción del servicio</string>
-    <string name="titulo3">3.	Información recopilada</string>
-    <string name="titulo4">4.	Uso de la información</string>
-    <string name="titulo5">5.	Almacenamiento y seguridad de datos</string>
-    <string name="titulo6">6.	Compartición de datos</string>
-    <string name="titulo7">7.	Derechos del usuario</string>
-    <string name="titulo8">8.	Responsabilidad del usuario</string>
-    <string name="titulo9">9.	Cambios a esta política</string>
-    <string name="titulo10">10.	Contacto</string>
+    <string name="titulo1">1. Aceptación de los términos</string>
+    <string name="titulo2">2. Descripción del servicio</string>
+    <string name="titulo3">3. Información recopilada</string>
+    <string name="titulo4">4. Uso de la información</string>
+    <string name="titulo5">5. Almacenamiento y seguridad de datos</string>
+    <string name="titulo6">6. Compartición de datos</string>
+    <string name="titulo7">7. Derechos del usuario</string>
+    <string name="titulo8">8. Responsabilidad del usuario</string>
+    <string name="titulo9">9. Cambios a esta política</string>
+    <string name="titulo10">10. Contacto</string>
 
-    <string name="txtTC1">Esta aplicación está diseñada para gestionar notas médicas, seguimientos y registros relacionados con pacientes con enfermedades dependientes o crónicas. Su uso está destinado únicamente a profesionales de la salud debidamente autorizados o a familiares responsables que brindan cuidados.</string>
-    <string name="txtTC2">Esta aplicación está diseñada para gestionar notas médicas, seguimientos y registros relacionados con pacientes con enfermedades dependientes o crónicas. Su uso está destinado únicamente a profesionales de la salud debidamente autorizados o a familiares responsables que brindan cuidados.</string>
-    <string name="txtTC3">Podemos recopilar y almacenar la siguiente información:
--	Datos personales del paciente: nombre, fecha de nacimiento, sexo, dirección, información de contacto, etc.
--	Información médica: historial clínico, diagnósticos, tratamientos, medicamentos, observaciones médicas, etc.
--	Información del cuidador o profesional de salud: nombre, credenciales, correo electrónico, etc.
--	Datos de uso de la aplicación (logs, interacciones, errores técnicos, etc.).
-</string>
-    <string name="txtTC4">La información recopilada será utilizada exclusivamente para:
--	Brindar el servicio de gestión y seguimiento de notas médicas.
--	Mejorar la funcionalidad y la seguridad de la aplicación.
--	Cumplir con obligaciones legales y regulatorias.
-</string>
-    <string name="txtTC5">Los datos recopilados son almacenados en servidores seguros y se aplican medidas técnicas y organizativas para garantizar la confidencialidad, integridad y disponibilidad de la información. No obstante, ningún sistema es completamente invulnerable, y el usuario acepta los riesgos inherentes al uso de servicios digitales.</string>
-    <string name="txtTC6">No compartimos los datos con terceros, salvo que:
--	Sea requerido por ley o autoridad competente.
--	El usuario (o representante legal del paciente) haya dado consentimiento explícito.
--	Sea necesario para la atención médica del paciente y esté respaldado por una relación profesional legítima.
-</string>
-    <string name="txtTC7">El usuario tiene derecho a:
--	Acceder a sus datos personales y/o los del paciente que gestiona.
--	Rectificar información inexacta o incompleta.
--	Solicitar la eliminación de los datos cuando ya no sean necesarios o en caso de retiro del consentimiento.
--	Limitar u oponerse al tratamiento de datos bajo ciertas condiciones.
-        Para ejercer estos derechos, puede contactarnos a través de:QfindeR@gmail.com.
-</string>
-    <string name="txtTC8">El usuario se compromete a:
--	Usar la aplicación únicamente para los fines previstos.
--	No divulgar ni compartir información médica confidencial sin autorización.
--	Mantener la seguridad de sus credenciales de acceso.
-</string>
-    <string name="txtTC9">Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados dentro de la aplicación o por correo electrónico.</string>
-    <string name="txtTC10">Para cualquier duda o solicitud relacionada con estos términos, puede contactarnos en:
-Correo electrónico: QfindeR@gmail.com
-Teléfono: 31022589685
-</string>
+    <string name="txtTC1">Esta aplicación está diseñada para gestionar notas médicas, seguimientos y registros relacionados con pacientes con enfermedades dependientes o crónicas...</string>
+    <string name="txtTC2">Esta aplicación está diseñada para gestionar notas médicas, seguimientos y registros relacionados con pacientes con enfermedades dependientes o crónicas...</string>
+    <string name="txtTC3">Podemos recopilar y almacenar la siguiente información: - Datos personales del paciente... etc.</string>
+    <string name="txtTC4">La información recopilada será utilizada exclusivamente para: - Brindar el servicio de gestión y seguimiento de notas médicas... etc.</string>
+    <string name="txtTC5">Los datos recopilados son almacenados en servidores seguros... etc.</string>
+    <string name="txtTC6">No compartimos los datos con terceros, salvo que... etc.</string>
+    <string name="txtTC7">El usuario tiene derecho a: - Acceder a sus datos personales... etc.</string>
+    <string name="txtTC8">El usuario se compromete a: - Usar la aplicación únicamente para los fines previstos... etc.</string>
+    <string name="txtTC9">Nos reservamos el derecho de modificar estos términos en cualquier momento...</string>
+    <string name="txtTC10">Para cualquier duda o solicitud relacionada con estos términos, puede contactarnos en: QfindeR@gmail.com</string>
+
     <string name="Qfinder">Qfinder</string>
     <string name="correo">Correo</string>
     <string name="contraseña">Contraseña</string>
 
-    <!--Opciones de organizar notas-->
+    <!-- Opciones de organizar notas -->
     <string-array name="Opciones_de_organizar">
         <item>Organizar por hora</item>
         <item>Organizar por fecha</item>
-        <item>Organizar por titulo </item>
+        <item>Organizar por título</item>
     </string-array>
 
-    <!--Opciones de organizar notas-->
     <string-array name="Tamaño_de_letra">
         <item>22</item>
         <item>20</item>
@@ -156,11 +136,21 @@ Teléfono: 31022589685
 
     <string name="fecha_prefix">Fecha: </string>
 
+    <!-- Sexo -->
     <string name="sexo_masculino">Masculino</string>
     <string name="sexo_femenino">Femenino</string>
     <string name="sexo_otro">Otro</string>
     <string name="sexo_prefiero_no_decir">Prefiero no decir</string>
 
+    <!-- Planes -->
+    <string name="current_plan">Plan Actual</string>
+    <string name="loading_user_data">Cargando tu plan...</string>
+    <string name="payment_error">Error en el proceso de pago</string>
+    <string name="service_error">Error al obtener información</string>
+
+    <string name="pending_subscription_title">Suscripción Pendiente</string>
+    <string name="pending_subscription_message">Ya tienes una suscripción pendiente de pago. Por favor espera a que se complete el proceso o contacta con soporte si necesitas ayuda.</string>
+    <string name="understand">Entendido</string>
+    <string name="contact_support">Contactar Soporte</string>
+    <string name="payment_pending">Pendiente de pago</string>
 </resources>
-
-

@@ -7,39 +7,7 @@
     android:orientation="vertical"
     android:background="#F9F9F9">
 
-    <!-- Encabezado azul -->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="99dp">
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="99dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/top_nav_background" />
-
-        <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="34dp"
-            android:layout_marginStart="10dp"
-            android:layout_alignParentStart="true"
-            android:background="@drawable/circle_azul"
-            android:contentDescription="Volver"
-            android:padding="10dp"
-            android:src="@drawable/img" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Plan Pro"
-            android:textColor="@color/black"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginTop="35dp"/>
-    </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -159,6 +127,14 @@
                                 android:textColor="#444444"
                                 android:textSize="16sp"/>
                         </LinearLayout>
+                        <Button
+                            android:id="@+id/btn_pro_plan"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Seleccionar Plan"
+                            android:textColor="#FFFFFF"
+                            android:backgroundTint="@color/Botones"
+                            android:layout_marginTop="16dp"/>
                     </LinearLayout>
 
                 </LinearLayout>

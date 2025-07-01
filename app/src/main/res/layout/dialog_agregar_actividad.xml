@@ -345,6 +345,11 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="230dp" />
+
+
         <!-- View de espacio extra, fuera del CardView pero dentro del LinearLayout -->
         <View
             android:layout_width="match_parent"
