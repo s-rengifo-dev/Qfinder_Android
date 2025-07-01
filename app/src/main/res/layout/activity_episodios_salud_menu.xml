@@ -118,19 +118,6 @@
                 android:textColor="@android:color/black"
                 android:textColorHint="@android:color/darker_gray" />
 
-            <ImageView
-                android:layout_width="23dp"
-                android:layout_height="20dp"
-                android:src="@drawable/organizar"
-                android:contentDescription="Organizar"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="4dp" />
-
-            <Spinner
-                android:id="@+id/spinner_organizar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
         </LinearLayout>
 
         <!-- ListView para las notas -->
