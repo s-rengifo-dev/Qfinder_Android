@@ -274,6 +274,9 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         if (getDialog() != null && getDialog().getWindow() != null) {
             int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.95);
             getDialog().getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+            getDialog().getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            );
         }
     }
 

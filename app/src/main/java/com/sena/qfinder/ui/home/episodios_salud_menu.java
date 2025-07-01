@@ -69,8 +69,6 @@ public class episodios_salud_menu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_episodios_salud_menu);
-
-        spinnerOrganizar = findViewById(R.id.spinner_organizar);
         listViewNotas = findViewById(R.id.listViewNotas);
         cantidadRegistros = findViewById(R.id.cantidadRegistros);
         searchInput = findViewById(R.id.searchInput);
@@ -90,7 +88,7 @@ public class episodios_salud_menu extends AppCompatActivity {
             return;
         }
 
-        configurarSpinnerOrganizar();
+
         configurarBusqueda();
 
         setupRecyclerPacientes();
@@ -120,25 +118,7 @@ public class episodios_salud_menu extends AppCompatActivity {
         recyclerPacientes.setAdapter(patientAdapter);
     }
 
-    private void configurarSpinnerOrganizar() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new String[]{"Fecha"}  // Cambiado de "Severidad" a "Tipo"
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerOrganizar.setAdapter(adapter);
-        spinnerOrganizar.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                ordenarNotas();
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-    }
 
     private void configurarBusqueda() {
         searchInput.addTextChangedListener(new TextWatcher() {
