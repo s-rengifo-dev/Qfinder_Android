@@ -3,14 +3,18 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#F5F5F5">
+    android:background="@android:color/transparent"
+    android:fillViewport="true"
+    android:padding="16dp">
 
+    <!-- Contenedor principal (único hijo del ScrollView) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- CardView con campos + botones -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,6 +29,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- Campos de texto -->
                 <TextView
                     android:id="@+id/tvTituloDialogo"
                     android:layout_width="match_parent"
@@ -34,7 +39,6 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp"/>
 
-                <!-- Campo título -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -49,7 +53,6 @@
                         android:maxLength="100"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo descripción -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -64,7 +67,6 @@
                         android:lines="3"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo fecha de la cita -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -78,7 +80,6 @@
                         android:inputType="none"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo hora de la cita -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -92,7 +93,6 @@
                         android:inputType="none"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo estado -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -103,51 +103,43 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"/>
+
+                <!-- Botones dentro del CardView, justo después del spinner -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginTop="12dp">
+
+                    <Button
+                        android:id="@+id/btnGuardar"
+                        android:layout_width="0dp"
+                        android:layout_height="39dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/Botones"
+                        android:text="Guardar"
+                        android:textColor="#FFFFFF" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnCancelar"
+                        android:layout_width="0dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/button_cancelar"
+                        android:text="Cancelar"
+                        android:textAllCaps="false"
+                        android:textColor="#4E9EFB" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Botones -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="12dp">
-
-                <!-- Botón Guardar (ahora a la izquierda) -->
-                <Button
-                    android:id="@+id/btnGuardar"
-                    android:layout_width="0dp"
-                    android:layout_height="39dp"
-                    android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:backgroundTint="@color/Botones"
-                android:text="Guardar"
-                android:textColor="#FFFFFF" />
-
-                <!-- Botón Cancelar (ahora a la derecha) -->
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnCancelar"
-                    android:layout_width="0dp"
-                    android:layout_height="32dp"
-                    android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_cancelar"
-                android:text="Cancelar"
-                android:textAllCaps="false"
-                android:textColor="#4E9EFB" />
-            </LinearLayout>
-        </LinearLayout>
-
+        <!-- Vista de espacio extra, afuera del CardView pero dentro del LinearLayout principal -->
         <View
-            android:layout_width="wrap_content"
-            android:layout_height="300dp" />
-
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:background="@android:color/transparent"/>
     </LinearLayout>
 </ScrollView>
