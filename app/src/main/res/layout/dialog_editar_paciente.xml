@@ -2,143 +2,161 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAFAFA"
-    android:fillViewport="true">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/transparent"
+    android:fillViewport="true"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_rounded_container"
-        android:elevation="2dp">
+        android:orientation="vertical">
 
-        <!-- Imagen del paciente -->
-        <ImageView
-            android:id="@+id/ivFotoPaciente"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/cuidador"
-            android:scaleType="centerCrop"
-            android:background="@drawable/circle_white_border_azul"
-            android:layout_marginBottom="8dp" />
-
-        <TextView
-            android:id="@+id/tvSeleccionarImagen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Seleccionar imagen"
-            android:textColor="@color/colorPrimary"
-            android:textSize="14sp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Título -->
-        <TextView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Datos del Paciente"
-            android:textColor="#212121"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Nombre -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp">
-            <EditText
-                android:id="@+id/etNombre"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Nombre" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Apellido -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp">
-            <EditText
-                android:id="@+id/etApellido"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Apellido" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Identificación -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp">
-            <EditText
-                android:id="@+id/edtIdentificacion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Identificación" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Fecha de nacimiento -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp">
-            <EditText
-                android:id="@+id/etFechaNacimiento"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Fecha de nacimiento"
-                android:focusable="false"
-                android:clickable="true" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Sexo -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Sexo"
-            android:textColor="#757575"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp" />
-
-        <Spinner
-            android:id="@+id/spinnerSexo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_spinner"
-            android:padding="12dp"
             android:layout_marginBottom="16dp"
-            android:spinnerMode="dropdown" />
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@android:color/white">
 
-        <!-- Diagnóstico -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp">
-            <EditText
-                android:id="@+id/etDiagnostico"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Diagnóstico" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <!-- Botón Guardar -->
-        <Button
-            android:id="@+id/btnGuardar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Guardar"
-            android:textColor="#FFFFFF"
-            android:textAllCaps="false"
-            android:backgroundTint="@color/Botones"
-            android:paddingVertical="12dp" />
+                <!-- Imagen del paciente -->
+                <ImageView
+                    android:id="@+id/ivFotoPaciente"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/cuidador"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/circle_white_border_azul"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvSeleccionarImagen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Seleccionar imagen"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="14sp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Datos del Paciente"
+                    android:textColor="#212121"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Nombre -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <EditText
+                        android:id="@+id/etNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Nombre" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Apellido -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <EditText
+                        android:id="@+id/etApellido"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Apellido" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Identificación -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <EditText
+                        android:id="@+id/edtIdentificacion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Identificación" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Fecha de nacimiento -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <EditText
+                        android:id="@+id/etFechaNacimiento"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Fecha de nacimiento"
+                        android:focusable="false"
+                        android:clickable="true" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Sexo -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sexo"
+                    android:textColor="#757575"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="4dp" />
+
+                <Spinner
+                    android:id="@+id/spinnerSexo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_spinner"
+                    android:padding="12dp"
+                    android:layout_marginBottom="16dp"
+                    android:spinnerMode="dropdown" />
+
+                <!-- Diagnóstico -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <EditText
+                        android:id="@+id/etDiagnostico"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Diagnóstico" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Botón Guardar -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnGuardar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Guardar"
+                    android:textColor="#FFFFFF"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="16dp"
+                    app:backgroundTint="@color/Botones"
+                    app:cornerRadius="16dp" />
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="325dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 </ScrollView>
