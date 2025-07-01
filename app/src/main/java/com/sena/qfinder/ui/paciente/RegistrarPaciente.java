@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.text.InputType;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,6 +69,8 @@ public class RegistrarPaciente extends Fragment {
         btnRegistrar = view.findViewById(R.id.btnRegistrar);
         btnBack = view.findViewById(R.id.btnBack);
 
+        // Configurar filtros de entrada
+        configurarFiltrosEntrada();
 
         // Configurar selección de género
         configurarSelectorGenero();
@@ -83,7 +87,40 @@ public class RegistrarPaciente extends Fragment {
         return view;
     }
 
+    private void configurarFiltrosEntrada() {
+        // Filtro para solo letras en nombre y apellido
+        InputFilter letterFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end,
+                                       Spanned dest, int dstart, int dend) {
+                for (int i = start; i < end; i++) {
+                    if (!Character.isLetter(source.charAt(i))) {
+                        return "";
+                    }
+                }
+                return null;
+            }
+        };
 
+        editNombre.setFilters(new InputFilter[]{letterFilter});
+        editApellido.setFilters(new InputFilter[]{letterFilter});
+
+        // Filtro para solo números en identificación (7-11 dígitos)
+        InputFilter numberFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end,
+                                       Spanned dest, int dstart, int dend) {
+                for (int i = start; i < end; i++) {
+                    if (!Character.isDigit(source.charAt(i))) {
+                        return "";
+                    }
+                }
+                return null;
+            }
+        };
+        editIdentificacion.setFilters(new InputFilter[]{numberFilter, new InputFilter.LengthFilter(11)});
+        editIdentificacion.setInputType(InputType.TYPE_CLASS_NUMBER);
+    }
 
     private void configurarSelectorGenero() {
         String[] generos = {"masculino", "femenino", "otro"};
@@ -176,9 +213,17 @@ public class RegistrarPaciente extends Fragment {
         String diagnostico = editDiagnostico.getText().toString().trim();
         String identificacionStr = editIdentificacion.getText().toString().trim();
 
+        // Validación de campos vacíos
         if (TextUtils.isEmpty(nombre) || TextUtils.isEmpty(apellido) || TextUtils.isEmpty(fechaNacimiento)
                 || TextUtils.isEmpty(sexo) || TextUtils.isEmpty(diagnostico) || TextUtils.isEmpty(identificacionStr)) {
             Toast.makeText(getContext(), "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validación de identificación (7-11 dígitos)
+        if (identificacionStr.length() < 7 || identificacionStr.length() > 11) {
+            editIdentificacion.setError("La identificación debe tener entre 7 y 11 dígitos");
+            Toast.makeText(getContext(), "La identificación debe tener entre 7 y 11 dígitos", Toast.LENGTH_LONG).show();
             return;
         }
 
