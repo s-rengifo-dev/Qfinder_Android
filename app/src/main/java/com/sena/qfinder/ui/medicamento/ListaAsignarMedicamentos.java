@@ -10,6 +10,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
@@ -1002,6 +1003,11 @@ public class ListaAsignarMedicamentos extends Fragment {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
 
         btnSave.setOnClickListener(v -> {
             if (validarCampos(spinnerPatients, spinnerMedications, etDosage, etFrequencyNumber, tvStartDate, tvEndDate, tvStartTime)) {

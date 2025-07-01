@@ -6,6 +6,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -254,6 +255,14 @@ public class CitasFragment extends Fragment {
 
         Dialog dialog = new Dialog(getContext());
         dialog.setContentView(R.layout.dialog_agregar_recordatorio);
+
+        // Hacer fondo transparente
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            // Si no quieres el oscurecimiento detrás del diálogo, descomenta la siguiente línea:
+            // dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        }
+
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(true);
 
@@ -266,7 +275,6 @@ public class CitasFragment extends Fragment {
         EditText etFechaRecordatorio = dialog.findViewById(R.id.etFechaCita);
         EditText etHoraCita = dialog.findViewById(R.id.etHoraCita);
 
-        // Configurar para que no se muestre el teclado al hacer click
         etFechaRecordatorio.setShowSoftInputOnFocus(false);
         etHoraCita.setShowSoftInputOnFocus(false);
 
@@ -277,7 +285,6 @@ public class CitasFragment extends Fragment {
 
         tvTituloDialogo.setText("Nueva cita para " + selectedPatientName);
 
-        // Set initial date and time
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
@@ -285,28 +292,21 @@ public class CitasFragment extends Fragment {
         etFechaRecordatorio.setText(dateFormat.format(calendar.getTime()));
         etHoraCita.setText(timeFormat.format(calendar.getTime()));
 
-        // Configurar el selector de fecha
         etFechaRecordatorio.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
                 showDatePicker(etFechaRecordatorio);
             }
         });
-
-        // También mantener el onClickListener por si acaso
         etFechaRecordatorio.setOnClickListener(v -> showDatePicker(etFechaRecordatorio));
 
-        // Configurar el selector de hora
         etHoraCita.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
                 showTimePicker(etHoraCita);
             }
         });
-
-        // También mantener el onClickListener por si acaso
         etHoraCita.setOnClickListener(v -> showTimePicker(etHoraCita));
 
         btnGuardar.setOnClickListener(v -> {
-            // ... (el resto del código para guardar permanece igual)
             String titulo = etTitulo.getText().toString().trim();
             String descripcion = etDescripcion.getText().toString().trim();
             String estado = spinnerEstado.getSelectedItem().toString().toLowerCase();
@@ -317,24 +317,20 @@ public class CitasFragment extends Fragment {
                 etTitulo.setError("El título es obligatorio");
                 return;
             }
-
             if (titulo.length() < 5 || titulo.length() > 100) {
                 etTitulo.setError("El título debe tener entre 5 y 100 caracteres");
                 return;
             }
-
             if (fechaStr.isEmpty()) {
                 etFechaRecordatorio.setError("La fecha es obligatoria");
                 return;
             }
-
             if (horaStr.isEmpty()) {
                 etHoraCita.setError("La hora es obligatoria");
                 return;
             }
 
             try {
-                // ... (resto del código de guardado)
                 SimpleDateFormat sdfFecha = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                 Date fecha = sdfFecha.parse(fechaStr);
 
@@ -393,6 +389,7 @@ public class CitasFragment extends Fragment {
         btnCancelar.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
+
 
     // Método auxiliar para mostrar el DatePicker
     private void showDatePicker(EditText editText) {
