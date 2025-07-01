@@ -97,22 +97,6 @@
                     android:hint="Teléfono"
                     android:inputType="phone" />
             </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Email -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
-
-                <EditText
-                    android:id="@+id/etCorreo"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Email"
-                    android:inputType="textEmailAddress" />
-            </com.google.android.material.textfield.TextInputLayout>
-
             <!-- Dirección -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

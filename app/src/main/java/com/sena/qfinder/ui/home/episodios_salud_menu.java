@@ -7,12 +7,9 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +32,6 @@ import com.sena.qfinder.ui.paciente.PatientAdapter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -48,7 +44,6 @@ public class episodios_salud_menu extends AppCompatActivity {
 
     private ImageView btnBack;
 
-    private Spinner spinnerOrganizar;
     private int pacienteIdSeleccionado = -1;
     private String token;
 
@@ -70,7 +65,6 @@ public class episodios_salud_menu extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_episodios_salud_menu);
 
-        spinnerOrganizar = findViewById(R.id.spinner_organizar);
         listViewNotas = findViewById(R.id.listViewNotas);
         cantidadRegistros = findViewById(R.id.cantidadRegistros);
         searchInput = findViewById(R.id.searchInput);
@@ -90,9 +84,7 @@ public class episodios_salud_menu extends AppCompatActivity {
             return;
         }
 
-        configurarSpinnerOrganizar();
         configurarBusqueda();
-
         setupRecyclerPacientes();
         cargarPacientes();
 
@@ -107,7 +99,6 @@ public class episodios_salud_menu extends AppCompatActivity {
             }
         });
 
-        // Botón de retroceso
         btnBack.setOnClickListener(v -> finish());
     }
 
@@ -120,38 +111,11 @@ public class episodios_salud_menu extends AppCompatActivity {
         recyclerPacientes.setAdapter(patientAdapter);
     }
 
-    private void configurarSpinnerOrganizar() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new String[]{"Fecha"}  // Cambiado de "Severidad" a "Tipo"
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerOrganizar.setAdapter(adapter);
-        spinnerOrganizar.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                ordenarNotas();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-    }
-
     private void configurarBusqueda() {
         searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            @Override public void afterTextChanged(Editable s) {
                 filtrarNotas(s.toString());
             }
         });
@@ -186,7 +150,7 @@ public class episodios_salud_menu extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     todasLasNotas.clear();
                     todasLasNotas.addAll(response.body().getData());
-                    ordenarNotas();
+                    ordenarNotas();  // Ahora sin spinner
                     filtrarNotas(searchInput.getText().toString());
                 } else {
                     Toast.makeText(episodios_salud_menu.this, "Error al cargar notas", Toast.LENGTH_SHORT).show();
@@ -201,26 +165,16 @@ public class episodios_salud_menu extends AppCompatActivity {
     }
 
     private void ordenarNotas() {
-        String criterio = (String) spinnerOrganizar.getSelectedItem();
-        if (criterio == null) return;
-
-        if (criterio.equalsIgnoreCase("fecha")) {
-            Collections.sort(todasLasNotas, (n1, n2) -> {
-                try {
-                    Date d1 = inputFormat.parse(n1.getFechaHoraInicio());
-                    Date d2 = inputFormat.parse(n2.getFechaHoraInicio());
-                    return d2.compareTo(d1); // Más reciente primero
-                } catch (Exception e) {
-                    return 0;
-                }
-            });
-        } else if (criterio.equalsIgnoreCase("tipo")) {
-            Collections.sort(todasLasNotas, (n1, n2) -> {
-                String t1 = n1.getTipo() != null ? n1.getTipo() : "";
-                String t2 = n2.getTipo() != null ? n2.getTipo() : "";
-                return t1.compareToIgnoreCase(t2);
-            });
-        }
+        // Ordena siempre por fecha de forma predeterminada (más reciente primero)
+        Collections.sort(todasLasNotas, (n1, n2) -> {
+            try {
+                Date d1 = inputFormat.parse(n1.getFechaHoraInicio());
+                Date d2 = inputFormat.parse(n2.getFechaHoraInicio());
+                return d2.compareTo(d1); // más reciente primero
+            } catch (Exception e) {
+                return 0;
+            }
+        });
 
         filtrarNotas(searchInput.getText().toString());
     }
@@ -233,27 +187,12 @@ public class episodios_salud_menu extends AppCompatActivity {
             String filtro = texto.toLowerCase(Locale.ROOT);
             for (NotaEpisodio nota : todasLasNotas) {
                 boolean coincide = false;
+                if (nota.getTitulo() != null && nota.getTitulo().toLowerCase().contains(filtro)) coincide = true;
+                else if (nota.getDescripcion() != null && nota.getDescripcion().toLowerCase().contains(filtro)) coincide = true;
+                else if (nota.getIntervenciones() != null && nota.getIntervenciones().toLowerCase().contains(filtro)) coincide = true;
+                else if (nota.getTipo() != null && nota.getTipo().toLowerCase().contains(filtro)) coincide = true;
 
-                // Búsqueda en título
-                if (nota.getTitulo() != null && nota.getTitulo().toLowerCase().contains(filtro)) {
-                    coincide = true;
-                }
-                // Búsqueda en descripción
-                else if (nota.getDescripcion() != null && nota.getDescripcion().toLowerCase().contains(filtro)) {
-                    coincide = true;
-                }
-                // Búsqueda en intervenciones
-                else if (nota.getIntervenciones() != null && nota.getIntervenciones().toLowerCase().contains(filtro)) {
-                    coincide = true;
-                }
-                // Búsqueda en tipo
-                else if (nota.getTipo() != null && nota.getTipo().toLowerCase().contains(filtro)) {
-                    coincide = true;
-                }
-
-                if (coincide) {
-                    notasFiltradas.add(nota);
-                }
+                if (coincide) notasFiltradas.add(nota);
             }
         }
         notaAdapter.notifyDataSetChanged();

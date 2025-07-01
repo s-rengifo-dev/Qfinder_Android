@@ -116,7 +116,6 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         nombreEditText = view.findViewById(R.id.etNombre);
         apellidoEditText = view.findViewById(R.id.etApellido);
         telefonoEditText = view.findViewById(R.id.edtTelefono);
-        emailEditText = view.findViewById(R.id.etCorreo);
         direccionEditText = view.findViewById(R.id.etDireccion);
         imagen = view.findViewById(R.id.imgAvatar);
         btnGuardar = view.findViewById(R.id.btnGuardar);
