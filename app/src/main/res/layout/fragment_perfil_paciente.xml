@@ -272,7 +272,49 @@
             android:layout_height="180dp"
             android:layout_gravity="center"
             android:layout_marginTop="16dp" />
+        <!-- Botón descargar QR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDescargarQR"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="30dp"
+                app:cardBackgroundColor="@color/azulitoPrincipio"
+                app:cardElevation="8dp"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:id="@+id/btnDescargarQR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Descargar QR"
+                        android:textColor="@color/white"
+                        android:textSize="18dp"
+                        android:layout_marginStart="8dp" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginLeft="10dp"
+                        android:src="@drawable/ic_download"
+                        android:backgroundTint="@color/white" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
         <!-- Botón generar QR -->
         <LinearLayout
             android:layout_width="match_parent"
