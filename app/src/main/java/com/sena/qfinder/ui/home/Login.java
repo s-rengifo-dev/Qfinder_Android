@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ import com.sena.qfinder.ui.auth.Fragment_password_recovery;
 import com.sena.qfinder.utils.SharedPrefManager;
 
 import okhttp3.OkHttpClient;
+import uk.co.deanwild.materialshowcaseview.IShowcaseListener;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseView;
 import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
@@ -126,63 +128,109 @@ public class Login extends Fragment {
     }
 
     private void showTutorialSteps() {
-        // 1. Explicación del campo de email
+        MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(getActivity());
+
+        IShowcaseListener styledListener = new IShowcaseListener() {
+            @Override
+            public void onShowcaseDisplayed(MaterialShowcaseView showcaseView) {
+                ViewGroup rootView = (ViewGroup) showcaseView.getChildAt(0);
+                findAndStyleDismissButton(rootView);
+            }
+
+            @Override
+            public void onShowcaseDismissed(MaterialShowcaseView showcaseView) {}
+        };
+
+        // Paso 1: Correo
         sequence.addSequenceItem(
                 new MaterialShowcaseView.Builder(getActivity())
                         .setTarget(tuto)
                         .setTitleText("Paso 1: Tu Correo")
-                        .setDismissText("Siguiente")
                         .setContentText("Aquí debes ingresar el correo electrónico con el que te registraste.")
+                        .setDismissText("Siguiente")
                         .withRectangleShape()
+                        .setListener(styledListener)
                         .build()
         );
 
-        // 2. Explicación del campo de contraseña
+        // Paso 2: Contraseña
         sequence.addSequenceItem(
                 new MaterialShowcaseView.Builder(getActivity())
                         .setTarget(passwordEditText)
                         .setTitleText("Paso 2: Contraseña")
-                        .setDismissText("Siguiente")
                         .setContentText("Escribe tu contraseña. Si la olvidaste, puedes recuperarla abajo.")
+                        .setDismissText("Siguiente")
                         .withRectangleShape()
+                        .setListener(styledListener)
                         .build()
         );
 
-        // 3. Explicación del botón de inicio de sesión
+        // Paso 3: Iniciar sesión
         sequence.addSequenceItem(
                 new MaterialShowcaseView.Builder(getActivity())
                         .setTarget(btnLogin)
                         .setTitleText("Paso 3: Iniciar Sesión")
-                        .setDismissText("Siguiente")
                         .setContentText("Presiona aquí para acceder a tu cuenta después de llenar los datos.")
+                        .setDismissText("Siguiente")
                         .withRectangleShape()
+                        .setListener(styledListener)
                         .build()
         );
 
-        // 4. Explicación del enlace de registro
+        // Paso 4: Registrarse
         sequence.addSequenceItem(
                 new MaterialShowcaseView.Builder(getActivity())
                         .setTarget(btnRegistro)
                         .setTitleText("¿No tienes cuenta?")
-                        .setDismissText("Siguiente")
                         .setContentText("Toca aquí para registrarte si eres nuevo en la app.")
+                        .setDismissText("Siguiente")
                         .withRectangleShape()
+                        .setListener(styledListener)
                         .build()
         );
 
-        // 5. Explicación de "Olvidé mi contraseña"
+        // Paso 5: Olvidé mi contraseña
         sequence.addSequenceItem(
                 new MaterialShowcaseView.Builder(getActivity())
                         .setTarget(btnOlvidarContrasena)
                         .setTitleText("Recuperar Contraseña")
-                        .setDismissText("¡Listo!")
                         .setContentText("Si no recuerdas tu contraseña, toca aquí para recuperarla.")
+                        .setDismissText("¡Listo!")
                         .withRectangleShape()
+                        .setListener(styledListener)
                         .build()
         );
 
         sequence.start();
     }
+
+    private void findAndStyleDismissButton(ViewGroup parent) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View child = parent.getChildAt(i);
+            if (child instanceof TextView) {
+                TextView textView = (TextView) child;
+                CharSequence text = textView.getText();
+                if (text != null && (
+                        text.toString().equalsIgnoreCase("siguiente") ||
+                                text.toString().equalsIgnoreCase("¡listo!") ||
+                                text.toString().equalsIgnoreCase("next") ||
+                                text.toString().equalsIgnoreCase("done"))
+                ) {
+                    // Aplica estilo de botón
+                    textView.setBackgroundResource(R.drawable.outline_button_bg);
+                    textView.setPadding(40, 20, 40, 20);
+                    textView.setTextColor(Color.parseColor("#FFFFFF"));
+                    textView.setTextSize(16);
+                    textView.setTypeface(null, Typeface.BOLD);
+                    return;
+                }
+            } else if (child instanceof ViewGroup) {
+                findAndStyleDismissButton((ViewGroup) child);
+            }
+        }
+    }
+
+
 
     private void initViews(View view) {
         emailEditText = view.findViewById(R.id.emailEditText);

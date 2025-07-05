@@ -147,21 +147,21 @@ public class DashboardFragment extends Fragment {
     private void navigateToFragment1() {
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, new Actividad1Fragment());
-        transaction.addToBackStack("dashboard");
+        transaction.addToBackStack("dashboard"); // Esto permite volver al dashboard con el botón de retroceso
         transaction.commit();
     }
 
     private void navigateToFragment2() {
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, new ListaAsignarMedicamentos());
-        transaction.addToBackStack("dashboard");
+        transaction.addToBackStack("dashboard"); // Esto permite volver al dashboard con el botón de retroceso
         transaction.commit();
     }
 
     private void navigateToAddPatient() {
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, new RegistrarPaciente());
-        transaction.addToBackStack("dashboard");
+        transaction.addToBackStack("dashboard"); // Esto permite volver al dashboard con el botón de retroceso
         transaction.commit();
     }
 
