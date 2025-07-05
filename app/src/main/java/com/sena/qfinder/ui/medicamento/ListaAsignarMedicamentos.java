@@ -130,14 +130,10 @@ public class ListaAsignarMedicamentos extends Fragment {
         btnOpenModalAsignar.setOnClickListener(view1 -> mostrarDialogoAgregarMedicamento());
 
         btnBack.setOnClickListener(v -> {
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-            Fragment_Serivicios ServiciosFragment = new Fragment_Serivicios();
-            fragmentTransaction.replace(R.id.fragment_container, ServiciosFragment);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+            // En lugar de navegar a Fragment_Serivicios, simplemente retrocede
+            getParentFragmentManager().popBackStack();
         });
+
 
         return view;
     }

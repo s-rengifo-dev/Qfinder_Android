@@ -103,17 +103,18 @@ public class Actividad1Fragment extends Fragment {
 
         // Configurar botón de retroceso - MANTENIENDO TU LÓGICA ORIGINAL
         btnBack.setOnClickListener(v -> {
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.fragment_container, new Fragment_Serivicios());
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+            // En lugar de navegar a Fragment_Serivicios, simplemente retrocede
+            getParentFragmentManager().popBackStack();
         });
 
         return view;
     }
 
     private void cargarPacientes() {
+
+        if (!isAdded() || getContext() == null) {
+            return; // Salir si el fragmento no está adjunto
+        }
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
@@ -128,6 +129,7 @@ public class Actividad1Fragment extends Fragment {
         call.enqueue(new Callback<PacienteListResponse>() {
             @Override
             public void onResponse(@NonNull Call<PacienteListResponse> call, @NonNull Response<PacienteListResponse> response) {
+                if (!isAdded() || getContext() == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     listaPacientes = response.body().getData();
                     if (listaPacientes != null && !listaPacientes.isEmpty()) {
@@ -154,12 +156,17 @@ public class Actividad1Fragment extends Fragment {
 
             @Override
             public void onFailure(@NonNull Call<PacienteListResponse> call, @NonNull Throwable t) {
+                if (!isAdded() || getContext() == null) return;
                 Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void cargarActividades(int idPaciente) {
+
+        if (!isAdded() || getContext() == null) {
+            return; // Salir si el fragmento no está adjunto
+        }
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
