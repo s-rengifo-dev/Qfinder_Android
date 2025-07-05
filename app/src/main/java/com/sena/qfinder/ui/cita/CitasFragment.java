@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -30,7 +32,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.ApiClient;
 import com.sena.qfinder.data.api.AuthService;
@@ -79,7 +80,7 @@ public class CitasFragment extends Fragment {
         recyclerCitas = rootView.findViewById(R.id.recyclerCitas);
         patientsContainer = rootView.findViewById(R.id.patientsContainer);
         Button btnAgregarRecordatorio = rootView.findViewById(R.id.btnAgregarRecordatorio);
-        ImageView btnBack = rootView.findViewById(R.id.btnBack);
+        btnBack = rootView.findViewById(R.id.btnBack);
 
         // Configurar RecyclerView
         recyclerCitas.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -90,17 +91,14 @@ public class CitasFragment extends Fragment {
         btnAgregarRecordatorio.setOnClickListener(v -> mostrarDialogoAgregarRecordatorio());
 
         // Listener para el botón de retroceso
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        btnBack.setOnClickListener(v -> {
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                Fragment_Serivicios serviciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
-                fragmentTransaction.replace(R.id.fragment_container, serviciosFragment); // Usa el ID del contenedor de tus fragments
-                fragmentTransaction.addToBackStack(null); // Opcional: para que puedas volver hacia adelante también
-                fragmentTransaction.commit();
-            }
+            Fragment_Serivicios serviciosFragment = new Fragment_Serivicios();
+            fragmentTransaction.replace(R.id.fragment_container, serviciosFragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         });
 
         // Cargar pacientes
@@ -177,10 +175,13 @@ public class CitasFragment extends Fragment {
             ivProfile.setImageResource(R.drawable.perfil_familiar);
         }
 
+        // Aplicar apariencia inicial (idéntico a DashboardFragment)
+        updateCardAppearance(patientCard, patientId == selectedPatientId);
+
         patientCard.setOnClickListener(v -> {
             selectedPatientId = patientId;
             selectedPatientName = name;
-            updatePatientCardsHighlight(patientId);
+            updatePatientCardsHighlight();
             loadCitasDelPaciente(patientId);
             Toast.makeText(getContext(), "Mostrando citas de " + name, Toast.LENGTH_SHORT).show();
         });
@@ -188,20 +189,38 @@ public class CitasFragment extends Fragment {
         patientsContainer.addView(patientCard);
     }
 
-    private void updatePatientCardsHighlight(int selectedPatientId) {
+    // Método idéntico al de DashboardFragment
+    private void updatePatientCardsHighlight() {
         if (patientsContainer == null || getContext() == null) return;
 
         for (int i = 0; i < patientsContainer.getChildCount(); i++) {
             View child = patientsContainer.getChildAt(i);
             if (child.getTag() instanceof Integer) {
                 int patientId = (int) child.getTag();
-
-                // Solo cambiamos el estado seleccionado sin tocar el fondo
-                child.setSelected(patientId == selectedPatientId);
-
-                // Opcional: Cambiar la elevación para feedback visual
-                child.setElevation(patientId == selectedPatientId ? 8f : 2f);
+                updateCardAppearance(child, patientId == selectedPatientId);
             }
+        }
+    }
+
+    // Método idéntico al de DashboardFragment
+    private void updateCardAppearance(View cardView, boolean isSelected) {
+        Context context = getContext();
+        if (context == null) return;
+
+        // Obtener el fondo original (debe ser un GradientDrawable)
+        GradientDrawable drawable = (GradientDrawable) ContextCompat.getDrawable(context, R.drawable.card_background).mutate();
+        cardView.setBackground(drawable);
+
+        if (isSelected) {
+            // Estilo cuando está seleccionado (mismos valores que DashboardFragment)
+            drawable.setStroke(4, ContextCompat.getColor(context, R.color.selected_stroke_color));
+            drawable.setColor(ContextCompat.getColor(context, R.color.selected_card_color));
+            cardView.setElevation(8f);
+        } else {
+            // Volver al estilo original (mismos valores que DashboardFragment)
+            drawable.setStroke(1, ContextCompat.getColor(context, R.color.default_stroke_color));
+            drawable.setColor(ContextCompat.getColor(context, R.color.default_card_color));
+            cardView.setElevation(2f);
         }
     }
 
@@ -253,14 +272,12 @@ public class CitasFragment extends Fragment {
             return;
         }
 
-        Dialog dialog = new Dialog(getContext());
+        Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.dialog_agregar_recordatorio);
 
         // Hacer fondo transparente
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            // Si no quieres el oscurecimiento detrás del diálogo, descomenta la siguiente línea:
-            // dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         }
 
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -278,7 +295,7 @@ public class CitasFragment extends Fragment {
         etFechaRecordatorio.setShowSoftInputOnFocus(false);
         etHoraCita.setShowSoftInputOnFocus(false);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(requireContext(),
                 R.array.estados_cita, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerEstado.setAdapter(adapter);
@@ -390,11 +407,9 @@ public class CitasFragment extends Fragment {
         dialog.show();
     }
 
-
-    // Método auxiliar para mostrar el DatePicker
     private void showDatePicker(EditText editText) {
         Calendar calendar = Calendar.getInstance();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(context,
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                 (view, year, month, dayOfMonth) -> {
                     String fechaSeleccionada = String.format(Locale.getDefault(), "%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     editText.setText(fechaSeleccionada);
@@ -405,10 +420,9 @@ public class CitasFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    // Método auxiliar para mostrar el TimePicker
     private void showTimePicker(EditText editText) {
         Calendar calendar = Calendar.getInstance();
-        TimePickerDialog timePickerDialog = new TimePickerDialog(context,
+        TimePickerDialog timePickerDialog = new TimePickerDialog(requireContext(),
                 (view, hourOfDay, minute) -> {
                     String horaSeleccionada = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
                     editText.setText(horaSeleccionada);
@@ -418,6 +432,7 @@ public class CitasFragment extends Fragment {
                 true);
         timePickerDialog.show();
     }
+
     private void guardarCita(CitaMedica cita) {
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
