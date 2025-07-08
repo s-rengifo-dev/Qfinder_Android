@@ -1,6 +1,7 @@
 package com.sena.qfinder.ui.home;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,6 +38,8 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -51,6 +54,8 @@ import com.sena.qfinder.data.models.PacienteResponse;
 import com.sena.qfinder.data.models.RolResponse;
 import com.sena.qfinder.data.models.UsuarioResponse;
 import com.sena.qfinder.ui.paciente.EditarPacienteDialogFragment;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -480,8 +485,9 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
             });
         });
 
-        checkbox.setOnCheckedChangeListener((buttonView, isChecked) ->
-                btnAgregar.setVisibility(isChecked ? View.VISIBLE : View.GONE));
+        checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            btnAgregar.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
 
         btnAgregar.setOnClickListener(v -> {
             if (idUsuarioColaborador[0] == -1) {
@@ -498,7 +504,33 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
                         Toast.makeText(getContext(), "Colaborador agregado correctamente", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                     } else {
-                        Toast.makeText(getContext(), "Ya es colaborador o error al agregar", Toast.LENGTH_SHORT).show();
+                        try {
+                            if (response.errorBody() != null) {
+                                String errorBody = response.errorBody().string();
+
+                                try {
+                                    JSONObject jsonObject = new JSONObject(errorBody);
+                                    String errorMsg = jsonObject.getString("error");
+
+                                    // Validar el contenido del mensaje y mostrar snackbar con estilo
+                                    if (errorMsg.contains("límite de 0 colaboradores")) {
+                                        mostrarMensajeLimitePlan("free", 0, 0, "colaboradores");
+                                    } else if (errorMsg.contains("límite de 5 colaboradores")) {
+                                        mostrarMensajeLimitePlan("plus", 5, 5, "colaboradores");
+                                    } else if (errorMsg.contains("límite de 2 colaboradores")) {
+                                        mostrarMensajeLimitePlan("free", 2, 2, "colaboradores");
+                                    } else {
+                                        Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                                    }
+                                } catch (Exception e) {
+                                    Toast.makeText(getContext(), "Error al procesar la respuesta", Toast.LENGTH_LONG).show();
+                                }
+                            } else {
+                                Toast.makeText(getContext(), "Error desconocido al agregar colaborador", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(getContext(), "Error inesperado", Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
 
@@ -511,6 +543,53 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
 
         dialog.show();
     }
+
+    private void mostrarMensajeLimitePlan(String planActual, int cantidadRegistrada, int limite, String tipo) {
+        View view = getView();
+        if (view != null) {
+            Snackbar snackbar = Snackbar.make(view, "", Snackbar.LENGTH_INDEFINITE);
+            Snackbar.SnackbarLayout layout = (Snackbar.SnackbarLayout) snackbar.getView();
+            layout.setPadding(0, 0, 0, 0);
+            layout.setBackgroundColor(Color.TRANSPARENT);
+
+            View customView = LayoutInflater.from(requireContext()).inflate(R.layout.snackbar_limit_exceeded, null);
+
+            TextView message = customView.findViewById(R.id.snackbar_message);
+            Button actionButton = customView.findViewById(R.id.snackbar_action);
+            ImageView icon = customView.findViewById(R.id.snackbar_icon);
+
+            String mensaje = String.format("Plan %s: %d/%d %s registrados. ¡Has alcanzado el límite!",
+                    planActual.toUpperCase(), cantidadRegistrada, limite, tipo);
+            message.setText(mensaje);
+            actionButton.setText("Actualizar Plan");
+            icon.setImageResource(R.drawable.premium);
+
+            actionButton.setOnClickListener(v -> {
+                snackbar.dismiss();
+                Intent intent = new Intent(requireActivity(), SubscriptionActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            });
+
+            layout.addView(customView, 0);
+            snackbar.show();
+        }
+    }
+
+    private static class ErrorResponse {
+        private String error;
+        private String plan_actual;
+        private int pacientes_registrados;
+        private int colaboradores_registrados;
+        private int limite;
+
+        public String getError() { return error; }
+        public String getPlan_actual() { return plan_actual; }
+        public int getPacientes_registrados() { return pacientes_registrados; }
+        public int getColaboradores_registrados() { return colaboradores_registrados; }
+        public int getLimite() { return limite; }
+    }
+
 
     private void initializeRetrofit() {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
