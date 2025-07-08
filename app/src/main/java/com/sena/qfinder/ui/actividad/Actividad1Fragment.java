@@ -2,6 +2,7 @@ package com.sena.qfinder.ui.actividad;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -25,9 +27,7 @@ import com.sena.qfinder.data.models.ActividadGetResponse;
 import com.sena.qfinder.data.models.ActividadListResponse;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
-import com.sena.qfinder.ui.home.DashboardFragment;
 import com.sena.qfinder.ui.home.Fragment_Serivicios;
-import com.sena.qfinder.ui.paciente.PatientAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPatientClickListener {
+public class Actividad1Fragment extends Fragment {
 
     private RecyclerView recyclerViewActividades;
     private RecyclerView recyclerViewPacientes;
@@ -55,6 +55,7 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_actividad1, container, false);
 
+        // Inicialización de vistas
         recyclerViewPacientes = view.findViewById(R.id.recyclerViewPacientes);
         recyclerViewActividades = view.findViewById(R.id.recyclerViewActividades);
         btnAgregarActividad = view.findViewById(R.id.btnAgregarActividad);
@@ -66,25 +67,29 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
                 LinearLayoutManager.HORIZONTAL,
                 false
         ));
-        patientAdapter = new PatientAdapter(new ArrayList<>(), this);
+
+        // Adaptador de pacientes con el nuevo sistema de selección
+        patientAdapter = new PatientAdapter(new ArrayList<>(), paciente -> {
+            selectedPatientId = paciente.getId();
+            patientAdapter.setSelectedPatientId(selectedPatientId);
+            cargarActividades(paciente.getId());
+        });
         recyclerViewPacientes.setAdapter(patientAdapter);
 
-        // Configurar RecyclerView para actividades (vertical)
+        // Configurar RecyclerView para actividades (vertical) - MANTENIENDO TU LÓGICA ORIGINAL
         recyclerViewActividades.setLayoutManager(new LinearLayoutManager(getContext()));
         actividadAdapter = new ActividadAdapter(new ArrayList<>(), actividad -> {
-            // Mostrar diálogo para editar/eliminar la actividad
+            // Lógica original para editar actividad
             AgregarActividadDialogFragment dialog = AgregarActividadDialogFragment.newInstance(actividad);
-            dialog.setOnActividadGuardadaListener(() -> {
-                cargarActividades(selectedPatientId); // Refresca la lista al guardar
-            });
+            dialog.setOnActividadGuardadaListener(() -> cargarActividades(selectedPatientId));
             dialog.show(getParentFragmentManager(), "EditarActividadDialog");
         });
-
-
         recyclerViewActividades.setAdapter(actividadAdapter);
 
+        // Cargar pacientes
         cargarPacientes();
 
+        // Configurar botón agregar actividad - MANTENIENDO TU LÓGICA ORIGINAL
         btnAgregarActividad.setOnClickListener(v -> {
             if (selectedPatientId == -1) {
                 Toast.makeText(getContext(), "Seleccione un paciente primero", Toast.LENGTH_SHORT).show();
@@ -92,31 +97,20 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
             }
 
             AgregarActividadDialogFragment dialog = AgregarActividadDialogFragment.newInstance(selectedPatientId);
-            dialog.setOnActividadGuardadaListener(() -> {
-                cargarActividades(selectedPatientId);
-            });
+            dialog.setOnActividadGuardadaListener(() -> cargarActividades(selectedPatientId));
             dialog.show(getParentFragmentManager(), "AgregarActividadDialog");
         });
 
-        // Código del botón de retroceso
+        // Configurar botón de retroceso - MANTENIENDO TU LÓGICA ORIGINAL
         btnBack.setOnClickListener(v -> {
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-            Fragment_Serivicios ServiciosFragment = new Fragment_Serivicios(); // Asegúrate de tener esta clase creada
-            fragmentTransaction.replace(R.id.fragment_container, ServiciosFragment); // Usa el ID correcto de tu contenedor
-            fragmentTransaction.addToBackStack(null); // Opcional
+            fragmentTransaction.replace(R.id.fragment_container, new Fragment_Serivicios());
+            fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         });
 
         return view;
-    }
-
-
-    @Override
-    public void onPatientClick(PacienteResponse paciente) {
-        selectedPatientId = paciente.getId();
-        cargarActividades(paciente.getId());
     }
 
     private void cargarPacientes() {
@@ -143,6 +137,13 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
                         }
                         // Actualizar el adaptador de pacientes
                         patientAdapter.setPatients(listaPacientes);
+
+                        // Seleccionar el primer paciente por defecto
+                        if (selectedPatientId == -1) {
+                            selectedPatientId = listaPacientes.get(0).getId();
+                            patientAdapter.setSelectedPatientId(selectedPatientId);
+                            cargarActividades(selectedPatientId);
+                        }
                     } else {
                         Toast.makeText(getContext(), "No hay pacientes registrados", Toast.LENGTH_SHORT).show();
                     }
@@ -191,6 +192,7 @@ public class Actividad1Fragment extends Fragment implements PatientAdapter.OnPat
         });
     }
 
+    // MÉTODO ORIGINAL SIN MODIFICACIONES
     private List<ActividadGetResponse> enriquecerActividades(List<ActividadGetResponse> actividadesResponse) {
         List<ActividadGetResponse> actividadesEnriquecidas = new ArrayList<>();
 

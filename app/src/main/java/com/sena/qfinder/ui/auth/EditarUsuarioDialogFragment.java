@@ -2,13 +2,11 @@ package com.sena.qfinder.ui.auth;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +42,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class EditarUsuarioDialogFragment extends DialogFragment {
 
-    private EditText nombreEditText, apellidoEditText, telefonoEditText, emailEditText, direccionEditText;
+    private EditText nombreEditText, apellidoEditText, telefonoEditText, direccionEditText;
     private Button btnGuardar;
     private ImageView imagen;
     private Uri selectedImageUri;
@@ -116,7 +114,6 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         nombreEditText = view.findViewById(R.id.etNombre);
         apellidoEditText = view.findViewById(R.id.etApellido);
         telefonoEditText = view.findViewById(R.id.edtTelefono);
-        emailEditText = view.findViewById(R.id.etCorreo);
         direccionEditText = view.findViewById(R.id.etDireccion);
         imagen = view.findViewById(R.id.imgAvatar);
         btnGuardar = view.findViewById(R.id.btnGuardar);
@@ -127,12 +124,10 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
                 nombreEditText.setText(usuario.getNombre_usuario());
                 apellidoEditText.setText(usuario.getApellido_usuario());
                 telefonoEditText.setText(usuario.getTelefono_usuario());
-                emailEditText.setText(usuario.getCorreo_usuario());
                 direccionEditText.setText(usuario.getDireccion_usuario());
             }
         }
 
-        // Mostrar imagen temporal si existe, de lo contrario cargar la del backend
         String uriStr = obtenerUriTemporal();
         if (uriStr != null) {
             selectedImageUri = Uri.parse(uriStr);
@@ -222,10 +217,9 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         String nombre = nombreEditText.getText().toString().trim();
         String apellido = apellidoEditText.getText().toString().trim();
         String telefono = telefonoEditText.getText().toString().trim();
-        String email = emailEditText.getText().toString().trim();
         String direccion = direccionEditText.getText().toString().trim();
 
-        if (nombre.isEmpty() || apellido.isEmpty() || telefono.isEmpty() || email.isEmpty() || direccion.isEmpty()) {
+        if (nombre.isEmpty() || apellido.isEmpty() || telefono.isEmpty() || direccion.isEmpty()) {
             Toast.makeText(getContext(), "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
             btnGuardar.setEnabled(true);
             return;
@@ -236,7 +230,7 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
                 apellido,
                 direccion,
                 telefono,
-                email,
+                "", // correo eliminado, se envía vacío
                 urlImagen
         );
 
@@ -280,10 +274,11 @@ public class EditarUsuarioDialogFragment extends DialogFragment {
         if (getDialog() != null && getDialog().getWindow() != null) {
             int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.95);
             getDialog().getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+            getDialog().getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            );
         }
     }
-
-    // ---------- MÉTODOS PARA GUARDAR/RECUPERAR LA URI TEMPORAL DE LA IMAGEN ----------
 
     private void guardarUriTemporal(String uriStr) {
         SharedPreferences prefs = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);

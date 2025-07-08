@@ -222,21 +222,23 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1" />
                 </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_save"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Guardar"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    android:backgroundTint="@color/Botones"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="32dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Botón guardar -->
-        <Button
-            android:id="@+id/btn_save"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Guardar"
-            android:textAllCaps="false"
-            android:textSize="18sp"
-            android:backgroundTint="@color/Botones"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="32dp" /> <!-- ✅ Más espacio inferior -->
+         <!-- ✅ Más espacio inferior -->
 
         <!-- Espaciador para evitar que el botón quede tapado -->
         <View

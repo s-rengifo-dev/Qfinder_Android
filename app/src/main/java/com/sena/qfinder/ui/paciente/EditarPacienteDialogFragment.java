@@ -292,17 +292,22 @@ public class EditarPacienteDialogFragment extends DialogFragment {
     }
 
     private String convertirFechaParaEnviar(String fechaFormateada) {
+        // Si ya está en formato ISO (yyyy-MM-dd), retornar directamente
+        if (fechaFormateada.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return fechaFormateada;
+        }
+
+        // Intentar formato "dd/MM/yyyy"
         try {
             SimpleDateFormat formatoEntrada = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             Date fecha = formatoEntrada.parse(fechaFormateada);
             SimpleDateFormat formatoSalida = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             return formatoSalida.format(fecha);
         } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
+            // Si falla, conservar el valor original como último recurso
+            return paciente.getFecha_nacimiento(); // Usar la fecha original del paciente
         }
     }
-
     private String convertirFechaParaMostrar(String fechaIso) {
         try {
             SimpleDateFormat formatoEntrada = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -320,6 +325,8 @@ public class EditarPacienteDialogFragment extends DialogFragment {
         if (getDialog() != null && getDialog().getWindow() != null) {
             int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.95);
             getDialog().getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+            getDialog().getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
         }
     }
+
 }

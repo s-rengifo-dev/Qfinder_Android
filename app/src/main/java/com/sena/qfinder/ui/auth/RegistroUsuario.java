@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
@@ -78,9 +80,8 @@ public class RegistroUsuario extends Fragment {
             chkAceptarTerminos.setButtonTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#18A0FB")));
         }
 
-        // Limitar a 10 dígitos y tipo de entrada telefónica
-        edtTelefono.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(10)});
-        edtTelefono.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+        // Configurar inputs
+        configureInputFilters();
 
         progressDialog = new ProgressDialog(getContext());
         progressDialog.setTitle("Registrando");
@@ -88,6 +89,40 @@ public class RegistroUsuario extends Fragment {
         progressDialog.setCancelable(false);
     }
 
+    private void configureInputFilters() {
+        // Limitar a 10 dígitos y tipo de entrada telefónica
+        edtTelefono.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10)});
+        edtTelefono.setInputType(InputType.TYPE_CLASS_PHONE);
+
+        // Solo números para identificación (7-11 dígitos)
+        InputFilter numberFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end,
+                                       Spanned dest, int dstart, int dend) {
+                for (int i = start; i < end; i++) {
+                    if (!Character.isDigit(source.charAt(i))) {
+                        return "";
+                    }
+                }
+                return null;
+            }
+        };
+        edtIdentificacion.setFilters(new InputFilter[]{numberFilter, new InputFilter.LengthFilter(11)});
+        edtIdentificacion.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        // Solo letras para nombre y apellido
+        InputFilter letterFilter = (source, start, end, dest, dstart, dend) -> {
+            for (int i = start; i < end; i++) {
+                if (!Character.isLetter(source.charAt(i))) {
+                    return "";
+                }
+            }
+            return null;
+        };
+
+        edtNombre.setFilters(new InputFilter[]{letterFilter});
+        edtApellido.setFilters(new InputFilter[]{letterFilter});
+    }
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> volverALogin());
@@ -191,8 +226,13 @@ public class RegistroUsuario extends Fragment {
             valido = false;
         }
 
-        if (edtIdentificacion.getText().toString().trim().isEmpty()) {
+        String identificacion = edtIdentificacion.getText().toString().trim();
+        if (identificacion.isEmpty()) {
             edtIdentificacion.setError("La identificación es obligatoria");
+            valido = false;
+        } else if (identificacion.length() < 7 || identificacion.length() > 11) {
+            edtIdentificacion.setError("Identificación inválida");
+            mostrarErrorIdentificacion();
             valido = false;
         }
 
@@ -222,6 +262,12 @@ public class RegistroUsuario extends Fragment {
         }
 
         return valido;
+    }
+
+    private void mostrarErrorIdentificacion() {
+        Toast.makeText(getContext(),
+                "La identificación debe tener entre 7 y 11 dígitos",
+                Toast.LENGTH_LONG).show();
     }
 
     private boolean esCorreoValido(String correo) {
