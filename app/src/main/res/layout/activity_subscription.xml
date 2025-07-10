@@ -49,7 +49,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="5 pacientes y 3 cuidadores"
+                        android:text="5 pacientes y 5 cuidadores"
                         android:textColor="#666666"
                         android:layout_marginTop="6dp"/>
 
@@ -97,7 +97,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="15 pacientes y 10 cuidadores"
+                        android:text="Sin límites en la cantidad de pacientes ni de colaboradores"
                         android:textColor="#666666"
                         android:layout_marginTop="6dp"/>
 

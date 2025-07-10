@@ -105,7 +105,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Hasta 3 cuidadores vinculados"
+                                android:text="Hasta 5 cuidadores vinculados"
                                 android:textColor="#444444"
                                 android:textSize="16sp"/>
                         </LinearLayout>
