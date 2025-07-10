@@ -41,10 +41,13 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import android.Manifest;
+
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.sena.qfinder.R;
 import com.sena.qfinder.data.api.ApiClient;
 import com.sena.qfinder.data.api.AuthService;
@@ -63,7 +66,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -267,21 +272,66 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     private Bitmap generarQRBitmapLocal(PacienteResponse paciente) {
         try {
             String qrContent = crearContenidoQRUniversal(paciente, perfilUsuario);
-            QRCodeWriter writer = new QRCodeWriter();
-            BitMatrix bitMatrix = writer.encode(qrContent, BarcodeFormat.QR_CODE, QR_CODE_SIZE, QR_CODE_SIZE);
+            Log.d("QR_DEBUG", "Generando QR con contenido: " + qrContent);
 
-            Bitmap bitmap = Bitmap.createBitmap(QR_CODE_SIZE, QR_CODE_SIZE, Bitmap.Config.ARGB_8888);
-            for (int x = 0; x < QR_CODE_SIZE; x++) {
-                for (int y = 0; y < QR_CODE_SIZE; y++) {
+            QRCodeWriter writer = new QRCodeWriter();
+
+            // Configuración mejorada
+            Map<EncodeHintType, Object> hints = new HashMap<>();
+            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M); // Nivel medio de corrección
+            hints.put(EncodeHintType.MARGIN, 1); // Margen mínimo
+
+            BitMatrix bitMatrix = writer.encode(
+                    qrContent,
+                    BarcodeFormat.QR_CODE,
+                    QR_CODE_SIZE,
+                    QR_CODE_SIZE,
+                    hints
+            );
+
+            int width = bitMatrix.getWidth();
+            int height = bitMatrix.getHeight();
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
                     bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
                 }
             }
+
             return addWhiteBorder(bitmap, 20);
-        } catch (WriterException e) {
-            Log.e("QR_GEN", "Error generando QR", e);
+        } catch (Exception e) {
+            Log.e("QR_GEN_ERROR", "Error al generar QR: " + e.getMessage(), e);
+            // Mostrar un QR de error alternativo
+            return generarQRDeError();
+        }
+    }
+
+    private Bitmap generarQRDeError() {
+        // Generar un QR simple con mensaje de error
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            BitMatrix bitMatrix = writer.encode(
+                    "ERROR: Contacte al soporte",
+                    BarcodeFormat.QR_CODE,
+                    200,
+                    200
+            );
+
+            Bitmap bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
+            for (int x = 0; x < 200; x++) {
+                for (int y = 0; y < 200; y++) {
+                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.RED : Color.WHITE);
+                }
+            }
+            return bitmap;
+        } catch (Exception e) {
             return null;
         }
     }
+
+
 
     private Bitmap addWhiteBorder(Bitmap bmp, int borderSize) {
         Bitmap bmpWithBorder = Bitmap.createBitmap(
@@ -737,17 +787,30 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
             byte[] decodedBytes = Base64.decode(pureBase64, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
 
-            // Añadir borde blanco como en la versión local
+            // Redimensionar si es necesario para mejor legibilidad
+            if (bitmap.getWidth() < QR_CODE_SIZE || bitmap.getHeight() < QR_CODE_SIZE) {
+                bitmap = Bitmap.createScaledBitmap(bitmap, QR_CODE_SIZE, QR_CODE_SIZE, false);
+            }
+
             Bitmap borderedBitmap = addWhiteBorder(bitmap, 20);
             ivCodigoQR.setImageBitmap(borderedBitmap);
             ivCodigoQR.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             Log.e("QR_API", "Error al mostrar QR de API", e);
-            // Fallback a generación local
+            // Fallback a generación local con texto limpio
             generarQRLocalUniversal(pacienteActual);
         }
     }
 
+    private String cleanTextForQR(String text) {
+        if (text == null) return "N/A";
+
+        // Eliminar caracteres especiales problemáticos
+        return text.replaceAll("[^\\x20-\\x7E]", "")
+                .replace("\n", " ") // Reemplazar saltos de línea
+                .replace("\r", "")
+                .trim();
+    }
     private void generarQRLocalUniversal(PacienteResponse paciente) {
         try {
             String qrContent = crearContenidoQRUniversal(paciente, perfilUsuario);
@@ -768,10 +831,16 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     }
 
     private String crearContenidoQRUniversal(PacienteResponse paciente, PerfilUsuarioResponse usuario) {
-        return "Nombre: " + paciente.getNombre() + " " + paciente.getApellido() + "\n" +
-                "Contacto: " + (usuario != null ? usuario.getTelefono_usuario() : "No disponible") + "\n" +
-                "Diagnóstico: " + safeText(paciente.getDiagnostico_principal()) + "\n" +
-                "App: QfindeR";
+        StringBuilder qrContent = new StringBuilder();
+        qrContent.append("Nombre: ").append(paciente.getNombre()).append(" ").append(paciente.getApellido()).append("\n");
+        qrContent.append("Contacto: ").append(usuario != null ? usuario.getTelefono_usuario() : "N/A").append("\n");
+
+        // Aquí llamamos a cleanTextForQR() para sanitizar el diagnóstico
+        String diagnosticoLimpio = cleanTextForQR(paciente.getDiagnostico_principal());
+        qrContent.append("Diagnostico: ").append(diagnosticoLimpio).append("\n");
+
+        qrContent.append("App: QFindeR");
+        return qrContent.toString();
     }
 
     private void abrirDialogoEditar() {
