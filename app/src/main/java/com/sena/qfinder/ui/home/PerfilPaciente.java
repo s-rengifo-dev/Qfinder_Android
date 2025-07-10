@@ -832,6 +832,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
 
     private String crearContenidoQRUniversal(PacienteResponse paciente, PerfilUsuarioResponse usuario) {
         StringBuilder qrContent = new StringBuilder();
+        qrContent.append("Informacion del Paciente\n");
         qrContent.append("Nombre: ").append(paciente.getNombre()).append(" ").append(paciente.getApellido()).append("\n");
         qrContent.append("Contacto: ").append(usuario != null ? usuario.getTelefono_usuario() : "N/A").append("\n");
 
