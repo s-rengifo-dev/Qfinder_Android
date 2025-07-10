@@ -51,6 +51,7 @@ import com.sena.qfinder.data.api.AuthService;
 import com.sena.qfinder.data.models.AgregarColaboradorRequest;
 import com.sena.qfinder.data.models.PacienteListResponse;
 import com.sena.qfinder.data.models.PacienteResponse;
+import com.sena.qfinder.data.models.PerfilUsuarioResponse;
 import com.sena.qfinder.data.models.RolResponse;
 import com.sena.qfinder.data.models.UsuarioResponse;
 import com.sena.qfinder.ui.paciente.EditarPacienteDialogFragment;
@@ -90,6 +91,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     private AuthService authService;
     private PacienteResponse pacienteActual;
     private String currentImageData;
+    private PerfilUsuarioResponse perfilUsuario;
 
     // Views
     private TextView tvNombreApellido, tvFechaNacimiento, tvSexo, tvDiagnostico, tvIdentificacion;
@@ -122,6 +124,32 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         }
 
         initializeRetrofit();
+        cargarPerfilUsuario();
+    }
+
+    private void cargarPerfilUsuario() {
+        String token = sharedPreferences.getString("token", null);
+        if (token == null) {
+            return;
+        }
+
+        authService.obtenerPerfil("Bearer " + token).enqueue(new Callback<PerfilUsuarioResponse>() {
+            @Override
+            public void onResponse(Call<PerfilUsuarioResponse> call, Response<PerfilUsuarioResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    perfilUsuario = response.body();
+                    // Si ya tenemos datos del paciente, actualizamos el QR
+                    if (pacienteActual != null) {
+                        mostrarQRDelPaciente(pacienteActual);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PerfilUsuarioResponse> call, Throwable t) {
+                Log.e("PerfilUsuario", "Error al cargar perfil", t);
+            }
+        });
     }
 
     @Override
@@ -200,30 +228,35 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
     }
 
     private void procesarDescargaQR() {
-        Bitmap qrBitmap = null;
-
-        // Opción 1: Obtener del ImageView
-        if (ivCodigoQR.getDrawable() != null) {
-            qrBitmap = getBitmapFromView(ivCodigoQR);
-        }
-        // Opción 2: Generar desde base64 si está disponible
-        else if (pacienteActual.getQrCode() != null && !pacienteActual.getQrCode().isEmpty()) {
+        // Prioridad 1: Usar el QR de la API si está disponible
+        if (pacienteActual.getQrCode() != null && !pacienteActual.getQrCode().isEmpty()) {
             try {
                 String pureBase64 = pacienteActual.getQrCode().contains(",") ?
                         pacienteActual.getQrCode().substring(pacienteActual.getQrCode().indexOf(",") + 1) :
                         pacienteActual.getQrCode();
                 byte[] decodedBytes = Base64.decode(pureBase64, Base64.DEFAULT);
-                qrBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                Bitmap qrBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+
+                // Añadir borde blanco para consistencia
+                qrBitmap = addWhiteBorder(qrBitmap, 20);
+                guardarQREnDispositivo(qrBitmap);
+                return;
             } catch (Exception e) {
                 Log.e("QR_DOWNLOAD", "Error al decodificar QR base64", e);
             }
         }
 
-        // Opción 3: Generar QR localmente
-        if (qrBitmap == null) {
-            qrBitmap = generarQRBitmapLocal(pacienteActual);
+        // Prioridad 2: Usar el ImageView si tiene un QR
+        if (ivCodigoQR.getDrawable() != null) {
+            Bitmap qrBitmap = getBitmapFromView(ivCodigoQR);
+            if (qrBitmap != null) {
+                guardarQREnDispositivo(qrBitmap);
+                return;
+            }
         }
 
+        // Prioridad 3: Generar QR localmente como último recurso
+        Bitmap qrBitmap = generarQRBitmapLocal(pacienteActual);
         if (qrBitmap != null) {
             guardarQREnDispositivo(qrBitmap);
         } else {
@@ -233,7 +266,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
 
     private Bitmap generarQRBitmapLocal(PacienteResponse paciente) {
         try {
-            String qrContent = crearContenidoQRUniversal(paciente);
+            String qrContent = crearContenidoQRUniversal(paciente, perfilUsuario);
             QRCodeWriter writer = new QRCodeWriter();
             BitMatrix bitMatrix = writer.encode(qrContent, BarcodeFormat.QR_CODE, QR_CODE_SIZE, QR_CODE_SIZE);
 
@@ -590,7 +623,6 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         public int getLimite() { return limite; }
     }
 
-
     private void initializeRetrofit() {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -700,19 +732,25 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
 
     private void mostrarCodigoQR(String base64QR) {
         try {
-            String pureBase64 = base64QR.contains(",") ? base64QR.substring(base64QR.indexOf(",") + 1) : base64QR;
+            String pureBase64 = base64QR.contains(",") ?
+                    base64QR.substring(base64QR.indexOf(",") + 1) : base64QR;
             byte[] decodedBytes = Base64.decode(pureBase64, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-            ivCodigoQR.setImageBitmap(bitmap);
+
+            // Añadir borde blanco como en la versión local
+            Bitmap borderedBitmap = addWhiteBorder(bitmap, 20);
+            ivCodigoQR.setImageBitmap(borderedBitmap);
             ivCodigoQR.setVisibility(View.VISIBLE);
         } catch (Exception e) {
+            Log.e("QR_API", "Error al mostrar QR de API", e);
+            // Fallback a generación local
             generarQRLocalUniversal(pacienteActual);
         }
     }
 
     private void generarQRLocalUniversal(PacienteResponse paciente) {
         try {
-            String qrContent = crearContenidoQRUniversal(paciente);
+            String qrContent = crearContenidoQRUniversal(paciente, perfilUsuario);
             QRCodeWriter writer = new QRCodeWriter();
             BitMatrix bitMatrix = writer.encode(qrContent, BarcodeFormat.QR_CODE, QR_CODE_SIZE, QR_CODE_SIZE);
 
@@ -729,12 +767,9 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         }
     }
 
-    private String crearContenidoQRUniversal(PacienteResponse paciente) {
-        return "ID: " + paciente.getId() + "\n" +
-                "Nombre: " + paciente.getNombre() + " " + paciente.getApellido() + "\n" +
-                "Identificación: " + safeText(paciente.getIdentificacion()) + "\n" +
-                "Fecha Nacimiento: " + formatFecha(paciente.getFecha_nacimiento()) + "\n" +
-                "Sexo: " + capitalizeFirstLetter(paciente.getSexo()) + "\n" +
+    private String crearContenidoQRUniversal(PacienteResponse paciente, PerfilUsuarioResponse usuario) {
+        return "Nombre: " + paciente.getNombre() + " " + paciente.getApellido() + "\n" +
+                "Contacto: " + (usuario != null ? usuario.getTelefono_usuario() : "No disponible") + "\n" +
                 "Diagnóstico: " + safeText(paciente.getDiagnostico_principal()) + "\n" +
                 "App: QfindeR";
     }
@@ -757,6 +792,7 @@ public class PerfilPaciente extends Fragment implements EditarPacienteDialogFrag
         new Handler(Looper.getMainLooper()).post(() -> {
             Glide.with(requireContext()).clear(imagenPerfilP);
             displayPacienteData(pacienteActualizado);
+            mostrarQRDelPaciente(pacienteActualizado);
         });
     }
 
