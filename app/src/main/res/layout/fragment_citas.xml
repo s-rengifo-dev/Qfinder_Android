@@ -91,7 +91,17 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp" />
 
-            <!-- BOTÓN -->
+            <TextView
+                android:id="@+id/tvSinCitas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Este paciente no tiene citas programadas aún"
+                android:textSize="16sp"
+                android:textColor="@color/gray_dark"
+                android:gravity="center"
+                android:padding="20dp"
+                android:visibility="gone" />
+
 
         </LinearLayout>
     </ScrollView>

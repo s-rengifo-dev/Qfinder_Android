@@ -76,6 +76,18 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <TextView
+        android:id="@+id/tvSinActividades"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Este paciente no tiene actividades registradas aún"
+        android:textColor="@color/gray_dark"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="20dp"/>
+
+
     <!-- Botón para agregar actividad -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAgregarActividad"

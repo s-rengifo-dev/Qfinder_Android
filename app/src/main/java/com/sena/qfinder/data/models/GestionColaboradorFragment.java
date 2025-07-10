@@ -5,8 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
-        import android.widget.*;
-        import androidx.fragment.app.Fragment;
+import android.widget.*;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
@@ -17,10 +17,10 @@ import com.sena.qfinder.data.models.ColaboradorResponse;
 
 import java.util.*;
 
-        import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.*;
-        import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class GestionColaboradorFragment extends Fragment {
 
@@ -68,10 +68,14 @@ public class GestionColaboradorFragment extends Fragment {
             @Override
             public void onResponse(Call<ColaboradorListResponse> call, Response<ColaboradorListResponse> response) {
                 if (!isAdded()) return;
+
+                // Si la respuesta es exitosa y tiene cuerpo
                 if (response.isSuccessful() && response.body() != null) {
-                    mostrarColaboradores(inflater, response.body().getColaboradores(), authService, token);
+                    List<ColaboradorResponse> lista = response.body().getColaboradores();
+                    mostrarColaboradores(inflater, lista, authService, token);
                 } else {
-                    Toast.makeText(getContext(), "Error al obtener colaboradores", Toast.LENGTH_SHORT).show();
+                    // Mostrar mensaje "no tienes colaboradores" también en caso de error o lista nula
+                    mostrarColaboradores(inflater, new ArrayList<>(), authService, token);
                 }
             }
 
@@ -82,10 +86,21 @@ public class GestionColaboradorFragment extends Fragment {
                 Log.e("COLABORADORES", "Fallo: ", t);
             }
         });
+
     }
 
     private void mostrarColaboradores(LayoutInflater inflater, List<ColaboradorResponse> colaboradores, AuthService authService, String token) {
         containerColaboradores.removeAllViews();
+
+        if (colaboradores.isEmpty()) {
+            TextView mensaje = new TextView(requireContext());
+            mensaje.setText("No tienes colaboradores asignados");
+            mensaje.setTextSize(18);
+            mensaje.setPadding(20, 120, 20, 20);
+            mensaje.setGravity(Gravity.CENTER);
+            containerColaboradores.addView(mensaje);
+            return;
+        }
 
         for (ColaboradorResponse colaborador : colaboradores) {
             View card = inflater.inflate(R.layout.item_colaborador, containerColaboradores, false);
@@ -136,7 +151,6 @@ public class GestionColaboradorFragment extends Fragment {
                         .setNegativeButton("No", null)
                         .show();
             });
-
 
             containerColaboradores.addView(card);
         }

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -163,10 +164,8 @@ public class Actividad1Fragment extends Fragment {
     }
 
     private void cargarActividades(int idPaciente) {
+        if (!isAdded() || getContext() == null) return;
 
-        if (!isAdded() || getContext() == null) {
-            return; // Salir si el fragmento no está adjunto
-        }
         SharedPreferences preferences = requireContext().getSharedPreferences("usuario", Context.MODE_PRIVATE);
         String token = preferences.getString("token", null);
 
@@ -178,26 +177,42 @@ public class Actividad1Fragment extends Fragment {
         AuthService authService = ApiClient.getClient().create(AuthService.class);
         Call<ActividadListResponse> call = authService.listarActividades("Bearer " + token, idPaciente);
 
+        // Obtener el TextView del mensaje de vacío
+        TextView tvSinActividades = requireView().findViewById(R.id.tvSinActividades);
+
         call.enqueue(new Callback<ActividadListResponse>() {
             @Override
             public void onResponse(@NonNull Call<ActividadListResponse> call, @NonNull Response<ActividadListResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     List<ActividadGetResponse> actividadesResponse = response.body().getData();
-                    List<ActividadGetResponse> actividadesEnriquecidas = enriquecerActividades(actividadesResponse);
-                    actividadAdapter.setActividades(actividadesEnriquecidas);
+
+                    if (!actividadesResponse.isEmpty()) {
+                        List<ActividadGetResponse> actividadesEnriquecidas = enriquecerActividades(actividadesResponse);
+                        actividadAdapter.setActividades(actividadesEnriquecidas);
+                        tvSinActividades.setVisibility(View.GONE);
+                        recyclerViewActividades.setVisibility(View.VISIBLE);
+                    } else {
+                        actividadAdapter.setActividades(new ArrayList<>());
+                        tvSinActividades.setVisibility(View.VISIBLE);
+                        recyclerViewActividades.setVisibility(View.GONE);
+                    }
                 } else {
-                    Toast.makeText(getContext(), "No se encontraron actividades", Toast.LENGTH_SHORT).show();
                     actividadAdapter.setActividades(new ArrayList<>());
+                    tvSinActividades.setVisibility(View.VISIBLE);
+                    recyclerViewActividades.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ActividadListResponse> call, @NonNull Throwable t) {
-                Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 actividadAdapter.setActividades(new ArrayList<>());
+                TextView tvSinActividades = requireView().findViewById(R.id.tvSinActividades);
+                tvSinActividades.setVisibility(View.VISIBLE);
+                recyclerViewActividades.setVisibility(View.GONE);
             }
         });
     }
+
 
     // MÉTODO ORIGINAL SIN MODIFICACIONES
     private List<ActividadGetResponse> enriquecerActividades(List<ActividadGetResponse> actividadesResponse) {

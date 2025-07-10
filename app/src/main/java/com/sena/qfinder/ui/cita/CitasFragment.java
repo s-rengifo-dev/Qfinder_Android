@@ -233,6 +233,8 @@ public class CitasFragment extends Fragment {
             return;
         }
 
+        TextView tvSinCitas = requireView().findViewById(R.id.tvSinCitas); // asegurarte que el TextView esté en el XML
+
         Retrofit retrofit = ApiClient.getClient();
         AuthService authService = retrofit.create(AuthService.class);
         Call<List<CitaMedica>> call = authService.listarCitasMedicas("Bearer " + token, pacienteId);
@@ -243,28 +245,34 @@ public class CitasFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     todasLasCitas = response.body();
                     Log.d(TAG, "Citas recibidas: " + todasLasCitas.size());
-                    if (todasLasCitas != null && !todasLasCitas.isEmpty()) {
+
+                    if (!todasLasCitas.isEmpty()) {
                         citaAdapter.updateData(todasLasCitas);
+                        tvSinCitas.setVisibility(View.GONE);
+                        recyclerCitas.setVisibility(View.VISIBLE);
                     } else {
-                        todasLasCitas = new ArrayList<>();
                         citaAdapter.updateData(new ArrayList<>());
-                        Toast.makeText(getContext(), "No hay citas programadas para este paciente", Toast.LENGTH_SHORT).show();
+                        tvSinCitas.setVisibility(View.VISIBLE);
+                        recyclerCitas.setVisibility(View.GONE);
                     }
                 } else {
-                    Toast.makeText(getContext(), "Error al cargar citas", Toast.LENGTH_SHORT).show();
-                    todasLasCitas = new ArrayList<>();
+                    Log.e(TAG, "Respuesta no exitosa al cargar citas. Código: " + response.code());
                     citaAdapter.updateData(new ArrayList<>());
+                    tvSinCitas.setVisibility(View.VISIBLE);
+                    recyclerCitas.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<CitaMedica>> call, @NonNull Throwable t) {
-                Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
-                todasLasCitas = new ArrayList<>();
+                Log.e(TAG, "Error de conexión al cargar citas", t);
                 citaAdapter.updateData(new ArrayList<>());
+                tvSinCitas.setVisibility(View.VISIBLE);
+                recyclerCitas.setVisibility(View.GONE);
             }
         });
     }
+
 
     private void mostrarDialogoAgregarRecordatorio() {
         if (selectedPatientId == -1) {
