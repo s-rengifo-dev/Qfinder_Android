@@ -1,5 +1,4 @@
 # QfindeR Android App
-
 Cliente móvil nativo para el ecosistema QfindeR. Aplicación enfocada en la gestión de salud, comunicación en tiempo real y transacciones seguras.
 
 ### 🛠 Tech Stack
