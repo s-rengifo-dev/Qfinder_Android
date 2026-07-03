@@ -1,4 +1,6 @@
-Cliente móvil nativo para el ecosistema QfindeR. Aplicación enfocada en la gestión de salud, comunicación en tiempo real y transacciones seguras.
+# QfindeR Android
+
+Aplicación móvil nativa diseñada para complementar el ecosistema QfindeR. Enfocada en la gestión de salud del paciente, comunicación directa mediante chat en tiempo real y procesamiento de pagos.
 
 ### 🛠 Tech Stack
 *   **Lenguaje:** Java / Kotlin
